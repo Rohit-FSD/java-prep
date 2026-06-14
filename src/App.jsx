@@ -9,9 +9,9 @@ import {
 } from "lucide-react";
 
 
-// --- persistence: window.storage in Claude artifacts, else localStorage locally ---
-const __store = (() => {
-  if (__store) return window.storage;
+// --- persistence: window.storage inside Claude artifacts, else localStorage when run locally ---
+const __store = (function () {
+  if (typeof window !== "undefined" && window.storage) return window.storage;
   if (typeof window !== "undefined" && window.localStorage) {
     return {
       get: async (k) => { const v = window.localStorage.getItem(k); return v == null ? null : { value: v }; },
