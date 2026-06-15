@@ -420,6 +420,171 @@ const QUESTIONS = [
       "Prefer java.util.concurrent for scalable thread safety.",
     ],
   },
+  {
+    id: "col-17", topic: "collections", difficulty: "medium", freq: "Very common",
+    companies: ["SERVICE", "BANK", "PRODUCT"],
+    q: "What happens if two distinct keys have the same hashCode in a HashMap?",
+    a: "They collide into the same bucket. The map then walks that bucket comparing with equals() — first hashCode narrows to a bucket, then equals() distinguishes keys within it. So both keys coexist; lookups just do a linear (or O(log n) tree) scan inside the bucket. A constant hashCode (e.g. returning 1) is legal but degrades the whole map to a single bucket — O(n) per operation. This is why hashCode should distribute well.",
+    keyPoints: [
+      "Same hash → same bucket; equals() separates keys within it.",
+      "Both keys stored; only retrieval cost rises.",
+      "Constant/poor hashCode → all collisions → O(n) lookups.",
+      "Java 8 treeifies a bucket >8 nodes to O(log n).",
+    ],
+  },
+  {
+    id: "col-18", topic: "collections", difficulty: "hard", freq: "Very common",
+    companies: ["SERVICE", "BANK", "PRODUCT"],
+    q: "Scenario: you iterate a List and call list.remove(x) inside the loop and get ConcurrentModificationException. Why, and how do you fix it?",
+    a: "A for-each loop uses the list's Iterator, which checks modCount against expectedModCount on each next(); calling list.remove() bumps modCount behind the iterator's back, so it fails fast with ConcurrentModificationException. Fixes: (1) use Iterator explicitly and call iterator.remove(); (2) use removeIf(predicate) — the cleanest Java 8 way; (3) collect items to remove and removeAll afterward; or (4) iterate over a copy. Note CME can occur even single-threaded — it's about structural modification during iteration, not threads.",
+    keyPoints: [
+      "for-each = iterator + modCount check → CME on structural change.",
+      "Fix: iterator.remove(), or removeIf(predicate) (preferred).",
+      "CME is not thread-specific; it's modification-during-iteration.",
+      "Iterating a copy or collecting-then-removeAll also works.",
+    ],
+    code: "// Cleanest:\nlist.removeIf(x -> x.isExpired());\n// Or explicit iterator:\nIterator<T> it = list.iterator();\nwhile (it.hasNext()) {\n  if (it.next().isExpired()) it.remove();\n}",
+  },
+  {
+    id: "col-19", topic: "collections", difficulty: "hard", freq: "Very common",
+    companies: ["BANK", "PRODUCT"],
+    q: "Scenario: 'check-then-act' on ConcurrentHashMap (if (!map.containsKey(k)) map.put(k, v)) is racy. How do you fix it atomically?",
+    a: "Even though ConcurrentHashMap is thread-safe per operation, a containsKey-then-put across two calls is NOT atomic — two threads can both see the key absent and both put. Use the atomic compound methods: putIfAbsent(k, v) (returns existing or null), computeIfAbsent(k, k -> expensiveCreate()) (atomically computes and stores only if absent — ideal for caches/memoization), or merge(k, v, remapping) for counters. These run the lambda under the bucket lock, so they're atomic and race-free.",
+    keyPoints: [
+      "Per-op thread-safety ≠ atomic compound (check-then-act) operations.",
+      "Use putIfAbsent / computeIfAbsent / merge / compute.",
+      "computeIfAbsent is the canonical thread-safe lazy-cache idiom.",
+      "Don't do long/blocking work or recursive map updates inside the lambda.",
+    ],
+    code: "// Thread-safe lazy cache:\nValue v = map.computeIfAbsent(key, k -> load(k));\n// Thread-safe counter:\nmap.merge(word, 1L, Long::sum);",
+  },
+  {
+    id: "col-20", topic: "collections", difficulty: "hard", freq: "Common",
+    companies: ["BANK", "PRODUCT"],
+    q: "Scenario: you use a mutable object as a HashMap key and later mutate a field used in equals/hashCode. What goes wrong?",
+    a: "The object was placed in a bucket based on its hashCode at insertion time. Mutating a field that feeds hashCode changes the computed bucket, but the entry physically stays in the old bucket. Now get(sameObject) computes the NEW bucket, finds nothing, and returns null — the value is 'lost' even though it's still in the map (and shows up in iteration). Lesson: keys must be immutable, or at least the fields used in equals/hashCode must never change while the object is a key. Prefer immutable keys (String, records, value objects).",
+    keyPoints: [
+      "Mutating key fields used in hashCode strands the entry in the old bucket.",
+      "get() looks in the new bucket → returns null; entry still in iteration.",
+      "Use immutable keys; records are ideal.",
+      "Same risk applies to HashSet membership.",
+    ],
+  },
+  {
+    id: "col-21", topic: "collections", difficulty: "medium", freq: "Common",
+    companies: ["SERVICE", "BANK", "PRODUCT"],
+    q: "HashMap vs LinkedHashMap vs TreeMap — how do you choose?",
+    a: "HashMap: no ordering guarantee, O(1) average get/put — the default. LinkedHashMap: maintains insertion order (or access order with accessOrder=true, enabling LRU caches) via a doubly-linked list across entries, still O(1), slight memory overhead. TreeMap: keeps keys sorted (natural order or Comparator), O(log n), and adds navigation (floor/ceiling/subMap). Choose HashMap unless you need predictable iteration order (LinkedHashMap) or sorting/range queries (TreeMap).",
+    keyPoints: [
+      "HashMap: fastest, no order.",
+      "LinkedHashMap: insertion/access order; basis of LRU.",
+      "TreeMap: sorted keys + navigation, O(log n).",
+      "Pick by ordering/range needs, then performance.",
+    ],
+  },
+  {
+    id: "col-22", topic: "collections", difficulty: "medium", freq: "Common",
+    companies: ["SERVICE", "BANK", "PRODUCT"],
+    q: "How does the enhanced for-loop work, and what does Iterable/Iterator provide?",
+    a: "The for-each loop is syntactic sugar: for (T x : coll) compiles to obtaining coll.iterator() and looping while hasNext()/next(). Any type implementing Iterable<T> (which returns an Iterator<T>) can be used. Iterator gives hasNext(), next(), and an optional remove(). Because it goes through the iterator, structural modification during a for-each triggers fail-fast CME; and you can't get the index or call remove() directly in a for-each.",
+    keyPoints: [
+      "for-each = sugar over iterator() + hasNext()/next().",
+      "Implement Iterable to make a custom type for-each-able.",
+      "No index access; remove only via Iterator.remove().",
+    ],
+  },
+  {
+    id: "col-23", topic: "collections", difficulty: "medium", freq: "Common",
+    companies: ["SERVICE", "BANK"],
+    q: "How does ArrayList grow internally, and what is its initial/grow capacity?",
+    a: "ArrayList wraps an Object[]. A default (no-arg) list starts with an empty shared array and lazily allocates capacity 10 on the first add. When full, it grows by ~1.5x (newCap = oldCap + (oldCap >> 1)), copying the old array into a bigger one via Arrays.copyOf — an O(n) operation, but amortized O(1) per add. If you know the size, pass an initial capacity to avoid repeated resizes/copies. ensureCapacity() can pre-size before a bulk add.",
+    keyPoints: [
+      "Backed by Object[]; default capacity 10 (lazy).",
+      "Grows ~1.5x with Arrays.copyOf (O(n) copy, amortized O(1) add).",
+      "Pre-size with new ArrayList<>(n) or ensureCapacity for bulk inserts.",
+    ],
+  },
+  {
+    id: "col-24", topic: "collections", difficulty: "medium", freq: "Common",
+    companies: ["BANK", "PRODUCT"],
+    q: "Scenario: Collections.synchronizedList is 'thread-safe', yet iterating it throws CME. Why?",
+    a: "synchronizedList wraps each method (add, get, remove) in a synchronized block, so individual operations are atomic. But iteration is a sequence of separate next() calls — another thread can modify the list between them, triggering fail-fast CME. The Javadoc explicitly says you MUST manually synchronize on the list while iterating. For real concurrent iteration without external locking, use CopyOnWriteArrayList (snapshot iterator) or a concurrent collection.",
+    keyPoints: [
+      "Per-method locking ≠ atomic iteration.",
+      "Must synchronized(list){ for(...) } during iteration.",
+      "CopyOnWriteArrayList / concurrent collections avoid the manual lock.",
+    ],
+    code: "List<T> sync = Collections.synchronizedList(new ArrayList<>());\nsynchronized (sync) {        // required during iteration\n  for (T t : sync) { ... }\n}",
+  },
+  {
+    id: "col-25", topic: "collections", difficulty: "easy", freq: "Common",
+    companies: ["SERVICE", "BANK"],
+    q: "Iterator vs ListIterator — what extra does ListIterator give?",
+    a: "Iterator is forward-only with hasNext/next/remove and works on any Collection. ListIterator (Lists only) is bidirectional — hasPrevious/previous — exposes nextIndex/previousIndex, and can set(e) (replace the last returned element) and add(e) (insert at the cursor) in addition to remove(). Use ListIterator when you need to traverse backward or modify a list in place during traversal.",
+    keyPoints: [
+      "Iterator: forward-only, any collection.",
+      "ListIterator: bidirectional, index-aware, set/add/remove.",
+      "Only lists provide a ListIterator.",
+    ],
+  },
+  {
+    id: "col-26", topic: "collections", difficulty: "medium", freq: "Common",
+    companies: ["BANK", "PRODUCT"],
+    q: "What is a PriorityQueue and how is it ordered?",
+    a: "PriorityQueue is an unbounded queue backed by a binary min-heap; the head is always the least element by natural order or a supplied Comparator. offer/poll are O(log n), peek is O(1). It is NOT sorted overall — only the head is guaranteed; iteration order is arbitrary. It's used for scheduling, Dijkstra/A*, top-K problems (use a bounded max-heap of size k), and merging sorted streams. Not thread-safe — use PriorityBlockingQueue for concurrency.",
+    keyPoints: [
+      "Binary heap; head = smallest (or per Comparator).",
+      "offer/poll O(log n), peek O(1); iteration order undefined.",
+      "Top-K: keep a size-k heap; use PriorityBlockingQueue if concurrent.",
+    ],
+  },
+  {
+    id: "col-27", topic: "collections", difficulty: "easy", freq: "Common",
+    companies: ["SERVICE", "BANK", "PRODUCT"],
+    q: "Difference between Collection and Collections.",
+    a: "Collection (singular) is the root interface of the collection hierarchy (List/Set/Queue extend it) defining add/remove/size/iterator etc. Collections (plural) is a utility class of static helper methods — sort, reverse, shuffle, min/max, binarySearch, unmodifiableXxx, synchronizedXxx, emptyList, singletonList. Don't confuse them; a common phone-screen 'gotcha' question.",
+    keyPoints: [
+      "Collection = root interface.",
+      "Collections = static utility methods class.",
+      "Similar: Map (interface) vs no — Map isn't under Collection.",
+    ],
+  },
+  {
+    id: "col-28", topic: "collections", difficulty: "medium", freq: "Common",
+    companies: ["SERVICE", "BANK"],
+    q: "Why don't Java collections store primitives, and what is autoboxing's cost?",
+    a: "Generics work only with reference types (due to type erasure), so List<int> is illegal — you use List<Integer>. Java autoboxes int↔Integer automatically. The cost: each boxed Integer is a heap object (more memory + GC pressure), and unboxing a null Integer throws NPE. For performance-critical numeric work, prefer primitive arrays (int[]) or specialized streams (IntStream) or libraries like Eclipse Collections/fastutil with primitive collections.",
+    keyPoints: [
+      "Generics need reference types → use wrappers (Integer, Long).",
+      "Autoboxing adds heap objects + GC; null unbox → NPE.",
+      "Hot numeric paths: int[], IntStream, primitive-collection libs.",
+    ],
+  },
+  {
+    id: "col-29", topic: "collections", difficulty: "hard", freq: "Occasional",
+    companies: ["BANK", "PRODUCT"],
+    q: "Scenario: design a thread-safe, bounded, in-memory counter of events per key under high concurrency. What do you use?",
+    a: "Use ConcurrentHashMap with a value of LongAdder (or AtomicLong) and merge/computeIfAbsent: map.computeIfAbsent(key, k -> new LongAdder()).increment(). LongAdder beats AtomicLong under high contention because it stripes the count across cells, reducing CAS retries (you trade exact-instant reads for throughput). Avoid map.merge(k,1L,Long::sum) at extreme contention since it locks the bucket; LongAdder lets concurrent increments on the same key scale. Bound memory by capping keys or evicting (Caffeine).",
+    keyPoints: [
+      "ConcurrentHashMap<K, LongAdder> + computeIfAbsent.",
+      "LongAdder > AtomicLong under heavy write contention (striping).",
+      "merge(...) is fine at low contention; LongAdder scales better.",
+      "Cap/evict keys to keep it bounded (Caffeine/size limit).",
+    ],
+    code: "ConcurrentHashMap<String, LongAdder> counts = new ConcurrentHashMap<>();\ncounts.computeIfAbsent(key, k -> new LongAdder()).increment();\nlong total = counts.get(key).sum();",
+  },
+  {
+    id: "col-30", topic: "collections", difficulty: "medium", freq: "Common",
+    companies: ["SERVICE", "BANK", "PRODUCT"],
+    q: "How do you remove duplicates from a List while preserving insertion order?",
+    a: "Wrap it in a LinkedHashSet: new ArrayList<>(new LinkedHashSet<>(list)) — the set dedupes by equals/hashCode while LinkedHashSet keeps first-seen order. With streams: list.stream().distinct().collect(toList()) (distinct() also preserves encounter order for ordered streams). If you need to dedupe by a specific field rather than whole-object equals, use a stream with a 'seen' set filter or toMap keyed by that field.",
+    keyPoints: [
+      "LinkedHashSet preserves first-seen order while deduping.",
+      "Streams: .distinct() (order-preserving for ordered streams).",
+      "Dedupe by field: filter(seen::add) or toMap(field, ...).",
+    ],
+    code: "// Preserve order:\nList<T> unique = new ArrayList<>(new LinkedHashSet<>(list));\n// Dedupe by a field:\nlist.stream().filter(e -> seen.add(e.getId())).collect(toList());",
+  },
 
   // ===================== CONCURRENCY =====================
   {
@@ -1679,6 +1844,126 @@ const QUESTIONS = [
       "limit short-circuits — the pipeline stops early.",
     ],
     code: "List<Emp> top3 = emps.stream()\n    .sorted(Comparator.comparing(Emp::getSalary).reversed())\n    .limit(3).collect(Collectors.toList());",
+  },
+  {
+    id: "sc-15", topic: "streams", difficulty: "medium", freq: "Very common",
+    companies: ["SERVICE", "BANK", "PRODUCT"],
+    q: "Count the occurrences of each character in a string, sorted by character.",
+    keyPoints: [
+      "chars() → mapToObj to Character; groupingBy into a TreeMap for sorted keys; counting() downstream.",
+      "TreeMap::new as the map factory keeps keys ordered.",
+    ],
+    code: "Map<Character,Long> freq = s.chars().mapToObj(c -> (char) c)\n    .collect(Collectors.groupingBy(c -> c, TreeMap::new, Collectors.counting()));",
+  },
+  {
+    id: "sc-16", topic: "streams", difficulty: "hard", freq: "Very common",
+    companies: ["BANK", "PRODUCT"],
+    q: "Scenario: group employees by department, then within each department find the highest-paid employee.",
+    keyPoints: [
+      "groupingBy(dept) with maxBy(comparing salary) as the downstream collector.",
+      "maxBy returns Optional<Emp>; use collectingAndThen + Optional::get to unwrap if every group is non-empty.",
+    ],
+    code: "Map<String, Emp> topPerDept = emps.stream()\n    .collect(Collectors.groupingBy(Emp::getDept,\n        Collectors.collectingAndThen(\n            Collectors.maxBy(Comparator.comparing(Emp::getSalary)),\n            Optional::get)));",
+  },
+  {
+    id: "sc-17", topic: "streams", difficulty: "medium", freq: "Common",
+    companies: ["BANK", "PRODUCT"],
+    q: "Scenario: from a list of orders, compute total revenue per customer and sort the result by revenue descending.",
+    keyPoints: [
+      "groupingBy(customer) + summingDouble(amount) → Map<Customer, Double>.",
+      "Stream the entrySet, sort by value reversed, collect to a LinkedHashMap to keep order.",
+    ],
+    code: "Map<String,Double> revenue = orders.stream()\n    .collect(Collectors.groupingBy(Order::getCustomer,\n             Collectors.summingDouble(Order::getAmount)));\nLinkedHashMap<String,Double> sorted = revenue.entrySet().stream()\n    .sorted(Map.Entry.<String,Double>comparingByValue().reversed())\n    .collect(Collectors.toMap(Map.Entry::getKey, Map.Entry::getValue,\n             (a,b)->a, LinkedHashMap::new));",
+  },
+  {
+    id: "sc-18", topic: "streams", difficulty: "medium", freq: "Common",
+    companies: ["SERVICE", "BANK", "PRODUCT"],
+    q: "Find the maximum, minimum, sum, count and average of a list of integers in one pass.",
+    keyPoints: [
+      "mapToInt(...).summaryStatistics() returns an IntSummaryStatistics with all of them.",
+      "One traversal — cleaner than five separate stream operations.",
+    ],
+    code: "IntSummaryStatistics stats = nums.stream()\n    .mapToInt(Integer::intValue).summaryStatistics();\n// stats.getMax(), getMin(), getSum(), getCount(), getAverage()",
+  },
+  {
+    id: "sc-19", topic: "streams", difficulty: "hard", freq: "Common",
+    companies: ["BANK", "PRODUCT"],
+    q: "Scenario: count how many employees fall in each salary band (e.g. <50k, 50k–100k, >100k).",
+    keyPoints: [
+      "groupingBy a classifier that returns a band label, with counting() downstream.",
+      "The classifier function maps each salary to its bucket name.",
+    ],
+    code: "Map<String,Long> bands = emps.stream().collect(\n    Collectors.groupingBy(e -> {\n        double s = e.getSalary();\n        if (s < 50_000) return \"<50k\";\n        if (s <= 100_000) return \"50k-100k\";\n        return \">100k\";\n    }, Collectors.counting()));",
+  },
+  {
+    id: "sc-20", topic: "streams", difficulty: "medium", freq: "Common",
+    companies: ["SERVICE", "BANK"],
+    q: "Check whether all / any / none of the elements satisfy a condition.",
+    keyPoints: [
+      "allMatch / anyMatch / noneMatch are short-circuiting terminal ops returning boolean.",
+      "On an empty stream allMatch and noneMatch return true; anyMatch returns false.",
+    ],
+    code: "boolean allActive = users.stream().allMatch(User::isActive);\nboolean anyAdmin  = users.stream().anyMatch(User::isAdmin);\nboolean noneBanned= users.stream().noneMatch(User::isBanned);",
+  },
+  {
+    id: "sc-21", topic: "streams", difficulty: "hard", freq: "Common",
+    companies: ["BANK", "PRODUCT"],
+    q: "Scenario: merge two Map<String,Integer> summing the values of common keys using streams.",
+    keyPoints: [
+      "Stream both entry sets through Collectors.toMap with a merge function (Integer::sum).",
+      "Concat the two entry streams, then collect with a sum merge for duplicate keys.",
+    ],
+    code: "Map<String,Integer> merged = Stream.concat(\n        m1.entrySet().stream(), m2.entrySet().stream())\n    .collect(Collectors.toMap(Map.Entry::getKey, Map.Entry::getValue,\n             Integer::sum));",
+  },
+  {
+    id: "sc-22", topic: "streams", difficulty: "medium", freq: "Very common",
+    companies: ["SERVICE", "BANK", "PRODUCT"],
+    q: "Convert a List<Employee> to a comma-separated String of names, only for active employees.",
+    keyPoints: [
+      "filter → map(name) → collect(joining(\", \")).",
+      "Composes filtering, projection and joining in one pipeline.",
+    ],
+    code: "String names = emps.stream()\n    .filter(Emp::isActive)\n    .map(Emp::getName)\n    .collect(Collectors.joining(\", \"));",
+  },
+  {
+    id: "sc-23", topic: "streams", difficulty: "medium", freq: "Common",
+    companies: ["BANK", "PRODUCT"],
+    q: "Scenario: given a list of transactions, find the three most expensive ones from year 2023.",
+    keyPoints: [
+      "filter by year, sort by amount descending, limit(3), collect.",
+      "Classic multi-step pipeline (filter → sort → limit) — a Java 8 textbook favourite.",
+    ],
+    code: "List<Txn> top = txns.stream()\n    .filter(t -> t.getYear() == 2023)\n    .sorted(Comparator.comparing(Txn::getAmount).reversed())\n    .limit(3)\n    .collect(Collectors.toList());",
+  },
+  {
+    id: "sc-24", topic: "streams", difficulty: "hard", freq: "Occasional",
+    companies: ["BANK", "PRODUCT"],
+    q: "Scenario: find the longest word(s) in a list — handle ties.",
+    keyPoints: [
+      "Find the max length first, then filter words matching that length (handles ties).",
+      "Single max() loses ties; computing max length then filtering keeps all of them.",
+    ],
+    code: "int maxLen = words.stream().mapToInt(String::length).max().orElse(0);\nList<String> longest = words.stream()\n    .filter(w -> w.length() == maxLen)\n    .collect(Collectors.toList());",
+  },
+  {
+    id: "sc-25", topic: "streams", difficulty: "medium", freq: "Common",
+    companies: ["SERVICE", "BANK"],
+    q: "Generate the first N Fibonacci numbers (or N squares) using Stream.iterate.",
+    keyPoints: [
+      "Stream.iterate(seed, next) with limit(N) for infinite-then-bounded generation.",
+      "Java 9+ Stream.iterate(seed, hasNext, next) adds a built-in predicate to stop.",
+    ],
+    code: "Stream.iterate(new long[]{0,1}, f -> new long[]{f[1], f[0]+f[1]})\n    .limit(n).map(f -> f[0])\n    .forEach(System.out::println);",
+  },
+  {
+    id: "sc-26", topic: "streams", difficulty: "hard", freq: "Common",
+    companies: ["BANK", "PRODUCT"],
+    q: "Scenario: build a Map<Department, Long> of headcount but only include departments with more than 5 employees.",
+    keyPoints: [
+      "groupingBy(dept, counting()) first, then filter the resulting entries.",
+      "Use Collectors.filtering only for per-group element filtering; here we filter whole groups afterward (or via collectingAndThen).",
+    ],
+    code: "Map<String,Long> big = emps.stream()\n    .collect(Collectors.groupingBy(Emp::getDept, Collectors.counting()))\n    .entrySet().stream()\n    .filter(e -> e.getValue() > 5)\n    .collect(Collectors.toMap(Map.Entry::getKey, Map.Entry::getValue));",
   },
 
   // ===================== STRING PROBLEMS (approach + reference solution) =====================
