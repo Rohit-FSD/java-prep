@@ -5,7 +5,7 @@ import {
   Eye, EyeOff, BookOpen, Award, Cpu, Database, Layers, Boxes, Shield,
   Code2, Zap, Hash, Terminal, GraduationCap, ListChecks, Star, ArrowRight,
   ArrowLeft, Lightbulb, Activity, Coffee, Brain, Sun, Moon, Shuffle, CircleDot,
-  Play, Copy, Loader2, AlertTriangle, Calendar, ChevronLeft
+  Play, Copy, Loader2, AlertTriangle, Calendar, ChevronLeft, Cloud, Container
 } from "lucide-react";
 
 
@@ -41,6 +41,8 @@ const TOPICS = [
   { id: "coding", name: "Coding & Output", icon: "Terminal", blurb: "Tricky output, snippets, write-on-the-spot." },
   { id: "string-coding", name: "String Problems", icon: "Hash", blurb: "Classic string coding interview problems." },
   { id: "array-coding", name: "Array Problems", icon: "Boxes", blurb: "Classic array & matrix coding problems." },
+  { id: "docker", name: "Docker & Containers", icon: "Container", blurb: "Images, layers, volumes, networking, Dockerfile, compose." },
+  { id: "aws", name: "AWS & Cloud", icon: "Cloud", blurb: "EC2, S3, IAM, Lambda, VPC, scaling, deploying Java apps." },
 ];
 
 const DIFF = { easy: "Easy", medium: "Medium", hard: "Hard" };
@@ -2528,6 +2530,280 @@ for (int[] row : m)
         int t = row[i]; row[i] = row[j]; row[j] = t;       // reverse row
     }`,
   },
+
+  // ===================== DOCKER & CONTAINERS =====================
+  {
+    id: "dkr-1", topic: "docker", difficulty: "easy", freq: "Very common",
+    companies: ["SERVICE", "BANK", "PRODUCT"],
+    q: "What is the difference between a container and a virtual machine?",
+    a: "A VM virtualizes hardware: each VM runs a full guest OS on top of a hypervisor — heavyweight (GBs), slow to boot, strong isolation. A container virtualizes the OS: it packages an app and its dependencies but SHARES the host kernel, using Linux namespaces (isolation) and cgroups (resource limits). Containers are lightweight (MBs), start in milliseconds, and are denser, which is why they suit microservices. The trade-off is weaker isolation (shared kernel) than a VM.",
+    keyPoints: [
+      "VM = virtualized hardware + full guest OS (heavy).",
+      "Container = shares host kernel via namespaces + cgroups (light).",
+      "Containers: faster boot, higher density; VMs: stronger isolation.",
+    ],
+  },
+  {
+    id: "dkr-2", topic: "docker", difficulty: "easy", freq: "Very common",
+    companies: ["SERVICE", "BANK", "PRODUCT"],
+    q: "Image vs container — what's the difference?",
+    a: "An image is an immutable, read-only template (the app + dependencies + filesystem layers + metadata) built from a Dockerfile. A container is a running (or stopped) INSTANCE of an image — the image plus a thin writable layer on top. One image can spawn many containers. Analogy: image is the class, container is the object; or image is the executable, container is the process.",
+    keyPoints: [
+      "Image = immutable template (read-only layers).",
+      "Container = runnable instance + a writable layer.",
+      "One image → many containers (like class → objects).",
+    ],
+  },
+  {
+    id: "dkr-3", topic: "docker", difficulty: "medium", freq: "Very common",
+    companies: ["SERVICE", "BANK", "PRODUCT"],
+    q: "Explain Docker image layers and the build cache.",
+    a: "Each instruction in a Dockerfile (FROM, RUN, COPY) creates a read-only layer; layers are cached and shared between images (content-addressable). On rebuild, Docker reuses cached layers up to the first changed instruction, then rebuilds everything after it. So ORDER matters: put rarely-changing steps (install dependencies) BEFORE frequently-changing ones (COPY source code). For Java/Maven, copy pom.xml and run dependency resolution first, then copy src — so code changes don't re-download dependencies.",
+    keyPoints: [
+      "Each Dockerfile instruction = a cached, shareable layer.",
+      "Cache invalidates from the first changed instruction onward.",
+      "Order stable steps first; copy deps before source for fast rebuilds.",
+    ],
+    code: "# Cache-friendly Java build:\nCOPY pom.xml .\nRUN mvn dependency:go-offline   # cached unless pom changes\nCOPY src ./src\nRUN mvn package -o",
+  },
+  {
+    id: "dkr-4", topic: "docker", difficulty: "medium", freq: "Very common",
+    companies: ["BANK", "PRODUCT"],
+    q: "What is a multi-stage build and why is it important for Java apps?",
+    a: "A multi-stage build uses multiple FROM statements: an early 'build' stage with the full JDK + Maven/Gradle compiles the app, then a final lightweight stage (JRE or distroless) copies ONLY the built artifact (the jar) from the build stage. This keeps the final image small and secure — no compilers, build tools, or source code shipped to production. It's the standard way to ship a Spring Boot jar: a 600MB build image yields a ~150MB runtime image.",
+    keyPoints: [
+      "Multiple FROM stages; copy only artifacts into the final image.",
+      "Smaller, more secure runtime (no JDK/Maven/source).",
+      "Use JRE or distroless/Alpine base for the final stage.",
+    ],
+    code: "FROM maven:3.9-eclipse-temurin-21 AS build\nWORKDIR /app\nCOPY . .\nRUN mvn -q package -DskipTests\n\nFROM eclipse-temurin:21-jre-alpine\nCOPY --from=build /app/target/app.jar app.jar\nENTRYPOINT [\"java\",\"-jar\",\"/app.jar\"]",
+  },
+  {
+    id: "dkr-5", topic: "docker", difficulty: "medium", freq: "Very common",
+    companies: ["SERVICE", "BANK", "PRODUCT"],
+    q: "CMD vs ENTRYPOINT vs RUN — when is each used?",
+    a: "RUN executes at BUILD time and creates a new layer (install packages, compile). ENTRYPOINT and CMD execute at RUNTIME when the container starts. ENTRYPOINT sets the fixed executable; CMD sets default arguments (or a default command). If both are present, CMD's values are passed as arguments to ENTRYPOINT. CLI args to `docker run` override CMD but not ENTRYPOINT (unless --entrypoint). Use exec form (JSON array) so signals reach the process for graceful shutdown.",
+    keyPoints: [
+      "RUN = build-time (creates layers); CMD/ENTRYPOINT = runtime.",
+      "ENTRYPOINT = the executable; CMD = default args overridable at run.",
+      "Prefer exec form [\"java\",\"-jar\",...] for proper signal handling.",
+    ],
+  },
+  {
+    id: "dkr-6", topic: "docker", difficulty: "medium", freq: "Common",
+    companies: ["SERVICE", "BANK", "PRODUCT"],
+    q: "How do you persist data in Docker? Volumes vs bind mounts.",
+    a: "Container writable layers are ephemeral — deleted when the container is removed. To persist data you mount external storage. A VOLUME is managed by Docker (stored under /var/lib/docker/volumes), portable, and the preferred way for databases and stateful data. A BIND MOUNT maps a specific host path into the container — great for local dev (live-editing source) but ties you to the host's filesystem layout. tmpfs mounts live in memory (sensitive, non-persistent data).",
+    keyPoints: [
+      "Container fs is ephemeral; use volumes/mounts for persistence.",
+      "Volume = Docker-managed, portable (DBs, prod data).",
+      "Bind mount = host path (dev/live-reload); tmpfs = in-memory.",
+    ],
+  },
+  {
+    id: "dkr-7", topic: "docker", difficulty: "medium", freq: "Common",
+    companies: ["BANK", "PRODUCT"],
+    q: "Explain Docker networking modes (bridge, host, none) and container-to-container communication.",
+    a: "bridge (default) puts containers on a private virtual network with NAT to the host; you publish ports with -p host:container. host shares the host's network stack directly (no isolation, no port mapping — faster, Linux only). none disables networking. For container-to-container communication, create a user-defined bridge network: containers on it can reach each other by CONTAINER NAME via Docker's built-in DNS (e.g. a Spring app connects to 'postgres:5432'). The default bridge does NOT provide name resolution.",
+    keyPoints: [
+      "bridge = default, isolated + port publishing; host = no isolation.",
+      "User-defined bridge gives DNS by container name.",
+      "Default bridge has no automatic name resolution → use a custom network.",
+    ],
+  },
+  {
+    id: "dkr-8", topic: "docker", difficulty: "medium", freq: "Common",
+    companies: ["SERVICE", "BANK", "PRODUCT"],
+    q: "What is Docker Compose and when do you use it?",
+    a: "Docker Compose defines and runs MULTI-container applications via a single YAML file (services, networks, volumes, env, depends_on). `docker compose up` starts the whole stack — e.g. a Spring Boot app + PostgreSQL + Redis — with one command, on a shared network where services reach each other by name. It's ideal for local development and integration testing. For production orchestration across many hosts you'd use Kubernetes (or Docker Swarm), not Compose.",
+    keyPoints: [
+      "Declarative multi-container stacks in one YAML file.",
+      "Single command brings up app + DB + cache on a shared network.",
+      "Great for dev/CI; use Kubernetes for prod orchestration.",
+    ],
+    code: "services:\n  app:\n    build: .\n    ports: [\"8080:8080\"]\n    depends_on: [db]\n    environment:\n      SPRING_DATASOURCE_URL: jdbc:postgresql://db:5432/app\n  db:\n    image: postgres:16\n    volumes: [\"pgdata:/var/lib/postgresql/data\"]\nvolumes:\n  pgdata:",
+  },
+  {
+    id: "dkr-9", topic: "docker", difficulty: "hard", freq: "Common",
+    companies: ["BANK", "PRODUCT"],
+    q: "How do you reduce Docker image size and improve security?",
+    a: "Use a minimal base (alpine, distroless, or eclipse-temurin:*-jre rather than the JDK), multi-stage builds to drop build tools, combine RUN commands and clean package caches in the same layer, add a .dockerignore to keep build context lean, and copy only what you need. For security: run as a NON-root user (USER directive), pin image tags/digests (not :latest), scan images (Trivy/Snyk/docker scout), and don't bake secrets into layers (they persist in history) — pass them at runtime or via a secrets manager.",
+    keyPoints: [
+      "Minimal base + multi-stage + .dockerignore + fewer layers.",
+      "Run as non-root USER; avoid :latest, pin digests.",
+      "Never bake secrets into layers; scan images (Trivy/scout).",
+    ],
+  },
+  {
+    id: "dkr-10", topic: "docker", difficulty: "medium", freq: "Common",
+    companies: ["SERVICE", "BANK", "PRODUCT"],
+    q: "Scenario: your Spring Boot container exits immediately on startup. How do you debug it?",
+    a: "Start with `docker ps -a` to see the exit code, then `docker logs <container>` for the stack trace — usually the app crashed (bad config, can't reach DB, port conflict, OOM). Common causes: the JVM was killed by the container memory limit (check exit 137 = OOMKilled), a missing/incorrect env var or datasource URL, or the ENTRYPOINT using shell form so signals/args were mishandled. You can override the entrypoint to get a shell: `docker run -it --entrypoint sh image` to inspect the filesystem, env, and run java manually.",
+    keyPoints: [
+      "docker ps -a (exit code) → docker logs (stack trace).",
+      "Exit 137 = OOMKilled (raise memory or tune -XX:MaxRAMPercentage).",
+      "Override entrypoint with sh to inspect env/config interactively.",
+    ],
+  },
+  {
+    id: "dkr-11", topic: "docker", difficulty: "hard", freq: "Occasional",
+    companies: ["BANK", "PRODUCT"],
+    q: "Scenario: a Java container gets OOMKilled even though heap looks fine. Why, and how do you size it?",
+    a: "The JVM counts only the heap in -Xmx, but the container's memory limit covers heap + metaspace + thread stacks + JIT code cache + direct/native buffers + GC overhead. If -Xmx is set near the container limit, non-heap memory pushes total usage past the cgroup limit and the kernel OOM-kills the process (exit 137). Modern JVMs (8u191+/11+) are container-aware and read cgroup limits; prefer -XX:MaxRAMPercentage=75 over a fixed -Xmx so the JVM leaves headroom for non-heap memory. Also right-size the container limit, not just the heap.",
+    keyPoints: [
+      "Container limit = heap + metaspace + stacks + native + GC, not just -Xmx.",
+      "Set -XX:MaxRAMPercentage (container-aware) instead of fixed -Xmx.",
+      "Exit code 137 = OOMKilled by the kernel/cgroup.",
+    ],
+  },
+  {
+    id: "dkr-12", topic: "docker", difficulty: "easy", freq: "Common",
+    companies: ["SERVICE", "BANK"],
+    q: "What does a typical Dockerfile for a Spring Boot app look like, and what are EXPOSE / WORKDIR / COPY for?",
+    a: "WORKDIR sets the working directory (and creates it). COPY brings files from the build context into the image. EXPOSE documents which port the app listens on (it's metadata only — it does NOT publish the port; you still need -p at run time). ENTRYPOINT/CMD define the start command. A typical flow: pick a JRE base, set WORKDIR, COPY the jar, EXPOSE 8080, then ENTRYPOINT java -jar app.jar.",
+    keyPoints: [
+      "WORKDIR = working dir; COPY = files into image.",
+      "EXPOSE is documentation only — use -p to actually publish.",
+      "ADD vs COPY: prefer COPY (ADD has surprising url/tar behavior).",
+    ],
+  },
+
+  // ===================== AWS & CLOUD =====================
+  {
+    id: "aws-1", topic: "aws", difficulty: "easy", freq: "Very common",
+    companies: ["SERVICE", "BANK", "PRODUCT"],
+    q: "Explain the core AWS compute, storage and database services you'd use for a Java app.",
+    a: "Compute: EC2 (virtual servers, full control), ECS/EKS (containers), Lambda (serverless functions), Elastic Beanstalk (managed app platform). Storage: S3 (object storage for files/backups/static assets), EBS (block storage attached to EC2), EFS (shared file system). Database: RDS (managed relational — MySQL/Postgres/Aurora), DynamoDB (managed NoSQL key-value), ElastiCache (Redis/Memcached). A typical Spring Boot deployment: app on EC2/ECS, data in RDS, files in S3, cache in ElastiCache, fronted by an ALB.",
+    keyPoints: [
+      "Compute: EC2 / ECS-EKS / Lambda / Beanstalk.",
+      "Storage: S3 (object), EBS (block), EFS (shared file).",
+      "DB: RDS/Aurora (SQL), DynamoDB (NoSQL), ElastiCache (cache).",
+    ],
+  },
+  {
+    id: "aws-2", topic: "aws", difficulty: "medium", freq: "Very common",
+    companies: ["SERVICE", "BANK", "PRODUCT"],
+    q: "What is IAM? Explain roles vs users vs policies, and least privilege.",
+    a: "IAM (Identity and Access Management) controls WHO can do WHAT on which resources. A USER is a long-lived identity (a person/app) with credentials. A ROLE is an identity with temporary credentials that can be ASSUMED — used for EC2/Lambda/services so you never hardcode keys (the service assumes a role and gets rotating short-lived credentials). A POLICY is a JSON document granting/denying actions on resources, attached to users/roles/groups. Least privilege = grant only the permissions actually needed. Best practice: apps use roles, not access keys.",
+    keyPoints: [
+      "User = long-lived identity; Role = assumable, temporary creds.",
+      "Policy = JSON of allowed/denied actions on resources.",
+      "Give EC2/Lambda a role — never hardcode access keys.",
+      "Follow least privilege; use groups for user permissions.",
+    ],
+  },
+  {
+    id: "aws-3", topic: "aws", difficulty: "medium", freq: "Very common",
+    companies: ["SERVICE", "BANK", "PRODUCT"],
+    q: "What is S3 and what are its key features (durability, classes, consistency)?",
+    a: "S3 is object storage: you store objects (files up to 5TB) in buckets, accessed via a key, with 11 nines (99.999999999%) durability. Storage classes trade cost vs access: Standard, Standard-IA (infrequent access), Intelligent-Tiering (auto), Glacier/Deep Archive (archival). Features: versioning, lifecycle policies (auto-transition/expire objects), server-side encryption (SSE-S3/KMS), and fine-grained access via bucket policies/IAM. Since Dec 2020 S3 provides strong read-after-write consistency. It is NOT a filesystem — it's a flat key-value object store (prefixes simulate folders).",
+    keyPoints: [
+      "Object store, 11 nines durability, buckets + keys.",
+      "Classes: Standard/IA/Intelligent-Tiering/Glacier for cost tiers.",
+      "Versioning, lifecycle, encryption; strong read-after-write consistency.",
+    ],
+  },
+  {
+    id: "aws-4", topic: "aws", difficulty: "medium", freq: "Very common",
+    companies: ["SERVICE", "BANK", "PRODUCT"],
+    q: "Difference between horizontal and vertical scaling, and how does Auto Scaling + Load Balancer fit?",
+    a: "Vertical scaling (scale up) = a bigger instance (more CPU/RAM) — simple but has a ceiling and downtime to resize. Horizontal scaling (scale out) = more instances — elastic and fault-tolerant, the cloud-native approach. An Auto Scaling Group adds/removes EC2 instances based on metrics (CPU, request count) between min/max bounds; an Elastic Load Balancer (ALB for HTTP) spreads traffic across healthy instances and runs health checks. For this to work the app should be STATELESS (session state in Redis/DynamoDB, not on the instance).",
+    keyPoints: [
+      "Vertical = bigger box (limited); Horizontal = more boxes (elastic).",
+      "ASG scales instance count on metrics; ELB/ALB distributes traffic.",
+      "Stateless apps required — externalize session state.",
+    ],
+  },
+  {
+    id: "aws-5", topic: "aws", difficulty: "medium", freq: "Very common",
+    companies: ["BANK", "PRODUCT"],
+    q: "What is a VPC? Explain subnets, security groups vs NACLs.",
+    a: "A VPC is your own isolated virtual network in AWS. You divide it into SUBNETS: public subnets (route to an Internet Gateway — for load balancers/bastions) and private subnets (no direct internet; outbound via a NAT Gateway — for app servers and databases). SECURITY GROUPS are stateful firewalls at the instance/ENI level (return traffic auto-allowed, allow-rules only). NETWORK ACLs are stateless firewalls at the subnet level (allow AND deny rules, evaluated in order, return traffic must be explicitly allowed). Typical design: ALB in public subnets, app + RDS in private subnets.",
+    keyPoints: [
+      "VPC = isolated network; public (IGW) vs private (NAT) subnets.",
+      "Security Group = stateful, instance-level, allow-only.",
+      "NACL = stateless, subnet-level, allow + deny, ordered.",
+      "Keep databases in private subnets.",
+    ],
+  },
+  {
+    id: "aws-6", topic: "aws", difficulty: "medium", freq: "Very common",
+    companies: ["SERVICE", "BANK", "PRODUCT"],
+    q: "What is AWS Lambda and when is serverless a good (or bad) fit?",
+    a: "Lambda runs your function code on demand without managing servers; you pay per request + execution time, and it auto-scales to zero and up massively. Good fit: event-driven and bursty workloads (S3 upload triggers, API backends via API Gateway, scheduled jobs, stream processing). Bad fit: long-running tasks (15-min max), very latency-sensitive paths hurt by COLD STARTS (JVM cold starts are notably slow — mitigate with provisioned concurrency, SnapStart for Java, or smaller runtimes), and steady high-throughput workloads that are cheaper on always-on compute.",
+    keyPoints: [
+      "Event-driven, auto-scaling, pay-per-use, no servers to manage.",
+      "Great for bursty/event/scheduled work; 15-min max runtime.",
+      "Java cold starts are slow → provisioned concurrency / SnapStart.",
+    ],
+  },
+  {
+    id: "aws-7", topic: "aws", difficulty: "medium", freq: "Common",
+    companies: ["BANK", "PRODUCT"],
+    q: "SQS vs SNS vs Kinesis — when do you use each?",
+    a: "SQS is a managed message QUEUE for decoupling producers/consumers — one consumer group pulls and processes each message (point-to-point), with at-least-once delivery (Standard) or exactly-once ordering (FIFO). SNS is pub/sub: one message FANS OUT to many subscribers (push to SQS queues, Lambda, email, HTTP). Kinesis is for high-throughput real-time STREAMING data (analytics, logs, clickstreams) with ordered, replayable shards and multiple consumers reading the same stream. Common pattern: SNS→multiple SQS queues (fan-out + buffering).",
+    keyPoints: [
+      "SQS = queue, decoupling, one logical consumer pulls.",
+      "SNS = pub/sub fan-out to many subscribers (push).",
+      "Kinesis = ordered, replayable real-time streaming.",
+    ],
+  },
+  {
+    id: "aws-8", topic: "aws", difficulty: "hard", freq: "Common",
+    companies: ["BANK", "PRODUCT"],
+    q: "Scenario: how would you deploy a containerized Spring Boot microservice on AWS for production?",
+    a: "Build the image (multi-stage), push to ECR (Elastic Container Registry). Run it on ECS Fargate (serverless containers, no EC2 to manage) or EKS (Kubernetes) for more control. Front it with an Application Load Balancer doing health checks and TLS termination; put tasks in PRIVATE subnets across multiple AZs for HA, ALB in public subnets. Store config/secrets in Parameter Store / Secrets Manager (injected at runtime, not baked in). Use RDS Multi-AZ for the database, CloudWatch for logs/metrics/alarms, an Auto Scaling policy on CPU/request count, and a CI/CD pipeline (CodePipeline/GitHub Actions) to build, scan, and roll out.",
+    keyPoints: [
+      "Image → ECR → ECS Fargate/EKS, multi-AZ private subnets.",
+      "ALB (health checks, TLS) in public subnets; tasks in private.",
+      "Secrets in Secrets Manager/Parameter Store; RDS Multi-AZ.",
+      "CloudWatch monitoring + autoscaling + CI/CD rollout.",
+    ],
+  },
+  {
+    id: "aws-9", topic: "aws", difficulty: "medium", freq: "Common",
+    companies: ["SERVICE", "BANK", "PRODUCT"],
+    q: "What are Regions and Availability Zones, and why do they matter for high availability?",
+    a: "A Region is a geographic area (e.g. ap-south-1 Mumbai); an Availability Zone is one or more discrete data centers within a region, isolated for failure but linked by low-latency networking. Deploying across MULTIPLE AZs gives high availability: if one AZ fails, instances in another keep serving (this is what RDS Multi-AZ, ASGs across AZs, and ELBs do). Multiple REGIONS give disaster recovery and lower latency to global users but add complexity and data-transfer cost. Choose region by latency, data-residency/compliance, and service availability.",
+    keyPoints: [
+      "Region = geographic area; AZ = isolated DC(s) within it.",
+      "Multi-AZ = high availability (survive a DC failure).",
+      "Multi-region = DR + global latency; pick region for compliance/latency.",
+    ],
+  },
+  {
+    id: "aws-10", topic: "aws", difficulty: "easy", freq: "Common",
+    companies: ["SERVICE", "BANK", "PRODUCT"],
+    q: "How should a Java app on AWS handle credentials and configuration securely?",
+    a: "Never hardcode AWS keys or DB passwords in code/images. For AWS API calls, attach an IAM ROLE to the EC2 instance / ECS task / Lambda — the AWS SDK's default credential provider chain automatically picks up the rotating temporary credentials. For app config and secrets (DB passwords, API keys), use Systems Manager Parameter Store (config) or Secrets Manager (secrets, with automatic rotation), read at startup or runtime. Encrypt with KMS. This keeps secrets out of source control and Docker layers.",
+    keyPoints: [
+      "Use IAM roles + SDK default credential chain (no hardcoded keys).",
+      "Secrets Manager (rotation) / Parameter Store for config + secrets.",
+      "Encrypt with KMS; keep secrets out of code and image layers.",
+    ],
+  },
+  {
+    id: "aws-11", topic: "aws", difficulty: "medium", freq: "Common",
+    companies: ["BANK", "PRODUCT"],
+    q: "RDS vs DynamoDB — how do you choose?",
+    a: "RDS is managed RELATIONAL (MySQL/Postgres/Aurora): use it when you need ACID transactions, complex joins, a fixed schema, and SQL — the default for most business apps. It scales reads with read replicas and HA with Multi-AZ, but write scaling is bounded by the instance. DynamoDB is managed NoSQL key-value/document: single-digit-millisecond latency at any scale, serverless, great for high-throughput, simple access patterns (user sessions, carts, IoT). The catch: you must DESIGN AROUND ACCESS PATTERNS (partition key choice), joins/ad-hoc queries are awkward, and it's eventually consistent by default.",
+    keyPoints: [
+      "RDS: relational, ACID, joins, SQL — default for business data.",
+      "DynamoDB: NoSQL, massive scale, low latency, design by access pattern.",
+      "RDS read replicas + Multi-AZ; DynamoDB needs good partition keys.",
+    ],
+  },
+  {
+    id: "aws-12", topic: "aws", difficulty: "medium", freq: "Common",
+    companies: ["SERVICE", "BANK", "PRODUCT"],
+    q: "What is CloudWatch and how do you monitor a Java app in production?",
+    a: "CloudWatch is AWS's observability service: METRICS (CPU, memory, request count, custom app metrics), LOGS (centralized via the CloudWatch agent or container log drivers), ALARMS (trigger on thresholds → SNS notification or auto-scaling action), and DASHBOARDS. For a Spring Boot app: ship logs to CloudWatch Logs, publish Micrometer/Actuator metrics, set alarms on error rate / p99 latency / CPU, and use X-Ray for distributed tracing across microservices. Alarms can drive Auto Scaling and page on-call.",
+    keyPoints: [
+      "Metrics + Logs + Alarms + Dashboards in one place.",
+      "Spring Boot: Actuator/Micrometer metrics + logs to CloudWatch.",
+      "Alarms → SNS/auto-scaling; X-Ray for distributed tracing.",
+    ],
+  },
 ];
 
 // ---- Market insights from research (2025–2026 trend snapshot) ----
@@ -2589,7 +2865,7 @@ const PROFILE = {
 //  Core Java Prep — single-file dashboard
 // ============================================================
 
-const ICONS = { Boxes, Hash, Layers, Cpu, Shield, Zap, Sparkles, Code2, Database, Terminal };
+const ICONS = { Boxes, Hash, Layers, Cpu, Shield, Zap, Sparkles, Code2, Database, Terminal, Cloud, Container };
 const COMPANY_LABELS = { SERVICE: "Service-based", BANK: "Banking", PRODUCT: "Product" };
 const COMPANY_SHORT = { SERVICE: "Service", BANK: "Bank", PRODUCT: "Product" };
 const STORE_KEY = "coreJavaPrep_v1";
