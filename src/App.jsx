@@ -5,7 +5,9 @@ import {
   Eye, EyeOff, BookOpen, Award, Cpu, Database, Layers, Boxes, Shield,
   Code2, Zap, Hash, Terminal, GraduationCap, ListChecks, Star, ArrowRight,
   ArrowLeft, Lightbulb, Activity, Coffee, Brain, Sun, Moon, Shuffle, CircleDot,
-  Play, Copy, Loader2, AlertTriangle, Calendar, ChevronLeft, Cloud, Container
+  Play, Copy, Loader2, AlertTriangle, Calendar, ChevronLeft, Cloud, Container,
+  Link2, Trees, SquareStack, Coins, GitFork, Component, Sprout,
+  Table2, DatabaseZap, Network
 } from "lucide-react";
 
 
@@ -43,6 +45,17 @@ const TOPICS = [
   { id: "array-coding", name: "Array Problems", icon: "Boxes", blurb: "Classic array & matrix coding problems." },
   { id: "docker", name: "Docker & Containers", icon: "Container", blurb: "Images, layers, volumes, networking, Dockerfile, compose." },
   { id: "aws", name: "AWS & Cloud", icon: "Cloud", blurb: "EC2, S3, IAM, Lambda, VPC, scaling, deploying Java apps." },
+  { id: "linkedlist", name: "Linked List Problems", icon: "Link2", blurb: "Reverse, cycle detect, merge, palindrome, Nth-from-end." },
+  { id: "tree", name: "Tree Problems", icon: "Trees", blurb: "Traversals, LCA, diameter, invert, symmetric." },
+  { id: "stack-queue", name: "Stack & Queue Problems", icon: "SquareStack", blurb: "Valid parens, min stack, RPN, monotonic deque." },
+  { id: "dp", name: "Dynamic Programming", icon: "TrendingUp", blurb: "Climbing stairs, house robber, coin change, LIS, edit distance." },
+  { id: "greedy", name: "Greedy Problems", icon: "Coins", blurb: "Jump game, gas station, intervals, scheduling." },
+  { id: "backtracking", name: "Backtracking", icon: "GitFork", blurb: "Subsets, permutations, word search, N-Queens." },
+  { id: "design", name: "LLD / Design Problems", icon: "Component", blurb: "LRU cache, rate limiter, Twitter, parking lot, URL shortener." },
+  { id: "spring", name: "Spring & Spring Boot", icon: "Sprout", blurb: "IoC/DI, beans, REST, security, caching, exception handling." },
+  { id: "jpa", name: "JPA & Hibernate", icon: "DatabaseZap", blurb: "Entities, fetch types, N+1, locking, transactions." },
+  { id: "sql", name: "SQL & Databases", icon: "Table2", blurb: "Joins, ACID, indexing, window queries, partitioning." },
+  { id: "microservices", name: "Microservices", icon: "Network", blurb: "Communication, resilience, saga, CQRS, discovery, tracing." },
 ];
 
 const DIFF = { easy: "Easy", medium: "Medium", hard: "Hard" };
@@ -1646,6 +1659,63 @@ const QUESTIONS = [
     ],
     code: "Map<String,Integer> m = new HashMap<>();\nm.put(\"Aa\", 1);\nm.put(\"BB\", 2);            // same hashCode, different equals\nSystem.out.println(m.size());     // 2\nSystem.out.println(m.get(\"Aa\"));  // 1\nSystem.out.println(m.get(\"BB\"));  // 2",
   },
+  {
+    id: "code-18", topic: "coding", difficulty: "hard", freq: "Very common",
+    companies: ["SERVICE", "BANK", "PRODUCT"],
+    q: "Output? A try returns 10, catch returns 20, but finally returns 30.",
+    a: "It prints 30. A return in finally OVERRIDES the return from try (or catch) — the try's return value is computed and then discarded when finally executes its own return. This also silently swallows exceptions. It's a notorious gotcha and an anti-pattern: never return (or throw) from a finally block. Order of prints: \"In try block\" then \"In finally block\", then Result: 30.",
+    keyPoints: [
+      "return in finally overrides try/catch's return → 30.",
+      "It also swallows pending exceptions — anti-pattern.",
+      "Never return or throw from finally.",
+    ],
+    code: "static int test() {\n  try { return 10; }\n  catch (Exception e) { return 20; }\n  finally { return 30; }   // overrides → method returns 30\n}",
+  },
+  {
+    id: "code-19", topic: "coding", difficulty: "medium", freq: "Very common",
+    companies: ["SERVICE", "BANK", "PRODUCT"],
+    q: "Output? s = \"Hello\"; s.concat(\"World\"); System.out.println(s);",
+    a: "It prints \"Hello\". Strings are immutable — concat() returns a NEW string and does not modify s. Since the result isn't assigned, it's discarded. To change s you must reassign: s = s.concat(\"World\"). This is the canonical demonstration of String immutability and a very common trap.",
+    keyPoints: [
+      "concat() returns a new String; the original is unchanged.",
+      "Result discarded because it's not assigned → prints \"Hello\".",
+      "Must reassign: s = s.concat(...).",
+    ],
+  },
+  {
+    id: "code-20", topic: "coding", difficulty: "hard", freq: "Common",
+    companies: ["SERVICE", "BANK"],
+    q: "How many objects? String s1=\"abc\"; String s2=new String(\"abc\"); String s3=s2.toUpperCase();",
+    a: "Three objects (plus the pooled literal). \"abc\" literal goes in the String pool (1 pooled object). new String(\"abc\") forces a NEW heap object distinct from the pool (s2). s2.toUpperCase() produces another new String \"ABC\" (s3) since the content differs. So at runtime: the pooled \"abc\", the heap \"abc\", and \"ABC\". Note: if toUpperCase() found no change needed it would return the same object — but here it changes, so a new one is created.",
+    keyPoints: [
+      "Literal \"abc\" → pooled object; new String(\"abc\") → separate heap object.",
+      "toUpperCase() returns a new String when content changes.",
+      "s1 == s2 is false; s1.equals(s2) is true.",
+    ],
+  },
+  {
+    id: "code-21", topic: "coding", difficulty: "medium", freq: "Common",
+    companies: ["BANK", "PRODUCT"],
+    q: "Output? intern(): s1=\"Java\"; s2=\"Java\"; s3=new String(\"Java\"); s4=s3.intern();",
+    a: "s1==s2 → true (both the same pooled literal). s1==s3 → false (s3 is a distinct heap object). s1==s4 → true (intern() returns the pooled reference, which is the same object as the literal s1). So interning lets a heap string 'rejoin' the pool, making == with the literal true again. equals() is true in all cases.",
+    keyPoints: [
+      "s1==s2: true (shared pooled literal).",
+      "s1==s3: false (new String is a separate object).",
+      "s1==s4: true (intern() returns the pooled reference).",
+    ],
+    code: "String s1 = \"Java\", s2 = \"Java\";\nString s3 = new String(\"Java\");\nString s4 = s3.intern();\nSystem.out.println(s1 == s2);  // true\nSystem.out.println(s1 == s3);  // false\nSystem.out.println(s1 == s4);  // true",
+  },
+  {
+    id: "code-22", topic: "coding", difficulty: "medium", freq: "Common",
+    companies: ["SERVICE", "BANK"],
+    q: "Output? Does 5 * 0.1 == 0.5 return true or false?",
+    a: "It returns false. 0.1 has no exact binary floating-point representation (IEEE 754), so 5 * 0.1 accumulates a tiny rounding error and is not exactly 0.5. Never compare floating-point with ==; compare with a tolerance (Math.abs(a-b) < epsilon) or use BigDecimal (constructed from strings) for exact decimal arithmetic like money.",
+    keyPoints: [
+      "false — 0.1 isn't exact in binary floating point.",
+      "Don't use == on doubles; use an epsilon tolerance.",
+      "Use BigDecimal (from String) for money/exact decimals.",
+    ],
+  },
 
   // ===================== CONCURRENCY — DEEP DIVE (talking points only) =====================
   {
@@ -2298,6 +2368,43 @@ return (int) (sign * r);`,
     }
 }`,
   },
+  {
+    id: "strc-16", topic: "string-coding", difficulty: "medium", freq: "Very common",
+    companies: ["SERVICE", "BANK", "PRODUCT"],
+    q: "Group Anagrams — group words that are anagrams of each other.",
+    keyPoints: [
+      "Use the sorted characters as the map key; group originals under it.",
+      "computeIfAbsent keeps it concise. O(n·k log k).",
+    ],
+    code: `public List<List<String>> groupAnagrams(String[] strs) {
+    Map<String, List<String>> map = new HashMap<>();
+    for (String s : strs) {
+        char[] c = s.toCharArray();
+        Arrays.sort(c);
+        map.computeIfAbsent(new String(c), k -> new ArrayList<>()).add(s);
+    }
+    return new ArrayList<>(map.values());
+}`,
+  },
+  {
+    id: "strc-17", topic: "string-coding", difficulty: "easy", freq: "Common",
+    companies: ["SERVICE", "BANK"],
+    q: "Roman to Integer.",
+    keyPoints: [
+      "Map each symbol to its value; scan left to right.",
+      "Subtract when a smaller value precedes a larger (IV, IX). O(n).",
+    ],
+    code: `public int romanToInt(String s) {
+    Map<Character,Integer> m = Map.of('I',1,'V',5,'X',10,'L',50,'C',100,'D',500,'M',1000);
+    int sum = 0;
+    for (int i = 0; i < s.length(); i++) {
+        int v = m.get(s.charAt(i));
+        if (i + 1 < s.length() && v < m.get(s.charAt(i + 1))) sum -= v;
+        else sum += v;
+    }
+    return sum;
+}`,
+  },
 
   // ===================== ARRAY PROBLEMS (approach + reference solution) =====================
   {
@@ -2529,6 +2636,28 @@ for (int[] row : m)
     for (int i = 0, j = n - 1; i < j; i++, j--) {
         int t = row[i]; row[i] = row[j]; row[j] = t;       // reverse row
     }`,
+  },
+  {
+    id: "arrc-17", topic: "array-coding", difficulty: "hard", freq: "Very common",
+    companies: ["PRODUCT", "BANK"],
+    q: "Trapping Rain Water — water trapped between bars.",
+    keyPoints: [
+      "Two pointers from both ends; move the side with the smaller height inward.",
+      "Track leftMax/rightMax; trapped = max-so-far − current height. O(n), O(1).",
+    ],
+    code: `public int trap(int[] h) {
+    int l = 0, r = h.length - 1, leftMax = 0, rightMax = 0, water = 0;
+    while (l < r) {
+        if (h[l] < h[r]) {
+            if (h[l] >= leftMax) leftMax = h[l]; else water += leftMax - h[l];
+            l++;
+        } else {
+            if (h[r] >= rightMax) rightMax = h[r]; else water += rightMax - h[r];
+            r--;
+        }
+    }
+    return water;
+}`,
   },
 
   // ===================== DOCKER & CONTAINERS =====================
@@ -2804,6 +2933,1063 @@ for (int[] row : m)
       "Alarms → SNS/auto-scaling; X-Ray for distributed tracing.",
     ],
   },
+
+  // ===================== LINKED LIST PROBLEMS =====================
+  {
+    id: "ll-1", topic: "linkedlist", difficulty: "easy", freq: "Very common",
+    companies: ["SERVICE", "BANK", "PRODUCT"],
+    q: "Reverse a singly linked list (iterative).",
+    keyPoints: [
+      "Three pointers: prev, curr(head), next — re-point each node backward.",
+      "O(n) time, O(1) space; recursive version is O(n) stack.",
+    ],
+    code: `public ListNode reverseList(ListNode head) {
+    ListNode prev = null;
+    while (head != null) {
+        ListNode next = head.next;
+        head.next = prev;
+        prev = head;
+        head = next;
+    }
+    return prev;
+}`,
+  },
+  {
+    id: "ll-2", topic: "linkedlist", difficulty: "medium", freq: "Very common",
+    companies: ["SERVICE", "BANK", "PRODUCT"],
+    q: "Detect a cycle in a linked list (Floyd's tortoise & hare).",
+    keyPoints: [
+      "Slow moves 1 step, fast moves 2; if they meet, a cycle exists.",
+      "O(n) time, O(1) space. To find cycle start: reset one pointer to head, advance both 1 step.",
+    ],
+    code: `public boolean hasCycle(ListNode head) {
+    ListNode slow = head, fast = head;
+    while (fast != null && fast.next != null) {
+        slow = slow.next;
+        fast = fast.next.next;
+        if (slow == fast) return true;
+    }
+    return false;
+}`,
+  },
+  {
+    id: "ll-3", topic: "linkedlist", difficulty: "easy", freq: "Very common",
+    companies: ["SERVICE", "BANK", "PRODUCT"],
+    q: "Merge two sorted linked lists.",
+    keyPoints: [
+      "Dummy head + tail pointer; splice the smaller node each step.",
+      "Attach the remaining list at the end. O(n+m).",
+    ],
+    code: `public ListNode mergeTwoLists(ListNode l1, ListNode l2) {
+    ListNode dummy = new ListNode(-1), curr = dummy;
+    while (l1 != null && l2 != null) {
+        if (l1.val < l2.val) { curr.next = l1; l1 = l1.next; }
+        else                 { curr.next = l2; l2 = l2.next; }
+        curr = curr.next;
+    }
+    curr.next = (l1 != null) ? l1 : l2;
+    return dummy.next;
+}`,
+  },
+  {
+    id: "ll-4", topic: "linkedlist", difficulty: "medium", freq: "Common",
+    companies: ["BANK", "PRODUCT"],
+    q: "Check if a linked list is a palindrome.",
+    keyPoints: [
+      "Find middle (slow/fast), reverse the second half, compare both halves.",
+      "O(n) time, O(1) space (restore the list afterward if required).",
+    ],
+    code: `public boolean isPalindrome(ListNode head) {
+    if (head == null || head.next == null) return true;
+    ListNode slow = head, fast = head;
+    while (fast != null && fast.next != null) { slow = slow.next; fast = fast.next.next; }
+    ListNode second = reverse(slow), first = head;
+    while (second != null) {
+        if (first.val != second.val) return false;
+        first = first.next; second = second.next;
+    }
+    return true;
+}`,
+  },
+  {
+    id: "ll-5", topic: "linkedlist", difficulty: "medium", freq: "Very common",
+    companies: ["SERVICE", "BANK", "PRODUCT"],
+    q: "Remove the Nth node from the end of a list.",
+    keyPoints: [
+      "Two-pointer gap: advance first n+1 steps, then move both until first is null.",
+      "Dummy node handles removing the head cleanly. One pass, O(n).",
+    ],
+    code: `public ListNode removeNthFromEnd(ListNode head, int n) {
+    ListNode dummy = new ListNode(0); dummy.next = head;
+    ListNode first = dummy, second = dummy;
+    for (int i = 0; i <= n; i++) first = first.next;
+    while (first != null) { first = first.next; second = second.next; }
+    second.next = second.next.next;
+    return dummy.next;
+}`,
+  },
+
+  // ===================== TREE PROBLEMS =====================
+  {
+    id: "tree-1", topic: "tree", difficulty: "easy", freq: "Very common",
+    companies: ["SERVICE", "BANK", "PRODUCT"],
+    q: "Invert / mirror a binary tree.",
+    keyPoints: [
+      "Recursively swap left and right subtrees.",
+      "O(n) time, O(h) recursion stack.",
+    ],
+    code: `public TreeNode invertTree(TreeNode root) {
+    if (root == null) return null;
+    TreeNode left = invertTree(root.left);
+    TreeNode right = invertTree(root.right);
+    root.left = right; root.right = left;
+    return root;
+}`,
+  },
+  {
+    id: "tree-2", topic: "tree", difficulty: "medium", freq: "Very common",
+    companies: ["SERVICE", "BANK", "PRODUCT"],
+    q: "Level-order (BFS) traversal of a binary tree.",
+    keyPoints: [
+      "Queue; process one full level per outer iteration using queue.size().",
+      "Collect each level into its own list. O(n).",
+    ],
+    code: `public List<List<Integer>> levelOrder(TreeNode root) {
+    List<List<Integer>> res = new ArrayList<>();
+    if (root == null) return res;
+    Queue<TreeNode> q = new LinkedList<>();
+    q.offer(root);
+    while (!q.isEmpty()) {
+        int size = q.size();
+        List<Integer> level = new ArrayList<>();
+        for (int i = 0; i < size; i++) {
+            TreeNode n = q.poll();
+            level.add(n.val);
+            if (n.left != null) q.offer(n.left);
+            if (n.right != null) q.offer(n.right);
+        }
+        res.add(level);
+    }
+    return res;
+}`,
+  },
+  {
+    id: "tree-3", topic: "tree", difficulty: "medium", freq: "Very common",
+    companies: ["BANK", "PRODUCT"],
+    q: "Lowest Common Ancestor (LCA) of two nodes in a binary tree.",
+    keyPoints: [
+      "Recurse; if root is p or q (or null), return it.",
+      "If both subtrees return non-null, root is the LCA. O(n).",
+    ],
+    code: `public TreeNode lowestCommonAncestor(TreeNode root, TreeNode p, TreeNode q) {
+    if (root == null || root == p || root == q) return root;
+    TreeNode left = lowestCommonAncestor(root.left, p, q);
+    TreeNode right = lowestCommonAncestor(root.right, p, q);
+    if (left != null && right != null) return root;
+    return (left != null) ? left : right;
+}`,
+  },
+  {
+    id: "tree-4", topic: "tree", difficulty: "medium", freq: "Common",
+    companies: ["BANK", "PRODUCT"],
+    q: "Diameter of a binary tree (longest path between any two nodes).",
+    keyPoints: [
+      "DFS returns height; at each node update max with left+right heights.",
+      "Diameter counts edges = max(left+right). O(n).",
+    ],
+    code: `int max = 0;
+public int diameterOfBinaryTree(TreeNode root) { depth(root); return max; }
+private int depth(TreeNode node) {
+    if (node == null) return 0;
+    int left = depth(node.left), right = depth(node.right);
+    max = Math.max(max, left + right);
+    return 1 + Math.max(left, right);
+}`,
+  },
+  {
+    id: "tree-5", topic: "tree", difficulty: "easy", freq: "Common",
+    companies: ["SERVICE", "BANK"],
+    q: "Check if a binary tree is symmetric (a mirror of itself).",
+    keyPoints: [
+      "Compare left subtree with right subtree mirrored.",
+      "isMirror(a.left, b.right) && isMirror(a.right, b.left). O(n).",
+    ],
+    code: `public boolean isSymmetric(TreeNode root) {
+    return root == null || isMirror(root.left, root.right);
+}
+private boolean isMirror(TreeNode t1, TreeNode t2) {
+    if (t1 == null && t2 == null) return true;
+    if (t1 == null || t2 == null) return false;
+    return t1.val == t2.val
+        && isMirror(t1.left, t2.right)
+        && isMirror(t1.right, t2.left);
+}`,
+  },
+
+  // ===================== STACK & QUEUE PROBLEMS =====================
+  {
+    id: "sq-1", topic: "stack-queue", difficulty: "easy", freq: "Very common",
+    companies: ["SERVICE", "BANK", "PRODUCT"],
+    q: "Valid parentheses — check balanced brackets.",
+    keyPoints: [
+      "Push openers; on a closer, pop and verify it matches.",
+      "Valid only if the stack is empty at the end. O(n).",
+    ],
+    code: `public boolean isValid(String s) {
+    Deque<Character> st = new ArrayDeque<>();
+    Map<Character,Character> pair = Map.of(')','(', ']','[', '}','{');
+    for (char c : s.toCharArray()) {
+        if (c=='('||c=='['||c=='{') st.push(c);
+        else if (st.isEmpty() || st.pop() != pair.get(c)) return false;
+    }
+    return st.isEmpty();
+}`,
+  },
+  {
+    id: "sq-2", topic: "stack-queue", difficulty: "medium", freq: "Very common",
+    companies: ["BANK", "PRODUCT"],
+    q: "Design a Min Stack (push/pop/top/getMin in O(1)).",
+    keyPoints: [
+      "Second stack tracks the running minimum.",
+      "Push to minStack when val <= current min; pop in lockstep.",
+    ],
+    code: `class MinStack {
+    Deque<Integer> stack = new ArrayDeque<>(), min = new ArrayDeque<>();
+    public void push(int v) { stack.push(v); if (min.isEmpty() || v <= min.peek()) min.push(v); }
+    public void pop() { if (stack.pop().equals(min.peek())) min.pop(); }
+    public int top() { return stack.peek(); }
+    public int getMin() { return min.peek(); }
+}`,
+  },
+  {
+    id: "sq-3", topic: "stack-queue", difficulty: "medium", freq: "Common",
+    companies: ["BANK", "PRODUCT"],
+    q: "Evaluate Reverse Polish Notation (postfix expression).",
+    keyPoints: [
+      "Push numbers; on an operator pop two operands, apply, push result.",
+      "Mind operand order for - and /. O(n).",
+    ],
+    code: `public int evalRPN(String[] tokens) {
+    Deque<Integer> st = new ArrayDeque<>();
+    for (String t : tokens) {
+        switch (t) {
+            case "+": st.push(st.pop() + st.pop()); break;
+            case "*": st.push(st.pop() * st.pop()); break;
+            case "-": { int b = st.pop(); st.push(st.pop() - b); break; }
+            case "/": { int b = st.pop(); st.push(st.pop() / b); break; }
+            default: st.push(Integer.parseInt(t));
+        }
+    }
+    return st.pop();
+}`,
+  },
+  {
+    id: "sq-4", topic: "stack-queue", difficulty: "medium", freq: "Common",
+    companies: ["SERVICE", "BANK"],
+    q: "Implement a Queue using two stacks.",
+    keyPoints: [
+      "Push to 'in'; on pop/peek, if 'out' empty, drain 'in' into 'out'.",
+      "Amortized O(1) per operation.",
+    ],
+    code: `class MyQueue {
+    Deque<Integer> in = new ArrayDeque<>(), out = new ArrayDeque<>();
+    public void push(int x) { in.push(x); }
+    public int pop() { peek(); return out.pop(); }
+    public int peek() {
+        if (out.isEmpty()) while (!in.isEmpty()) out.push(in.pop());
+        return out.peek();
+    }
+    public boolean empty() { return in.isEmpty() && out.isEmpty(); }
+}`,
+  },
+  {
+    id: "sq-5", topic: "stack-queue", difficulty: "hard", freq: "Common",
+    companies: ["PRODUCT", "BANK"],
+    q: "Sliding window maximum (max of every window of size k).",
+    keyPoints: [
+      "Monotonic decreasing deque of indices; front is the window max.",
+      "Evict out-of-window indices from the front, smaller values from the back. O(n).",
+    ],
+    code: `public int[] maxSlidingWindow(int[] nums, int k) {
+    Deque<Integer> dq = new ArrayDeque<>();
+    int n = nums.length; int[] res = new int[n - k + 1];
+    for (int i = 0; i < n; i++) {
+        while (!dq.isEmpty() && dq.peekFirst() <= i - k) dq.pollFirst();
+        while (!dq.isEmpty() && nums[dq.peekLast()] < nums[i]) dq.pollLast();
+        dq.offerLast(i);
+        if (i >= k - 1) res[i - k + 1] = nums[dq.peekFirst()];
+    }
+    return res;
+}`,
+  },
+
+  // ===================== DYNAMIC PROGRAMMING =====================
+  {
+    id: "dp-1", topic: "dp", difficulty: "easy", freq: "Very common",
+    companies: ["SERVICE", "BANK", "PRODUCT"],
+    q: "Climbing stairs — number of ways to reach step n (1 or 2 steps).",
+    keyPoints: [
+      "Fibonacci recurrence: ways(n) = ways(n-1) + ways(n-2).",
+      "Two rolling variables → O(n) time, O(1) space.",
+    ],
+    code: `public int climbStairs(int n) {
+    if (n <= 2) return n;
+    int first = 1, second = 2;
+    for (int i = 3; i <= n; i++) { int third = first + second; first = second; second = third; }
+    return second;
+}`,
+  },
+  {
+    id: "dp-2", topic: "dp", difficulty: "medium", freq: "Very common",
+    companies: ["SERVICE", "BANK", "PRODUCT"],
+    q: "House Robber — max sum without robbing two adjacent houses.",
+    keyPoints: [
+      "dp[i] = max(skip = dp[i-1], take = dp[i-2] + nums[i]).",
+      "Track two previous values → O(n) time, O(1) space.",
+    ],
+    code: `public int rob(int[] nums) {
+    int prev1 = 0, prev2 = 0;
+    for (int num : nums) {
+        int temp = prev1;
+        prev1 = Math.max(prev2 + num, prev1);
+        prev2 = temp;
+    }
+    return prev1;
+}`,
+  },
+  {
+    id: "dp-3", topic: "dp", difficulty: "medium", freq: "Very common",
+    companies: ["BANK", "PRODUCT"],
+    q: "Coin Change — fewest coins to make an amount (−1 if impossible).",
+    keyPoints: [
+      "Bottom-up dp[a] = min coins for amount a; init to 'infinity'.",
+      "dp[a] = min(dp[a], 1 + dp[a - coin]). O(amount × coins).",
+    ],
+    code: `public int coinChange(int[] coins, int amount) {
+    int[] dp = new int[amount + 1];
+    Arrays.fill(dp, amount + 1);
+    dp[0] = 0;
+    for (int a = 1; a <= amount; a++)
+        for (int c : coins)
+            if (a - c >= 0) dp[a] = Math.min(dp[a], 1 + dp[a - c]);
+    return dp[amount] > amount ? -1 : dp[amount];
+}`,
+  },
+  {
+    id: "dp-4", topic: "dp", difficulty: "hard", freq: "Common",
+    companies: ["PRODUCT", "BANK"],
+    q: "Longest Increasing Subsequence (LIS).",
+    keyPoints: [
+      "Patience sorting: keep a 'tails' list, binary-search each number's slot.",
+      "Replace or append; list size is the LIS length. O(n log n).",
+    ],
+    code: `public int lengthOfLIS(int[] nums) {
+    List<Integer> sub = new ArrayList<>();
+    for (int num : nums) {
+        int i = Collections.binarySearch(sub, num);
+        if (i < 0) i = -(i + 1);
+        if (i == sub.size()) sub.add(num); else sub.set(i, num);
+    }
+    return sub.size();
+}`,
+  },
+  {
+    id: "dp-5", topic: "dp", difficulty: "hard", freq: "Common",
+    companies: ["PRODUCT", "BANK"],
+    q: "Edit Distance — min insert/delete/replace to convert word1 → word2.",
+    keyPoints: [
+      "2D dp; dp[i][j] = edits for prefixes of length i and j.",
+      "Match → carry diagonal; else 1 + min(replace, delete, insert). O(m×n).",
+    ],
+    code: `public int minDistance(String w1, String w2) {
+    int m = w1.length(), n = w2.length();
+    int[][] dp = new int[m + 1][n + 1];
+    for (int i = 0; i <= m; i++) dp[i][0] = i;
+    for (int j = 0; j <= n; j++) dp[0][j] = j;
+    for (int i = 1; i <= m; i++)
+        for (int j = 1; j <= n; j++)
+            dp[i][j] = w1.charAt(i-1) == w2.charAt(j-1)
+                ? dp[i-1][j-1]
+                : 1 + Math.min(dp[i-1][j-1], Math.min(dp[i-1][j], dp[i][j-1]));
+    return dp[m][n];
+}`,
+  },
+
+  // ===================== GREEDY =====================
+  {
+    id: "gr-1", topic: "greedy", difficulty: "medium", freq: "Very common",
+    companies: ["SERVICE", "BANK", "PRODUCT"],
+    q: "Jump Game — can you reach the last index?",
+    keyPoints: [
+      "Track the farthest reachable index as you scan.",
+      "If current index exceeds reach, you're stuck → false. O(n).",
+    ],
+    code: `public boolean canJump(int[] nums) {
+    int reach = 0;
+    for (int i = 0; i < nums.length; i++) {
+        if (i > reach) return false;
+        reach = Math.max(reach, i + nums[i]);
+    }
+    return true;
+}`,
+  },
+  {
+    id: "gr-2", topic: "greedy", difficulty: "medium", freq: "Common",
+    companies: ["BANK", "PRODUCT"],
+    q: "Gas Station — find the start index to complete the circuit.",
+    keyPoints: [
+      "If total gas < total cost, impossible (−1).",
+      "Reset start to i+1 whenever the running tank goes negative. O(n).",
+    ],
+    code: `public int canCompleteCircuit(int[] gas, int[] cost) {
+    int total = 0, curr = 0, start = 0;
+    for (int i = 0; i < gas.length; i++) {
+        int diff = gas[i] - cost[i];
+        total += diff; curr += diff;
+        if (curr < 0) { start = i + 1; curr = 0; }
+    }
+    return total < 0 ? -1 : start;
+}`,
+  },
+  {
+    id: "gr-3", topic: "greedy", difficulty: "medium", freq: "Very common",
+    companies: ["SERVICE", "BANK", "PRODUCT"],
+    q: "Merge overlapping intervals.",
+    keyPoints: [
+      "Sort by start; merge when current end >= next start.",
+      "Otherwise push current and move on. O(n log n).",
+    ],
+    code: `public int[][] merge(int[][] intervals) {
+    Arrays.sort(intervals, (a, b) -> a[0] - b[0]);
+    List<int[]> res = new ArrayList<>();
+    int[] cur = intervals[0];
+    for (int i = 1; i < intervals.length; i++) {
+        if (cur[1] >= intervals[i][0]) cur[1] = Math.max(cur[1], intervals[i][1]);
+        else { res.add(cur); cur = intervals[i]; }
+    }
+    res.add(cur);
+    return res.toArray(new int[0][]);
+}`,
+  },
+  {
+    id: "gr-4", topic: "greedy", difficulty: "medium", freq: "Common",
+    companies: ["BANK", "PRODUCT"],
+    q: "Non-overlapping intervals — min removals to make the rest non-overlapping.",
+    keyPoints: [
+      "Sort by END time; greedily keep the earliest-finishing interval.",
+      "Count overlaps where next start < current end. O(n log n).",
+    ],
+    code: `public int eraseOverlapIntervals(int[][] intervals) {
+    Arrays.sort(intervals, (a, b) -> a[1] - b[1]);
+    int end = intervals[0][1], count = 0;
+    for (int i = 1; i < intervals.length; i++) {
+        if (intervals[i][0] < end) count++;
+        else end = intervals[i][1];
+    }
+    return count;
+}`,
+  },
+  {
+    id: "gr-5", topic: "greedy", difficulty: "easy", freq: "Common",
+    companies: ["SERVICE"],
+    q: "Assign Cookies — maximize content children with greedy matching.",
+    keyPoints: [
+      "Sort greed and sizes; give the smallest sufficient cookie to each child.",
+      "Two pointers advance together. O(n log n).",
+    ],
+    code: `public int findContentChildren(int[] g, int[] s) {
+    Arrays.sort(g); Arrays.sort(s);
+    int child = 0, cookie = 0;
+    while (child < g.length && cookie < s.length) {
+        if (s[cookie] >= g[child]) child++;
+        cookie++;
+    }
+    return child;
+}`,
+  },
+
+  // ===================== BACKTRACKING =====================
+  {
+    id: "bt-1", topic: "backtracking", difficulty: "medium", freq: "Very common",
+    companies: ["SERVICE", "BANK", "PRODUCT"],
+    q: "Generate all subsets (the power set).",
+    keyPoints: [
+      "At each index, choose to include or skip; record the path at every node.",
+      "Add a copy of the path, recurse forward, then backtrack. O(2^n).",
+    ],
+    code: `public List<List<Integer>> subsets(int[] nums) {
+    List<List<Integer>> res = new ArrayList<>();
+    backtrack(0, nums, new ArrayList<>(), res);
+    return res;
+}
+void backtrack(int start, int[] nums, List<Integer> path, List<List<Integer>> res) {
+    res.add(new ArrayList<>(path));
+    for (int i = start; i < nums.length; i++) {
+        path.add(nums[i]);
+        backtrack(i + 1, nums, path, res);
+        path.remove(path.size() - 1);
+    }
+}`,
+  },
+  {
+    id: "bt-2", topic: "backtracking", difficulty: "medium", freq: "Very common",
+    companies: ["SERVICE", "BANK", "PRODUCT"],
+    q: "Generate all permutations of an array.",
+    keyPoints: [
+      "Build paths of full length; skip elements already used.",
+      "Add/recurse/remove to backtrack. O(n!).",
+    ],
+    code: `public List<List<Integer>> permute(int[] nums) {
+    List<List<Integer>> res = new ArrayList<>();
+    backtrack(nums, new ArrayList<>(), res);
+    return res;
+}
+void backtrack(int[] nums, List<Integer> path, List<List<Integer>> res) {
+    if (path.size() == nums.length) { res.add(new ArrayList<>(path)); return; }
+    for (int num : nums) {
+        if (path.contains(num)) continue;
+        path.add(num);
+        backtrack(nums, path, res);
+        path.remove(path.size() - 1);
+    }
+}`,
+  },
+  {
+    id: "bt-3", topic: "backtracking", difficulty: "hard", freq: "Common",
+    companies: ["PRODUCT", "BANK"],
+    q: "Word Search — does a word exist in a 2D grid (4-directional)?",
+    keyPoints: [
+      "DFS from each cell; mark visited with a sentinel, restore on backtrack.",
+      "Prune on bounds and character mismatch. O(m·n·4^L).",
+    ],
+    code: `public boolean exist(char[][] b, String word) {
+    for (int i = 0; i < b.length; i++)
+        for (int j = 0; j < b[0].length; j++)
+            if (dfs(b, word, 0, i, j)) return true;
+    return false;
+}
+boolean dfs(char[][] b, String w, int k, int i, int j) {
+    if (k == w.length()) return true;
+    if (i<0||j<0||i>=b.length||j>=b[0].length||b[i][j]!=w.charAt(k)) return false;
+    char tmp = b[i][j]; b[i][j] = '#';
+    boolean found = dfs(b,w,k+1,i+1,j)||dfs(b,w,k+1,i-1,j)||dfs(b,w,k+1,i,j+1)||dfs(b,w,k+1,i,j-1);
+    b[i][j] = tmp;
+    return found;
+}`,
+  },
+  {
+    id: "bt-4", topic: "backtracking", difficulty: "hard", freq: "Occasional",
+    companies: ["PRODUCT", "BANK"],
+    q: "N-Queens — place N queens so none attack each other.",
+    keyPoints: [
+      "Place one queen per row; check column and both diagonals for safety.",
+      "Backtrack on conflict. O(n!).",
+    ],
+    code: `void backtrack(int row, char[][] board, List<List<String>> res) {
+    if (row == board.length) { res.add(build(board)); return; }
+    for (int col = 0; col < board.length; col++) {
+        if (isSafe(board, row, col)) {
+            board[row][col] = 'Q';
+            backtrack(row + 1, board, res);
+            board[row][col] = '.';
+        }
+    }
+}`,
+  },
+  {
+    id: "bt-5", topic: "backtracking", difficulty: "hard", freq: "Occasional",
+    companies: ["PRODUCT"],
+    q: "Palindrome Partitioning — all ways to split a string into palindromes.",
+    keyPoints: [
+      "Try every prefix; if it's a palindrome, recurse on the remainder.",
+      "Add/recurse/remove to backtrack. Exponential.",
+    ],
+    code: `void backtrack(int start, String s, List<String> path, List<List<String>> res) {
+    if (start == s.length()) { res.add(new ArrayList<>(path)); return; }
+    for (int end = start + 1; end <= s.length(); end++) {
+        String sub = s.substring(start, end);
+        if (isPalindrome(sub)) {
+            path.add(sub);
+            backtrack(end, s, path, res);
+            path.remove(path.size() - 1);
+        }
+    }
+}`,
+  },
+
+  // ===================== LLD / DESIGN PROBLEMS =====================
+  {
+    id: "ds-1", topic: "design", difficulty: "hard", freq: "Very common",
+    companies: ["PRODUCT", "BANK"],
+    q: "Design an LRU Cache with O(1) get and put.",
+    keyPoints: [
+      "HashMap (key → node) + doubly-linked list ordered by recency.",
+      "On access, move node to front; on overflow, evict the tail.",
+      "Interview shortcut: LinkedHashMap(accessOrder=true) + removeEldestEntry.",
+    ],
+    code: `class LRUCache {
+    private final int cap;
+    private final LinkedHashMap<Integer,Integer> map;
+    public LRUCache(int capacity) {
+        cap = capacity;
+        map = new LinkedHashMap<>(16, 0.75f, true) {
+            protected boolean removeEldestEntry(Map.Entry<Integer,Integer> e) {
+                return size() > cap;
+            }
+        };
+    }
+    public int get(int k) { return map.getOrDefault(k, -1); }
+    public void put(int k, int v) { map.put(k, v); }
+}`,
+  },
+  {
+    id: "ds-2", topic: "design", difficulty: "medium", freq: "Common",
+    companies: ["PRODUCT", "BANK"],
+    q: "Design a Hit Counter (hits in the last 5 minutes / 300s).",
+    keyPoints: [
+      "Queue of timestamps; evict entries older than 300s on each query.",
+      "getHits returns the queue size. Circular array is the bounded variant.",
+    ],
+    code: `class HitCounter {
+    Queue<Integer> q = new LinkedList<>();
+    public void hit(int timestamp) { q.offer(timestamp); }
+    public int getHits(int timestamp) {
+        while (!q.isEmpty() && timestamp - q.peek() >= 300) q.poll();
+        return q.size();
+    }
+}`,
+  },
+  {
+    id: "ds-3", topic: "design", difficulty: "hard", freq: "Common",
+    companies: ["PRODUCT"],
+    q: "Design Twitter (post tweet, follow/unfollow, news feed of 10).",
+    keyPoints: [
+      "Users → set of followees + linked list of tweets with a global timestamp.",
+      "News feed merges followees' tweets via a max-heap on timestamp (k-way merge).",
+    ],
+    code: `public List<Integer> getNewsFeed(int userId) {
+    List<Integer> res = new ArrayList<>();
+    PriorityQueue<Tweet> pq = new PriorityQueue<>((a, b) -> b.time - a.time);
+    for (int uid : userMap.get(userId).followed) {
+        Tweet t = userMap.get(uid).head;
+        if (t != null) pq.offer(t);
+    }
+    while (!pq.isEmpty() && res.size() < 10) {
+        Tweet t = pq.poll();
+        res.add(t.id);
+        if (t.next != null) pq.offer(t.next);
+    }
+    return res;
+}`,
+  },
+  {
+    id: "ds-4", topic: "design", difficulty: "medium", freq: "Common",
+    companies: ["SERVICE", "PRODUCT"],
+    q: "Design a Parking Lot (OOP modeling).",
+    keyPoints: [
+      "Vehicle hierarchy (abstract Vehicle → Car/Bike/Truck) + enum VehicleType.",
+      "ParkingSpot typed by size; ParkingLot finds the first compatible free spot.",
+      "Shows encapsulation + polymorphism — a classic LLD warm-up.",
+    ],
+    code: `enum VehicleType { BIKE, CAR, TRUCK }
+abstract class Vehicle { VehicleType type; String license; }
+class ParkingSpot {
+    VehicleType type; boolean free = true; Vehicle vehicle;
+    boolean park(Vehicle v) {
+        if (free && v.type == type) { vehicle = v; free = false; return true; }
+        return false;
+    }
+    void leave() { vehicle = null; free = true; }
+}`,
+  },
+  {
+    id: "ds-5", topic: "design", difficulty: "medium", freq: "Common",
+    companies: ["PRODUCT", "BANK"],
+    q: "Design a URL Shortener (encode / decode).",
+    keyPoints: [
+      "Map a unique incrementing id to a base-36/62 code; store code → longUrl.",
+      "Keep a reverse map to dedupe identical long URLs.",
+      "At scale: distributed id generation (Snowflake) + persistent KV store.",
+    ],
+    code: `class Codec {
+    Map<String,String> map = new HashMap<>(), reverse = new HashMap<>();
+    String base = "http://short.ly/"; int id = 1;
+    public String encode(String longUrl) {
+        if (reverse.containsKey(longUrl)) return base + reverse.get(longUrl);
+        String code = Integer.toString(id++, 36);
+        map.put(code, longUrl); reverse.put(longUrl, code);
+        return base + code;
+    }
+    public String decode(String shortUrl) {
+        return map.getOrDefault(shortUrl.replace(base, ""), "");
+    }
+}`,
+  },
+
+  // ===================== SPRING & SPRING BOOT =====================
+  {
+    id: "spr-1", topic: "spring", difficulty: "easy", freq: "Very common",
+    companies: ["SERVICE", "BANK", "PRODUCT"],
+    q: "What is IoC and Dependency Injection? What are the types of DI?",
+    a: "Inversion of Control means the framework — not your code — creates and wires objects; the Spring IoC container owns the lifecycle of beans. Dependency Injection is how IoC is achieved: dependencies are handed to a class rather than created by it. Types: constructor injection (preferred — enforces mandatory deps, supports immutability and final fields, testable), setter injection (for optional deps), and field injection (@Autowired on a field — concise but discouraged because it hides dependencies and can't be made final or easily unit-tested).",
+    keyPoints: [
+      "IoC: container creates/wires/manages beans, not your code.",
+      "DI types: constructor (preferred), setter, field.",
+      "Constructor injection → immutable, mandatory deps, easy testing.",
+    ],
+  },
+  {
+    id: "spr-2", topic: "spring", difficulty: "medium", freq: "Very common",
+    companies: ["SERVICE", "BANK", "PRODUCT"],
+    q: "Is a Spring singleton bean thread-safe? How is it different from a Java singleton?",
+    a: "No — a Spring singleton bean is NOT automatically thread-safe. 'Singleton' in Spring means ONE instance PER container (per ApplicationContext), not the JVM-wide Java singleton. Because that one instance is shared across all threads, any mutable instance state is a race condition. Keep beans stateless (most services are), or use local variables, ThreadLocal, or synchronization for any shared mutable state. Java's singleton (Effective Java enum/holder) guarantees one instance per classloader and you implement it yourself.",
+    keyPoints: [
+      "Spring singleton = one bean per container, not per JVM.",
+      "Shared instance → NOT thread-safe if it has mutable state.",
+      "Keep beans stateless; scope to prototype/request when stateful.",
+    ],
+  },
+  {
+    id: "spr-3", topic: "spring", difficulty: "medium", freq: "Common",
+    companies: ["SERVICE", "BANK", "PRODUCT"],
+    q: "Explain the Spring bean lifecycle.",
+    a: "The container: (1) instantiates the bean, (2) populates dependencies (DI), (3) calls aware interfaces (BeanNameAware, ApplicationContextAware), (4) runs BeanPostProcessor's before-init, (5) calls @PostConstruct / afterPropertiesSet (InitializingBean) / custom init-method, (6) runs BeanPostProcessor's after-init (where AOP proxies are created), then the bean is ready for use. On shutdown it calls @PreDestroy / destroy() (DisposableBean) / custom destroy-method. @PostConstruct and @PreDestroy are the idiomatic hooks.",
+    keyPoints: [
+      "Instantiate → inject deps → aware → post-process → init → use → destroy.",
+      "Init hooks: @PostConstruct / InitializingBean / init-method.",
+      "BeanPostProcessor after-init is where AOP proxies wrap the bean.",
+    ],
+  },
+  {
+    id: "spr-4", topic: "spring", difficulty: "medium", freq: "Common",
+    companies: ["SERVICE", "BANK", "PRODUCT"],
+    q: "If two classes implement the same interface, how does Spring know which to inject? (@Primary vs @Qualifier)",
+    a: "By default Spring throws NoUniqueBeanDefinitionException when two candidates match by type. Resolve it with: @Primary on one bean to make it the default winner, or @Qualifier(\"beanName\") at the injection point to pick a specific bean explicitly. @Qualifier overrides @Primary. Spring also falls back to matching by the field/parameter name (convention over configuration) if it equals a bean name. @Primary is for a sensible global default; @Qualifier is for per-injection precision.",
+    keyPoints: [
+      "Two candidates by type → NoUniqueBeanDefinitionException.",
+      "@Primary = default winner; @Qualifier = explicit pick (overrides @Primary).",
+      "Falls back to bean-name matching the variable name.",
+    ],
+  },
+  {
+    id: "spr-5", topic: "spring", difficulty: "easy", freq: "Very common",
+    companies: ["SERVICE", "BANK", "PRODUCT"],
+    q: "@Controller vs @RestController, and @ResponseBody vs ResponseEntity.",
+    a: "@Controller returns view names (MVC); to return data you annotate methods with @ResponseBody. @RestController = @Controller + @ResponseBody on every method, so it's the default for REST APIs returning JSON/XML. @ResponseBody serializes the return value into the response body. ResponseEntity wraps the body AND lets you control the HTTP status code and headers (e.g. return 201 Created with a Location header, or 404). Use ResponseEntity when you need status/header control; a plain body when 200 OK is fine.",
+    keyPoints: [
+      "@RestController = @Controller + @ResponseBody (REST default).",
+      "@ResponseBody serializes the return into the body.",
+      "ResponseEntity adds status code + headers control.",
+    ],
+  },
+  {
+    id: "spr-6", topic: "spring", difficulty: "easy", freq: "Very common",
+    companies: ["SERVICE", "BANK", "PRODUCT"],
+    q: "@RequestParam vs @PathVariable vs @RequestBody.",
+    a: "@PathVariable binds a value embedded in the URL path — /users/{id} → @PathVariable Long id, used to identify a resource. @RequestParam binds a query string or form parameter — /users?active=true → @RequestParam boolean active, used for filters/options. @RequestBody binds and deserializes the HTTP request body (usually JSON) into an object — used for POST/PUT payloads. Rule of thumb: path = which resource, query param = how to filter, body = the data being sent.",
+    keyPoints: [
+      "@PathVariable: value in the URL path (resource identity).",
+      "@RequestParam: query/form parameter (filters/options).",
+      "@RequestBody: deserialized request body (POST/PUT payload).",
+    ],
+    code: "@PostMapping(\"/users/{deptId}\")\nUser create(@PathVariable Long deptId,\n            @RequestParam boolean notify,\n            @RequestBody UserDto dto) { ... }",
+  },
+  {
+    id: "spr-7", topic: "spring", difficulty: "medium", freq: "Common",
+    companies: ["SERVICE", "BANK", "PRODUCT"],
+    q: "What does @SpringBootApplication do?",
+    a: "It's a convenience meta-annotation combining three: @SpringBootConfiguration (a @Configuration marking the class as a source of bean definitions), @EnableAutoConfiguration (Boot's auto-configuration — it inspects the classpath and configures beans automatically, e.g. a DataSource if a JDBC driver is present), and @ComponentScan (scans the package of the annotated class and its sub-packages for @Component/@Service/@Repository/@Controller). That's why you place the main class at the root package.",
+    keyPoints: [
+      "= @SpringBootConfiguration + @EnableAutoConfiguration + @ComponentScan.",
+      "Auto-config wires beans based on classpath + properties.",
+      "Component scan starts at the main class's package — keep it at the root.",
+    ],
+  },
+  {
+    id: "spr-8", topic: "spring", difficulty: "medium", freq: "Very common",
+    companies: ["SERVICE", "BANK", "PRODUCT"],
+    q: "How do you handle exceptions globally in Spring Boot REST? (@ControllerAdvice)",
+    a: "Use a @RestControllerAdvice (= @ControllerAdvice + @ResponseBody) class with @ExceptionHandler methods that map specific exceptions to consistent error responses (status + body). This centralizes error handling instead of scattering try/catch in controllers. You can extend ResponseEntityExceptionHandler to also customize Spring's built-in exceptions (e.g. MethodArgumentNotValidException from @Valid failures). Return a ResponseEntity with the right HTTP status and a structured error DTO.",
+    keyPoints: [
+      "@RestControllerAdvice + @ExceptionHandler = centralized handling.",
+      "Map each exception to a status + structured error body.",
+      "Extend ResponseEntityExceptionHandler for validation/Spring exceptions.",
+    ],
+    code: "@RestControllerAdvice\nclass GlobalHandler {\n  @ExceptionHandler(ResourceNotFoundException.class)\n  ResponseEntity<ApiError> handle(ResourceNotFoundException e) {\n    return ResponseEntity.status(404).body(new ApiError(e.getMessage()));\n  }\n}",
+  },
+  {
+    id: "spr-9", topic: "spring", difficulty: "medium", freq: "Common",
+    companies: ["BANK", "PRODUCT"],
+    q: "Which HTTP methods are idempotent, and why does it matter?",
+    a: "Idempotent = the same request made multiple times has the same effect as once. GET, PUT, DELETE, HEAD, OPTIONS are idempotent; POST and PATCH are generally NOT. GET is also 'safe' (no side effects). It matters for retries: a client or proxy can safely retry an idempotent request after a timeout without risking duplicate effects (e.g. PUT /users/1 sets the same state; POST /users twice creates two users). Designing idempotent endpoints (or idempotency keys for POST) is key to resilient distributed systems.",
+    keyPoints: [
+      "Idempotent: GET, PUT, DELETE, HEAD, OPTIONS. Not: POST, PATCH.",
+      "GET is also safe (no side effects).",
+      "Enables safe retries; use idempotency keys for POST.",
+    ],
+  },
+  {
+    id: "spr-10", topic: "spring", difficulty: "medium", freq: "Common",
+    companies: ["BANK", "PRODUCT"],
+    q: "How does @Cacheable work, and what's the difference vs @CachePut and @CacheEvict?",
+    a: "@Cacheable wraps a method: on call it checks the cache by key; on a hit it returns the cached value and SKIPS the method; on a miss it runs the method and stores the result. @CachePut ALWAYS executes the method and updates the cache (use for updates so the cache stays fresh). @CacheEvict removes entries (e.g. on delete). It works via a Spring AOP proxy + CacheInterceptor + CacheManager — so self-invocation (calling the cached method from within the same bean) bypasses the proxy and the cache. Use 'unless'/'condition' for conditional caching.",
+    keyPoints: [
+      "@Cacheable: return cached / run-and-store on miss (skips method on hit).",
+      "@CachePut: always run + update cache; @CacheEvict: remove entries.",
+      "Proxy-based → self-invocation bypasses caching.",
+    ],
+  },
+  {
+    id: "spr-11", topic: "spring", difficulty: "hard", freq: "Common",
+    companies: ["BANK", "PRODUCT"],
+    q: "How do you secure a REST API with Spring Security + JWT? Describe the JWT structure.",
+    a: "Stateless auth: the client logs in, the server issues a signed JWT, and the client sends it in the Authorization: Bearer header on each request. A filter (OncePerRequestFilter) validates the token's signature and expiry, then sets the SecurityContext — no server-side session. A JWT has three base64url parts: HEADER (alg, type), PAYLOAD (claims — sub, roles, exp, iat), and SIGNATURE (HMAC/RSA over header.payload, proving integrity). Keep tokens short-lived and use refresh tokens; never put secrets in the payload (it's only encoded, not encrypted).",
+    keyPoints: [
+      "Stateless: signed JWT in Bearer header, validated per request by a filter.",
+      "Structure: header.payload.signature (base64url), signature = integrity.",
+      "Short-lived access + refresh tokens; payload is readable, not secret.",
+    ],
+  },
+
+  // ===================== JPA & HIBERNATE =====================
+  {
+    id: "jpa-1", topic: "jpa", difficulty: "easy", freq: "Very common",
+    companies: ["SERVICE", "BANK", "PRODUCT"],
+    q: "Difference between JPA, Hibernate, and Spring Data JPA.",
+    a: "JPA is the SPECIFICATION (an interface/standard for ORM — annotations like @Entity, the EntityManager API). Hibernate is the most popular IMPLEMENTATION (provider) of that spec, plus extra features. Spring Data JPA is an ABSTRACTION on top of JPA/Hibernate that removes boilerplate: you declare a repository interface (extends JpaRepository) and Spring generates the implementation, including derived query methods (findByEmailAndActive). So: JPA = contract, Hibernate = engine, Spring Data JPA = convenience layer.",
+    keyPoints: [
+      "JPA = specification; Hibernate = implementation; Spring Data JPA = abstraction.",
+      "Spring Data generates repositories + derived queries.",
+      "You can swap providers because you code to the JPA API.",
+    ],
+  },
+  {
+    id: "jpa-2", topic: "jpa", difficulty: "medium", freq: "Very common",
+    companies: ["SERVICE", "BANK", "PRODUCT"],
+    q: "FetchType.LAZY vs EAGER — and the N+1 query problem.",
+    a: "LAZY loads an association only when first accessed; EAGER loads it immediately with the parent. Defaults: @OneToMany/@ManyToMany are LAZY, @ManyToOne/@OneToOne are EAGER. Prefer LAZY to avoid loading unneeded data. The N+1 problem: you fetch N parents (1 query), then accessing each parent's lazy collection fires 1 query per parent → N+1 queries, killing performance. Fixes: a JOIN FETCH JPQL query, an @EntityGraph, or batch fetching (@BatchSize / hibernate.default_batch_fetch_size). EAGER can also cause N+1, so it's not a fix.",
+    keyPoints: [
+      "LAZY = load on access; EAGER = load with parent.",
+      "N+1: 1 query for parents + N for each lazy association.",
+      "Fix with JOIN FETCH, @EntityGraph, or batch fetching.",
+    ],
+  },
+  {
+    id: "jpa-3", topic: "jpa", difficulty: "medium", freq: "Common",
+    companies: ["BANK", "PRODUCT"],
+    q: "@GeneratedValue strategies — IDENTITY vs SEQUENCE vs AUTO vs TABLE.",
+    a: "IDENTITY uses an auto-increment column; simple but disables JDBC batch inserts (the DB assigns the id on insert, so Hibernate can't batch). SEQUENCE uses a DB sequence — preferred for performance because Hibernate can pre-fetch ids (allocationSize) and batch inserts; default on Postgres/Oracle. TABLE emulates a sequence with a separate table — portable but slow (extra locking), rarely used. AUTO lets the provider pick based on the dialect. For high-throughput inserts, SEQUENCE with a tuned allocationSize wins.",
+    keyPoints: [
+      "IDENTITY: auto-increment, simple, but no batch inserts.",
+      "SEQUENCE: DB sequence, pre-fetchable, batch-friendly (preferred).",
+      "TABLE: portable but slow; AUTO: provider chooses.",
+    ],
+  },
+  {
+    id: "jpa-4", topic: "jpa", difficulty: "medium", freq: "Common",
+    companies: ["BANK", "PRODUCT"],
+    q: "Optimistic vs pessimistic locking in JPA.",
+    a: "Optimistic locking assumes conflicts are rare: a @Version field (int/timestamp) is checked on update; if another transaction changed the row meanwhile, the version mismatch throws OptimisticLockException and you retry. No DB locks held — great for high concurrency / low contention. Pessimistic locking actually locks the row in the DB (@Lock(PESSIMISTIC_WRITE) → SELECT ... FOR UPDATE) so others block until you commit — use for high-contention critical sections where retries are costly, at the price of reduced concurrency and deadlock risk.",
+    keyPoints: [
+      "Optimistic: @Version check on update, retry on conflict (no locks).",
+      "Pessimistic: DB row lock (SELECT FOR UPDATE), others block.",
+      "Optimistic for low contention; pessimistic for hot rows.",
+    ],
+  },
+  {
+    id: "jpa-5", topic: "jpa", difficulty: "medium", freq: "Common",
+    companies: ["SERVICE", "BANK"],
+    q: "What do @Transactional and @Modifying do, and what is the transient keyword?",
+    a: "@Transactional wraps a method in a DB transaction — commit on success, rollback on a RuntimeException (checked exceptions don't roll back by default). It's proxy-based, so self-invocation and private methods bypass it. @Modifying marks a custom @Query that's an UPDATE/DELETE (not a SELECT) so Spring Data executes it as an update and you can clear the persistence context. The Java 'transient' keyword excludes a field from Java serialization; in JPA, @Transient excludes a field from persistence (don't confuse the two — they're different mechanisms).",
+    keyPoints: [
+      "@Transactional: commit/rollback boundary; rolls back on RuntimeException.",
+      "@Modifying: marks @Query as UPDATE/DELETE.",
+      "transient (Java) = skip serialization; @Transient (JPA) = skip persistence.",
+    ],
+  },
+  {
+    id: "jpa-6", topic: "jpa", difficulty: "hard", freq: "Occasional",
+    companies: ["PRODUCT", "BANK"],
+    q: "How do you avoid infinite recursion in JSON serialization of bidirectional relationships?",
+    a: "A bidirectional @OneToMany/@ManyToOne serialized to JSON loops forever (parent → children → parent → ...). Fixes: @JsonManagedReference on the parent side + @JsonBackReference on the child (the back side is omitted); or @JsonIgnore on one side; or @JsonIdentityInfo to serialize by id reference; best practice is to serialize DTOs instead of entities, decoupling the API from the persistence model and avoiding lazy-loading-in-serializer issues entirely.",
+    keyPoints: [
+      "Bidirectional entity → JSON infinite loop.",
+      "@JsonManagedReference/@JsonBackReference or @JsonIgnore breaks the cycle.",
+      "Best: map entities to DTOs for the API layer.",
+    ],
+  },
+
+  // ===================== SQL & DATABASES =====================
+  {
+    id: "sql-1", topic: "sql", difficulty: "easy", freq: "Very common",
+    companies: ["SERVICE", "BANK", "PRODUCT"],
+    q: "DELETE vs TRUNCATE vs DROP, and WHERE vs HAVING.",
+    a: "DELETE is DML — removes rows (optionally with WHERE), is logged per row, fires triggers, and can be rolled back. TRUNCATE is DDL — removes ALL rows quickly by deallocating pages, resets identity, can't use WHERE, doesn't fire row triggers, and is usually not transactional. DROP removes the whole table (structure + data). WHERE filters individual rows BEFORE grouping; HAVING filters GROUPS after GROUP BY (it can use aggregate functions like COUNT/SUM, which WHERE cannot).",
+    keyPoints: [
+      "DELETE: row-by-row DML, WHERE, rollback-able, triggers.",
+      "TRUNCATE: fast DDL, all rows, resets identity, no WHERE.",
+      "WHERE filters rows pre-grouping; HAVING filters groups post-aggregation.",
+    ],
+  },
+  {
+    id: "sql-2", topic: "sql", difficulty: "easy", freq: "Very common",
+    companies: ["SERVICE", "BANK", "PRODUCT"],
+    q: "Explain INNER JOIN vs LEFT JOIN, and the SQL order of execution.",
+    a: "INNER JOIN returns only rows with a match in both tables; LEFT (OUTER) JOIN returns all rows from the left table plus matched right rows (NULLs where no match) — used to find 'all X, with their Y if any', e.g. all employees including those without a department. Logical order of execution: FROM → JOIN → WHERE → GROUP BY → HAVING → SELECT → ORDER BY → LIMIT/OFFSET. That's why you can't use a SELECT alias in WHERE (WHERE runs before SELECT) but can in ORDER BY.",
+    keyPoints: [
+      "INNER = matches only; LEFT = all left rows + matched right (NULLs).",
+      "Order: FROM→JOIN→WHERE→GROUP BY→HAVING→SELECT→ORDER BY→LIMIT.",
+      "Aliases from SELECT aren't visible in WHERE, only in ORDER BY.",
+    ],
+  },
+  {
+    id: "sql-3", topic: "sql", difficulty: "easy", freq: "Very common",
+    companies: ["SERVICE", "BANK", "PRODUCT"],
+    q: "What are the ACID properties?",
+    a: "Atomicity — a transaction is all-or-nothing (rolls back fully on failure). Consistency — a transaction moves the DB from one valid state to another, respecting constraints. Isolation — concurrent transactions don't interfere; the effect is as if serial (governed by isolation levels that trade off against anomalies like dirty/non-repeatable reads and phantoms). Durability — once committed, changes survive crashes (persisted via write-ahead log). ACID is the relational guarantee; many NoSQL stores relax it for availability/scale (BASE).",
+    keyPoints: [
+      "Atomicity, Consistency, Isolation, Durability.",
+      "Isolation levels trade anomalies (dirty/non-repeatable/phantom) vs concurrency.",
+      "Durability via write-ahead logging; NoSQL often relaxes ACID (BASE).",
+    ],
+  },
+  {
+    id: "sql-4", topic: "sql", difficulty: "medium", freq: "Very common",
+    companies: ["SERVICE", "BANK", "PRODUCT"],
+    q: "What is indexing? When should you add an index, and what are the downsides?",
+    a: "An index (usually a B-tree) is a sorted auxiliary structure that lets the DB find rows without a full table scan — turning O(n) lookups into O(log n). Add indexes on columns used in WHERE, JOIN, and ORDER BY, and on foreign keys. Downsides: every INSERT/UPDATE/DELETE must also update the indexes (slower writes) and indexes consume storage. So index read-heavy query columns, not everything. Composite indexes follow the left-most prefix rule; over-indexing hurts write throughput.",
+    keyPoints: [
+      "B-tree index → O(log n) lookups, avoids full scans.",
+      "Index WHERE/JOIN/ORDER BY/FK columns.",
+      "Cost: slower writes + storage; don't over-index.",
+    ],
+  },
+  {
+    id: "sql-5", topic: "sql", difficulty: "hard", freq: "Very common",
+    companies: ["BANK", "PRODUCT"],
+    q: "Find the Nth highest salary, and the top-3 earners per department.",
+    a: "Nth highest: use DENSE_RANK() (handles ties) in a subquery and filter the rank, or a correlated subquery / LIMIT-OFFSET for a quick 2nd-highest. Top-3 per department: PARTITION BY department in a window function and keep ranks ≤ 3. Window functions (RANK/DENSE_RANK/ROW_NUMBER over PARTITION BY) are the standard, readable way to express 'per-group top-K' and are a very common senior SQL screen.",
+    keyPoints: [
+      "Nth highest: DENSE_RANK() in a subquery, filter rnk = N.",
+      "Top-K per group: window function with PARTITION BY.",
+      "DENSE_RANK handles ties; ROW_NUMBER doesn't.",
+    ],
+    code: "-- Top 3 paid per department:\nSELECT * FROM (\n  SELECT e.*, DENSE_RANK() OVER (\n    PARTITION BY department_id ORDER BY salary DESC) AS rnk\n  FROM employee e\n) t WHERE rnk <= 3;",
+  },
+  {
+    id: "sql-6", topic: "sql", difficulty: "medium", freq: "Common",
+    companies: ["BANK", "PRODUCT"],
+    q: "Find employees earning more than their department's average salary.",
+    a: "Use a correlated subquery or a window function. Window approach: compute AVG(salary) OVER (PARTITION BY department_id) alongside each row, then filter where salary > that average — single pass, no self-join. Correlated subquery: WHERE salary > (SELECT AVG(salary) FROM employee e2 WHERE e2.department_id = e1.department_id), which re-evaluates per row. The window-function version is usually clearer and faster.",
+    keyPoints: [
+      "Window: AVG(salary) OVER (PARTITION BY dept) then filter.",
+      "Or a correlated subquery on the same department.",
+      "Window version avoids a self-join / per-row re-evaluation.",
+    ],
+    code: "SELECT * FROM (\n  SELECT e.*, AVG(salary) OVER (PARTITION BY department_id) avg_sal\n  FROM employee e\n) t WHERE salary > avg_sal;",
+  },
+  {
+    id: "sql-7", topic: "sql", difficulty: "medium", freq: "Common",
+    companies: ["SERVICE", "BANK"],
+    q: "Primary key vs unique key vs candidate vs surrogate keys; can a table have no PK?",
+    a: "A candidate key is any minimal set of columns that uniquely identifies a row; the PRIMARY KEY is the chosen candidate (unique + NOT NULL, one per table, usually clustered). A UNIQUE key also enforces uniqueness but allows one NULL and you can have many. A surrogate key is an artificial id (auto-increment/UUID) with no business meaning, vs a natural key from the data. A table CAN exist without a PK, but it risks duplicate rows, no reliable row identity, replication issues, and poor performance — so it's strongly discouraged.",
+    keyPoints: [
+      "Candidate = minimal unique; PK = chosen candidate (unique + NOT NULL).",
+      "UNIQUE allows a NULL and multiple per table; surrogate = artificial id.",
+      "No-PK tables risk dupes, weak identity, replication/perf problems.",
+    ],
+  },
+  {
+    id: "sql-8", topic: "sql", difficulty: "medium", freq: "Common",
+    companies: ["BANK", "PRODUCT"],
+    q: "Views vs materialized views, and how do you paginate in SQL?",
+    a: "A VIEW is a stored query — a virtual table evaluated each time you query it (always fresh, no storage, can simplify/secure access). A MATERIALIZED VIEW stores the result physically for fast reads but must be refreshed (can be stale) — good for expensive aggregations queried often. Pagination: LIMIT n OFFSET m (simple but OFFSET gets slow on large offsets because the DB still scans skipped rows); for large datasets prefer keyset/'seek' pagination (WHERE id > last_seen_id ORDER BY id LIMIT n), which uses the index and stays fast.",
+    keyPoints: [
+      "View = virtual (fresh, no storage); materialized view = stored (fast, stale).",
+      "Pagination: LIMIT/OFFSET (slow at high offsets).",
+      "Keyset pagination (WHERE id > last) scales for large datasets.",
+    ],
+  },
+
+  // ===================== MICROSERVICES =====================
+  {
+    id: "ms-1", topic: "microservices", difficulty: "easy", freq: "Very common",
+    companies: ["SERVICE", "BANK", "PRODUCT"],
+    q: "What are microservices? How do they differ from a monolith, with trade-offs.",
+    a: "Microservices structure an app as small, independently deployable services, each owning a single business capability and its own data store, communicating over the network. A monolith is one deployable unit. Benefits: independent deployment/scaling, technology diversity, fault isolation, team autonomy. Downsides: distributed-system complexity (network failures, eventual consistency, distributed transactions), operational overhead (observability, orchestration), testing/debugging across services, and data consistency challenges. Don't start with microservices for a small app — the complexity rarely pays off until scale/team size demands it.",
+    keyPoints: [
+      "Small, independently deployable, single-capability, own data.",
+      "Pros: independent scaling/deploy, fault isolation, team autonomy.",
+      "Cons: distributed complexity, eventual consistency, ops overhead.",
+    ],
+  },
+  {
+    id: "ms-2", topic: "microservices", difficulty: "medium", freq: "Very common",
+    companies: ["SERVICE", "BANK", "PRODUCT"],
+    q: "How do microservices communicate? Synchronous vs asynchronous.",
+    a: "Synchronous: the caller waits for a response — REST/HTTP (simple, ubiquitous) or gRPC (binary, fast, contract-first via protobuf). Tight coupling in time: if the callee is down/slow, the caller suffers (mitigate with timeouts, retries, circuit breakers). Asynchronous: message brokers (Kafka, RabbitMQ) decouple services via events/queues — the producer doesn't wait, giving resilience, buffering, and scalability at the cost of eventual consistency and harder debugging. Use sync for request/response queries; async events for decoupling and propagating state changes.",
+    keyPoints: [
+      "Sync: REST/gRPC — simple but temporally coupled.",
+      "Async: Kafka/RabbitMQ — decoupled, resilient, eventually consistent.",
+      "Protect sync calls with timeouts, retries, circuit breakers.",
+    ],
+  },
+  {
+    id: "ms-3", topic: "microservices", difficulty: "hard", freq: "Very common",
+    companies: ["BANK", "PRODUCT"],
+    q: "What is the Saga pattern and how does it handle distributed transactions?",
+    a: "You can't use a single ACID transaction across services (no distributed 2PC at scale), so a Saga breaks a business transaction into a sequence of LOCAL transactions, each publishing an event that triggers the next. If a step fails, the Saga runs COMPENSATING transactions to undo the prior steps (semantic rollback), achieving eventual consistency. Two styles: choreography (services react to each other's events — decentralized, simple but can get tangled) and orchestration (a central orchestrator directs each step — clearer control/visibility). Steps must be idempotent and retry-safe.",
+    keyPoints: [
+      "Sequence of local txns + compensating txns for rollback.",
+      "Eventual consistency instead of distributed ACID/2PC.",
+      "Choreography (event-driven) vs orchestration (central coordinator).",
+      "Steps must be idempotent and retryable.",
+    ],
+  },
+  {
+    id: "ms-4", topic: "microservices", difficulty: "hard", freq: "Common",
+    companies: ["BANK", "PRODUCT"],
+    q: "Explain the Circuit Breaker pattern and other resilience patterns.",
+    a: "A circuit breaker (Resilience4j/Hysterix) wraps a remote call and tracks failures: CLOSED (calls flow, counting failures), OPEN (after a threshold, calls fail fast without hitting the dead service — preventing cascading failures and resource exhaustion), HALF-OPEN (after a wait, lets a few trial calls through; success → close, failure → re-open). Companion patterns: retry with exponential backoff (transient faults), timeouts (don't wait forever), bulkhead (isolate resource pools so one slow dependency can't sink everything), rate limiting, and fallbacks (graceful degradation).",
+    keyPoints: [
+      "States: CLOSED → OPEN (fail fast) → HALF-OPEN (probe) → CLOSED.",
+      "Stops cascading failures / resource exhaustion.",
+      "Pair with retry+backoff, timeout, bulkhead, rate limit, fallback.",
+    ],
+  },
+  {
+    id: "ms-5", topic: "microservices", difficulty: "medium", freq: "Common",
+    companies: ["BANK", "PRODUCT"],
+    q: "What is CQRS and how does eventual consistency work with it?",
+    a: "CQRS (Command Query Responsibility Segregation) splits the WRITE model (commands that change state) from the READ model (queries) — often separate data stores optimized for each (normalized for writes, denormalized/materialized views for fast reads). The write side emits events that update the read side asynchronously, so the read model is EVENTUALLY consistent (briefly stale after a write). Benefits: independent scaling of reads vs writes and tailored read models; costs: complexity and handling the consistency lag (e.g. show 'pending' UI, or read-your-writes via the write store).",
+    keyPoints: [
+      "Separate write model (commands) from read model (queries).",
+      "Read side updated via events → eventually consistent.",
+      "Scales reads/writes independently; must handle staleness.",
+    ],
+  },
+  {
+    id: "ms-6", topic: "microservices", difficulty: "medium", freq: "Common",
+    companies: ["SERVICE", "BANK", "PRODUCT"],
+    q: "What is service discovery, and client-side vs server-side load balancing?",
+    a: "Service instances come and go (autoscaling, restarts) with changing IPs, so hardcoding addresses fails. Service discovery keeps a registry (Eureka, Consul, Kubernetes DNS) where instances register and clients look them up by logical name. Client-side load balancing: the client gets the instance list and picks one (e.g. Spring Cloud LoadBalancer/Ribbon) — fewer hops, smarter routing. Server-side: a proxy/load balancer (an API gateway, AWS ALB, or Kubernetes Service) fronts the instances and distributes traffic — clients stay simple. Kubernetes gives you DNS-based discovery + a Service LB out of the box.",
+    keyPoints: [
+      "Registry maps logical name → live instances (Eureka/Consul/K8s DNS).",
+      "Client-side LB: client picks instance (fewer hops).",
+      "Server-side LB: proxy/gateway/Service distributes (simpler clients).",
+    ],
+  },
+  {
+    id: "ms-7", topic: "microservices", difficulty: "medium", freq: "Common",
+    companies: ["BANK", "PRODUCT"],
+    q: "What is distributed tracing and why is it essential in microservices?",
+    a: "A single user request fans out across many services, so a stack trace in one service isn't enough to debug latency or failures. Distributed tracing assigns a TRACE ID to the whole request and a SPAN ID to each service hop, propagated via headers (W3C traceparent) so you can stitch the full end-to-end timeline. Tools: Micrometer Tracing / Spring Cloud Sleuth + Zipkin/Jaeger/OpenTelemetry. It shows where time is spent and which service failed — indispensable for performance and root-cause analysis in a distributed system.",
+    keyPoints: [
+      "Trace ID spans the whole request; span ID per service hop.",
+      "Context propagated via headers (W3C traceparent) across calls.",
+      "Sleuth/Micrometer + Zipkin/Jaeger/OpenTelemetry; finds latency/root cause.",
+    ],
+  },
 ];
 
 // ---- Market insights from research (2025–2026 trend snapshot) ----
@@ -2865,7 +4051,8 @@ const PROFILE = {
 //  Core Java Prep — single-file dashboard
 // ============================================================
 
-const ICONS = { Boxes, Hash, Layers, Cpu, Shield, Zap, Sparkles, Code2, Database, Terminal, Cloud, Container };
+const ICONS = { Boxes, Hash, Layers, Cpu, Shield, Zap, Sparkles, Code2, Database, Terminal, Cloud, Container,
+  Link2, Trees, SquareStack, TrendingUp, Coins, GitFork, Component, Sprout, Table2, DatabaseZap, Network };
 const COMPANY_LABELS = { SERVICE: "Service-based", BANK: "Banking", PRODUCT: "Product" };
 const COMPANY_SHORT = { SERVICE: "Service", BANK: "Bank", PRODUCT: "Product" };
 const STORE_KEY = "coreJavaPrep_v1";
