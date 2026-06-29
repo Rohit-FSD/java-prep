@@ -5,9 +5,7 @@ import {
   Eye, EyeOff, BookOpen, Award, Cpu, Database, Layers, Boxes, Shield,
   Code2, Zap, Hash, Terminal, GraduationCap, ListChecks, Star, ArrowRight,
   ArrowLeft, Lightbulb, Activity, Coffee, Brain, Sun, Moon, Shuffle, CircleDot,
-  Play, Copy, Loader2, AlertTriangle, Calendar, ChevronLeft, Cloud, Container,
-  Link2, Trees, SquareStack, Coins, GitFork, Component, Sprout,
-  Table2, DatabaseZap, Network
+  Play, Copy, Loader2, AlertTriangle, Calendar, ChevronLeft, Map
 } from "lucide-react";
 
 
@@ -43,19 +41,6 @@ const TOPICS = [
   { id: "coding", name: "Coding & Output", icon: "Terminal", blurb: "Tricky output, snippets, write-on-the-spot." },
   { id: "string-coding", name: "String Problems", icon: "Hash", blurb: "Classic string coding interview problems." },
   { id: "array-coding", name: "Array Problems", icon: "Boxes", blurb: "Classic array & matrix coding problems." },
-  { id: "docker", name: "Docker & Containers", icon: "Container", blurb: "Images, layers, volumes, networking, Dockerfile, compose." },
-  { id: "aws", name: "AWS & Cloud", icon: "Cloud", blurb: "EC2, S3, IAM, Lambda, VPC, scaling, deploying Java apps." },
-  { id: "linkedlist", name: "Linked List Problems", icon: "Link2", blurb: "Reverse, cycle detect, merge, palindrome, Nth-from-end." },
-  { id: "tree", name: "Tree Problems", icon: "Trees", blurb: "Traversals, LCA, diameter, invert, symmetric." },
-  { id: "stack-queue", name: "Stack & Queue Problems", icon: "SquareStack", blurb: "Valid parens, min stack, RPN, monotonic deque." },
-  { id: "dp", name: "Dynamic Programming", icon: "TrendingUp", blurb: "Climbing stairs, house robber, coin change, LIS, edit distance." },
-  { id: "greedy", name: "Greedy Problems", icon: "Coins", blurb: "Jump game, gas station, intervals, scheduling." },
-  { id: "backtracking", name: "Backtracking", icon: "GitFork", blurb: "Subsets, permutations, word search, N-Queens." },
-  { id: "design", name: "LLD / Design Problems", icon: "Component", blurb: "LRU cache, rate limiter, Twitter, parking lot, URL shortener." },
-  { id: "spring", name: "Spring & Spring Boot", icon: "Sprout", blurb: "IoC/DI, beans, REST, security, caching, exception handling." },
-  { id: "jpa", name: "JPA & Hibernate", icon: "DatabaseZap", blurb: "Entities, fetch types, N+1, locking, transactions." },
-  { id: "sql", name: "SQL & Databases", icon: "Table2", blurb: "Joins, ACID, indexing, window queries, partitioning." },
-  { id: "microservices", name: "Microservices", icon: "Network", blurb: "Communication, resilience, saga, CQRS, discovery, tracing." },
 ];
 
 const DIFF = { easy: "Easy", medium: "Medium", hard: "Hard" };
@@ -434,171 +419,6 @@ const QUESTIONS = [
       "synchronizedXxx needs manual sync during iteration.",
       "Prefer java.util.concurrent for scalable thread safety.",
     ],
-  },
-  {
-    id: "col-17", topic: "collections", difficulty: "medium", freq: "Very common",
-    companies: ["SERVICE", "BANK", "PRODUCT"],
-    q: "What happens if two distinct keys have the same hashCode in a HashMap?",
-    a: "They collide into the same bucket. The map then walks that bucket comparing with equals() — first hashCode narrows to a bucket, then equals() distinguishes keys within it. So both keys coexist; lookups just do a linear (or O(log n) tree) scan inside the bucket. A constant hashCode (e.g. returning 1) is legal but degrades the whole map to a single bucket — O(n) per operation. This is why hashCode should distribute well.",
-    keyPoints: [
-      "Same hash → same bucket; equals() separates keys within it.",
-      "Both keys stored; only retrieval cost rises.",
-      "Constant/poor hashCode → all collisions → O(n) lookups.",
-      "Java 8 treeifies a bucket >8 nodes to O(log n).",
-    ],
-  },
-  {
-    id: "col-18", topic: "collections", difficulty: "hard", freq: "Very common",
-    companies: ["SERVICE", "BANK", "PRODUCT"],
-    q: "Scenario: you iterate a List and call list.remove(x) inside the loop and get ConcurrentModificationException. Why, and how do you fix it?",
-    a: "A for-each loop uses the list's Iterator, which checks modCount against expectedModCount on each next(); calling list.remove() bumps modCount behind the iterator's back, so it fails fast with ConcurrentModificationException. Fixes: (1) use Iterator explicitly and call iterator.remove(); (2) use removeIf(predicate) — the cleanest Java 8 way; (3) collect items to remove and removeAll afterward; or (4) iterate over a copy. Note CME can occur even single-threaded — it's about structural modification during iteration, not threads.",
-    keyPoints: [
-      "for-each = iterator + modCount check → CME on structural change.",
-      "Fix: iterator.remove(), or removeIf(predicate) (preferred).",
-      "CME is not thread-specific; it's modification-during-iteration.",
-      "Iterating a copy or collecting-then-removeAll also works.",
-    ],
-    code: "// Cleanest:\nlist.removeIf(x -> x.isExpired());\n// Or explicit iterator:\nIterator<T> it = list.iterator();\nwhile (it.hasNext()) {\n  if (it.next().isExpired()) it.remove();\n}",
-  },
-  {
-    id: "col-19", topic: "collections", difficulty: "hard", freq: "Very common",
-    companies: ["BANK", "PRODUCT"],
-    q: "Scenario: 'check-then-act' on ConcurrentHashMap (if (!map.containsKey(k)) map.put(k, v)) is racy. How do you fix it atomically?",
-    a: "Even though ConcurrentHashMap is thread-safe per operation, a containsKey-then-put across two calls is NOT atomic — two threads can both see the key absent and both put. Use the atomic compound methods: putIfAbsent(k, v) (returns existing or null), computeIfAbsent(k, k -> expensiveCreate()) (atomically computes and stores only if absent — ideal for caches/memoization), or merge(k, v, remapping) for counters. These run the lambda under the bucket lock, so they're atomic and race-free.",
-    keyPoints: [
-      "Per-op thread-safety ≠ atomic compound (check-then-act) operations.",
-      "Use putIfAbsent / computeIfAbsent / merge / compute.",
-      "computeIfAbsent is the canonical thread-safe lazy-cache idiom.",
-      "Don't do long/blocking work or recursive map updates inside the lambda.",
-    ],
-    code: "// Thread-safe lazy cache:\nValue v = map.computeIfAbsent(key, k -> load(k));\n// Thread-safe counter:\nmap.merge(word, 1L, Long::sum);",
-  },
-  {
-    id: "col-20", topic: "collections", difficulty: "hard", freq: "Common",
-    companies: ["BANK", "PRODUCT"],
-    q: "Scenario: you use a mutable object as a HashMap key and later mutate a field used in equals/hashCode. What goes wrong?",
-    a: "The object was placed in a bucket based on its hashCode at insertion time. Mutating a field that feeds hashCode changes the computed bucket, but the entry physically stays in the old bucket. Now get(sameObject) computes the NEW bucket, finds nothing, and returns null — the value is 'lost' even though it's still in the map (and shows up in iteration). Lesson: keys must be immutable, or at least the fields used in equals/hashCode must never change while the object is a key. Prefer immutable keys (String, records, value objects).",
-    keyPoints: [
-      "Mutating key fields used in hashCode strands the entry in the old bucket.",
-      "get() looks in the new bucket → returns null; entry still in iteration.",
-      "Use immutable keys; records are ideal.",
-      "Same risk applies to HashSet membership.",
-    ],
-  },
-  {
-    id: "col-21", topic: "collections", difficulty: "medium", freq: "Common",
-    companies: ["SERVICE", "BANK", "PRODUCT"],
-    q: "HashMap vs LinkedHashMap vs TreeMap — how do you choose?",
-    a: "HashMap: no ordering guarantee, O(1) average get/put — the default. LinkedHashMap: maintains insertion order (or access order with accessOrder=true, enabling LRU caches) via a doubly-linked list across entries, still O(1), slight memory overhead. TreeMap: keeps keys sorted (natural order or Comparator), O(log n), and adds navigation (floor/ceiling/subMap). Choose HashMap unless you need predictable iteration order (LinkedHashMap) or sorting/range queries (TreeMap).",
-    keyPoints: [
-      "HashMap: fastest, no order.",
-      "LinkedHashMap: insertion/access order; basis of LRU.",
-      "TreeMap: sorted keys + navigation, O(log n).",
-      "Pick by ordering/range needs, then performance.",
-    ],
-  },
-  {
-    id: "col-22", topic: "collections", difficulty: "medium", freq: "Common",
-    companies: ["SERVICE", "BANK", "PRODUCT"],
-    q: "How does the enhanced for-loop work, and what does Iterable/Iterator provide?",
-    a: "The for-each loop is syntactic sugar: for (T x : coll) compiles to obtaining coll.iterator() and looping while hasNext()/next(). Any type implementing Iterable<T> (which returns an Iterator<T>) can be used. Iterator gives hasNext(), next(), and an optional remove(). Because it goes through the iterator, structural modification during a for-each triggers fail-fast CME; and you can't get the index or call remove() directly in a for-each.",
-    keyPoints: [
-      "for-each = sugar over iterator() + hasNext()/next().",
-      "Implement Iterable to make a custom type for-each-able.",
-      "No index access; remove only via Iterator.remove().",
-    ],
-  },
-  {
-    id: "col-23", topic: "collections", difficulty: "medium", freq: "Common",
-    companies: ["SERVICE", "BANK"],
-    q: "How does ArrayList grow internally, and what is its initial/grow capacity?",
-    a: "ArrayList wraps an Object[]. A default (no-arg) list starts with an empty shared array and lazily allocates capacity 10 on the first add. When full, it grows by ~1.5x (newCap = oldCap + (oldCap >> 1)), copying the old array into a bigger one via Arrays.copyOf — an O(n) operation, but amortized O(1) per add. If you know the size, pass an initial capacity to avoid repeated resizes/copies. ensureCapacity() can pre-size before a bulk add.",
-    keyPoints: [
-      "Backed by Object[]; default capacity 10 (lazy).",
-      "Grows ~1.5x with Arrays.copyOf (O(n) copy, amortized O(1) add).",
-      "Pre-size with new ArrayList<>(n) or ensureCapacity for bulk inserts.",
-    ],
-  },
-  {
-    id: "col-24", topic: "collections", difficulty: "medium", freq: "Common",
-    companies: ["BANK", "PRODUCT"],
-    q: "Scenario: Collections.synchronizedList is 'thread-safe', yet iterating it throws CME. Why?",
-    a: "synchronizedList wraps each method (add, get, remove) in a synchronized block, so individual operations are atomic. But iteration is a sequence of separate next() calls — another thread can modify the list between them, triggering fail-fast CME. The Javadoc explicitly says you MUST manually synchronize on the list while iterating. For real concurrent iteration without external locking, use CopyOnWriteArrayList (snapshot iterator) or a concurrent collection.",
-    keyPoints: [
-      "Per-method locking ≠ atomic iteration.",
-      "Must synchronized(list){ for(...) } during iteration.",
-      "CopyOnWriteArrayList / concurrent collections avoid the manual lock.",
-    ],
-    code: "List<T> sync = Collections.synchronizedList(new ArrayList<>());\nsynchronized (sync) {        // required during iteration\n  for (T t : sync) { ... }\n}",
-  },
-  {
-    id: "col-25", topic: "collections", difficulty: "easy", freq: "Common",
-    companies: ["SERVICE", "BANK"],
-    q: "Iterator vs ListIterator — what extra does ListIterator give?",
-    a: "Iterator is forward-only with hasNext/next/remove and works on any Collection. ListIterator (Lists only) is bidirectional — hasPrevious/previous — exposes nextIndex/previousIndex, and can set(e) (replace the last returned element) and add(e) (insert at the cursor) in addition to remove(). Use ListIterator when you need to traverse backward or modify a list in place during traversal.",
-    keyPoints: [
-      "Iterator: forward-only, any collection.",
-      "ListIterator: bidirectional, index-aware, set/add/remove.",
-      "Only lists provide a ListIterator.",
-    ],
-  },
-  {
-    id: "col-26", topic: "collections", difficulty: "medium", freq: "Common",
-    companies: ["BANK", "PRODUCT"],
-    q: "What is a PriorityQueue and how is it ordered?",
-    a: "PriorityQueue is an unbounded queue backed by a binary min-heap; the head is always the least element by natural order or a supplied Comparator. offer/poll are O(log n), peek is O(1). It is NOT sorted overall — only the head is guaranteed; iteration order is arbitrary. It's used for scheduling, Dijkstra/A*, top-K problems (use a bounded max-heap of size k), and merging sorted streams. Not thread-safe — use PriorityBlockingQueue for concurrency.",
-    keyPoints: [
-      "Binary heap; head = smallest (or per Comparator).",
-      "offer/poll O(log n), peek O(1); iteration order undefined.",
-      "Top-K: keep a size-k heap; use PriorityBlockingQueue if concurrent.",
-    ],
-  },
-  {
-    id: "col-27", topic: "collections", difficulty: "easy", freq: "Common",
-    companies: ["SERVICE", "BANK", "PRODUCT"],
-    q: "Difference between Collection and Collections.",
-    a: "Collection (singular) is the root interface of the collection hierarchy (List/Set/Queue extend it) defining add/remove/size/iterator etc. Collections (plural) is a utility class of static helper methods — sort, reverse, shuffle, min/max, binarySearch, unmodifiableXxx, synchronizedXxx, emptyList, singletonList. Don't confuse them; a common phone-screen 'gotcha' question.",
-    keyPoints: [
-      "Collection = root interface.",
-      "Collections = static utility methods class.",
-      "Similar: Map (interface) vs no — Map isn't under Collection.",
-    ],
-  },
-  {
-    id: "col-28", topic: "collections", difficulty: "medium", freq: "Common",
-    companies: ["SERVICE", "BANK"],
-    q: "Why don't Java collections store primitives, and what is autoboxing's cost?",
-    a: "Generics work only with reference types (due to type erasure), so List<int> is illegal — you use List<Integer>. Java autoboxes int↔Integer automatically. The cost: each boxed Integer is a heap object (more memory + GC pressure), and unboxing a null Integer throws NPE. For performance-critical numeric work, prefer primitive arrays (int[]) or specialized streams (IntStream) or libraries like Eclipse Collections/fastutil with primitive collections.",
-    keyPoints: [
-      "Generics need reference types → use wrappers (Integer, Long).",
-      "Autoboxing adds heap objects + GC; null unbox → NPE.",
-      "Hot numeric paths: int[], IntStream, primitive-collection libs.",
-    ],
-  },
-  {
-    id: "col-29", topic: "collections", difficulty: "hard", freq: "Occasional",
-    companies: ["BANK", "PRODUCT"],
-    q: "Scenario: design a thread-safe, bounded, in-memory counter of events per key under high concurrency. What do you use?",
-    a: "Use ConcurrentHashMap with a value of LongAdder (or AtomicLong) and merge/computeIfAbsent: map.computeIfAbsent(key, k -> new LongAdder()).increment(). LongAdder beats AtomicLong under high contention because it stripes the count across cells, reducing CAS retries (you trade exact-instant reads for throughput). Avoid map.merge(k,1L,Long::sum) at extreme contention since it locks the bucket; LongAdder lets concurrent increments on the same key scale. Bound memory by capping keys or evicting (Caffeine).",
-    keyPoints: [
-      "ConcurrentHashMap<K, LongAdder> + computeIfAbsent.",
-      "LongAdder > AtomicLong under heavy write contention (striping).",
-      "merge(...) is fine at low contention; LongAdder scales better.",
-      "Cap/evict keys to keep it bounded (Caffeine/size limit).",
-    ],
-    code: "ConcurrentHashMap<String, LongAdder> counts = new ConcurrentHashMap<>();\ncounts.computeIfAbsent(key, k -> new LongAdder()).increment();\nlong total = counts.get(key).sum();",
-  },
-  {
-    id: "col-30", topic: "collections", difficulty: "medium", freq: "Common",
-    companies: ["SERVICE", "BANK", "PRODUCT"],
-    q: "How do you remove duplicates from a List while preserving insertion order?",
-    a: "Wrap it in a LinkedHashSet: new ArrayList<>(new LinkedHashSet<>(list)) — the set dedupes by equals/hashCode while LinkedHashSet keeps first-seen order. With streams: list.stream().distinct().collect(toList()) (distinct() also preserves encounter order for ordered streams). If you need to dedupe by a specific field rather than whole-object equals, use a stream with a 'seen' set filter or toMap keyed by that field.",
-    keyPoints: [
-      "LinkedHashSet preserves first-seen order while deduping.",
-      "Streams: .distinct() (order-preserving for ordered streams).",
-      "Dedupe by field: filter(seen::add) or toMap(field, ...).",
-    ],
-    code: "// Preserve order:\nList<T> unique = new ArrayList<>(new LinkedHashSet<>(list));\n// Dedupe by a field:\nlist.stream().filter(e -> seen.add(e.getId())).collect(toList());",
   },
 
   // ===================== CONCURRENCY =====================
@@ -1549,173 +1369,6 @@ const QUESTIONS = [
       "Boxing in tight loops costs allocations/perf.",
     ],
   },
-  {
-    id: "code-9", topic: "coding", difficulty: "hard", freq: "Very common",
-    companies: ["SERVICE", "BANK", "PRODUCT"],
-    q: "Output? You add a custom object to a HashMap as a key, then look it up with a NEW object having identical fields — but get() returns null. Why?",
-    a: "Because the class doesn't override equals() and hashCode(). The map stored the entry under the first object's identity hashCode (Object's default). The second object — equal in fields but a different instance — computes a different identity hashCode, lands in a different bucket, and even if it hit the same bucket, the default equals() (==) would say 'not equal'. So get() returns null. Fix: override both equals() and hashCode() using the same fields (or make it a record). Then the lookup finds the entry.",
-    keyPoints: [
-      "No equals/hashCode override → default identity semantics.",
-      "Different instance → different bucket / != → get() returns null.",
-      "Fix: override both consistently (or use a record).",
-      "Always override equals AND hashCode together for map keys.",
-    ],
-    code: "class Point { int x, y; Point(int x,int y){this.x=x;this.y=y;} }\nMap<Point,String> m = new HashMap<>();\nm.put(new Point(1,2), \"A\");\nSystem.out.println(m.get(new Point(1,2))); // null  (no equals/hashCode)\n// After overriding equals & hashCode (or using a record) → prints \"A\"",
-  },
-  {
-    id: "code-10", topic: "coding", difficulty: "medium", freq: "Very common",
-    companies: ["SERVICE", "BANK", "PRODUCT"],
-    q: "Output? Put the SAME key twice in a HashMap with different values, then get it and check size().",
-    a: "Keys are unique — the second put() overwrites the value and returns the OLD value; size stays 1. So map.put(\"a\",1) then map.put(\"a\",2) leaves {\"a\"=2}, size()==1, and the second put returns 1. HashMap finds the existing key via hashCode+equals, replaces the value in place, and does not add a new entry.",
-    keyPoints: [
-      "Duplicate key → value overwritten, no new entry.",
-      "put() returns the PREVIOUS value (or null if absent).",
-      "size() reflects unique keys only.",
-    ],
-    code: "Map<String,Integer> m = new HashMap<>();\nm.put(\"a\", 1);\nInteger old = m.put(\"a\", 2);\nSystem.out.println(old);       // 1  (previous value)\nSystem.out.println(m.get(\"a\")); // 2\nSystem.out.println(m.size());   // 1",
-  },
-  {
-    id: "code-11", topic: "coding", difficulty: "hard", freq: "Common",
-    companies: ["BANK", "PRODUCT"],
-    q: "Output? Override equals() but NOT hashCode(), then add the object to a HashSet and check contains() with an equal object.",
-    a: "contains() returns false (and you can even add two 'equal' objects). HashSet/HashMap use hashCode() FIRST to pick the bucket; only within a bucket is equals() consulted. Since hashCode wasn't overridden, the two equal objects produce different (identity) hashes, go to different buckets, and equals() is never even called. This is the canonical 'broken contract' bug: if you override equals you MUST override hashCode.",
-    keyPoints: [
-      "hashCode picks the bucket BEFORE equals is consulted.",
-      "Mismatched hashes → equals never runs → contains()==false.",
-      "Equal objects can both be added → duplicates in a Set.",
-      "Rule: override equals ⇒ override hashCode (same fields).",
-    ],
-    code: "// equals overridden, hashCode NOT:\nSet<Key> s = new HashSet<>();\ns.add(new Key(1));\nSystem.out.println(s.contains(new Key(1))); // false\ns.add(new Key(1));\nSystem.out.println(s.size());                // 2 (duplicates!)",
-  },
-  {
-    id: "code-12", topic: "coding", difficulty: "medium", freq: "Common",
-    companies: ["SERVICE", "BANK", "PRODUCT"],
-    q: "Output? Add null key and null values to HashMap, Hashtable, and ConcurrentHashMap.",
-    a: "HashMap allows ONE null key and multiple null values — works fine, get(null) returns the value. Hashtable throws NullPointerException on a null key OR null value. ConcurrentHashMap also throws NullPointerException on null key or value (so absence vs. null is unambiguous across threads). A frequent trap: m.get(null) on a HashMap returns null whether the key is absent OR mapped to null — use containsKey to disambiguate.",
-    keyPoints: [
-      "HashMap: 1 null key + null values OK.",
-      "Hashtable & ConcurrentHashMap: NPE on null key/value.",
-      "HashMap.get(null) → null can't distinguish absent vs null value.",
-    ],
-    code: "new HashMap<>().put(null, null);          // OK\nnew Hashtable<>().put(null, 1);           // NullPointerException\nnew ConcurrentHashMap<>().put(\"k\", null); // NullPointerException",
-  },
-  {
-    id: "code-13", topic: "coding", difficulty: "medium", freq: "Common",
-    companies: ["BANK", "PRODUCT"],
-    q: "Output? Use a mutable key (e.g. a List) in a HashMap, mutate it, then try to get() it back.",
-    a: "After mutation, get() returns null even though the entry is still in the map. The key's hashCode is computed from its contents; when you put it, it lands in bucket A. Mutating the list changes its hashCode, so get(sameList) now computes bucket B and finds nothing. The entry is 'stranded' in bucket A (still visible in iteration / size). Lesson: never use mutable objects as keys — use immutable keys (String, records, value objects).",
-    keyPoints: [
-      "Mutating a key changes its hashCode → wrong bucket on lookup.",
-      "get() returns null; entry still present in iteration/size.",
-      "Use immutable keys only.",
-    ],
-    code: "Map<List<Integer>,String> m = new HashMap<>();\nList<Integer> key = new ArrayList<>(List.of(1,2));\nm.put(key, \"X\");\nkey.add(3);                       // mutate the key\nSystem.out.println(m.get(key));   // null (hashCode changed)\nSystem.out.println(m.size());     // 1 (still there, stranded)",
-  },
-  {
-    id: "code-14", topic: "coding", difficulty: "medium", freq: "Common",
-    companies: ["SERVICE", "BANK"],
-    q: "Output? getOrDefault vs get on a missing key, and put returning a value.",
-    a: "get(missing) returns null; getOrDefault(missing, def) returns def WITHOUT inserting it. put(k,v) returns the previous value mapped to k (null if it was absent). putIfAbsent(k,v) only sets if absent and returns the existing value (or null). These return values trip people up — get and getOrDefault never modify the map; only the put-family does.",
-    keyPoints: [
-      "get(missing) → null; getOrDefault → default (no insert).",
-      "put returns the PREVIOUS value (null if new key).",
-      "putIfAbsent returns existing value, sets only if absent.",
-    ],
-    code: "Map<String,Integer> m = new HashMap<>();\nSystem.out.println(m.getOrDefault(\"a\", 0)); // 0 (not stored)\nSystem.out.println(m.put(\"a\", 1));          // null (was absent)\nSystem.out.println(m.put(\"a\", 2));          // 1   (previous value)\nSystem.out.println(m.putIfAbsent(\"a\", 9));  // 2   (already present)",
-  },
-  {
-    id: "code-15", topic: "coding", difficulty: "hard", freq: "Common",
-    companies: ["SERVICE", "BANK", "PRODUCT"],
-    q: "Output? list.remove(1) on List<Integer> — does it remove index 1 or the value 1?",
-    a: "list.remove(1) removes the element at INDEX 1 (because remove(int) matches first). To remove the VALUE 1, you must box it: list.remove(Integer.valueOf(1)) which calls remove(Object). This overload-resolution gotcha is a very common output trap. So for [10,20,30], remove(1) gives [10,30]; remove(Integer.valueOf(1)) leaves it unchanged (no element equals 1).",
-    keyPoints: [
-      "remove(int) = by index; remove(Object) = by value.",
-      "An int literal binds to remove(int) → removes by index.",
-      "Use Integer.valueOf(x) to remove a value from List<Integer>.",
-    ],
-    code: "List<Integer> l = new ArrayList<>(List.of(10,20,30));\nl.remove(1);                  // removes index 1 → [10, 30]\nl.remove(Integer.valueOf(10));// removes value 10 → [30]",
-  },
-  {
-    id: "code-16", topic: "coding", difficulty: "medium", freq: "Common",
-    companies: ["BANK", "PRODUCT"],
-    q: "Output? Iteration order of HashMap vs LinkedHashMap vs TreeMap for the same inserts.",
-    a: "HashMap: order is unspecified (depends on hash/bucket layout — often looks 'random' and can change across JDK versions). LinkedHashMap: insertion order, exactly as added. TreeMap: sorted ascending by key (natural order or Comparator). So inserting C, A, B prints something arbitrary for HashMap, [C, A, B] for LinkedHashMap, and [A, B, C] for TreeMap. Never rely on HashMap iteration order.",
-    keyPoints: [
-      "HashMap: no guaranteed order (don't depend on it).",
-      "LinkedHashMap: insertion (or access) order.",
-      "TreeMap: sorted by key.",
-    ],
-    code: "var ins = List.of(\"C\",\"A\",\"B\");\n// HashMap     → unspecified order\n// LinkedHashMap→ C, A, B  (insertion)\n// TreeMap     → A, B, C  (sorted)",
-  },
-  {
-    id: "code-17", topic: "coding", difficulty: "hard", freq: "Occasional",
-    companies: ["BANK", "PRODUCT"],
-    q: "Output? Add two String keys whose hashCodes collide (e.g. \"Aa\" and \"BB\") to a HashMap.",
-    a: "\"Aa\" and \"BB\" have the SAME hashCode (2112) — a famous collision. Both keys are still stored correctly: they collide into one bucket, but equals() distinguishes them, so the map holds two entries and both get() calls succeed. Collisions never lose data — they only slow that bucket to a linear (or tree) scan. This demonstrates that hashCode equality ≠ object equality.",
-    keyPoints: [
-      "\"Aa\".hashCode() == \"BB\".hashCode() == 2112 (collision).",
-      "Both entries coexist; equals() separates them in the bucket.",
-      "Collisions cost performance, never correctness.",
-    ],
-    code: "Map<String,Integer> m = new HashMap<>();\nm.put(\"Aa\", 1);\nm.put(\"BB\", 2);            // same hashCode, different equals\nSystem.out.println(m.size());     // 2\nSystem.out.println(m.get(\"Aa\"));  // 1\nSystem.out.println(m.get(\"BB\"));  // 2",
-  },
-  {
-    id: "code-18", topic: "coding", difficulty: "hard", freq: "Very common",
-    companies: ["SERVICE", "BANK", "PRODUCT"],
-    q: "Output? A try returns 10, catch returns 20, but finally returns 30.",
-    a: "It prints 30. A return in finally OVERRIDES the return from try (or catch) — the try's return value is computed and then discarded when finally executes its own return. This also silently swallows exceptions. It's a notorious gotcha and an anti-pattern: never return (or throw) from a finally block. Order of prints: \"In try block\" then \"In finally block\", then Result: 30.",
-    keyPoints: [
-      "return in finally overrides try/catch's return → 30.",
-      "It also swallows pending exceptions — anti-pattern.",
-      "Never return or throw from finally.",
-    ],
-    code: "static int test() {\n  try { return 10; }\n  catch (Exception e) { return 20; }\n  finally { return 30; }   // overrides → method returns 30\n}",
-  },
-  {
-    id: "code-19", topic: "coding", difficulty: "medium", freq: "Very common",
-    companies: ["SERVICE", "BANK", "PRODUCT"],
-    q: "Output? s = \"Hello\"; s.concat(\"World\"); System.out.println(s);",
-    a: "It prints \"Hello\". Strings are immutable — concat() returns a NEW string and does not modify s. Since the result isn't assigned, it's discarded. To change s you must reassign: s = s.concat(\"World\"). This is the canonical demonstration of String immutability and a very common trap.",
-    keyPoints: [
-      "concat() returns a new String; the original is unchanged.",
-      "Result discarded because it's not assigned → prints \"Hello\".",
-      "Must reassign: s = s.concat(...).",
-    ],
-  },
-  {
-    id: "code-20", topic: "coding", difficulty: "hard", freq: "Common",
-    companies: ["SERVICE", "BANK"],
-    q: "How many objects? String s1=\"abc\"; String s2=new String(\"abc\"); String s3=s2.toUpperCase();",
-    a: "Three objects (plus the pooled literal). \"abc\" literal goes in the String pool (1 pooled object). new String(\"abc\") forces a NEW heap object distinct from the pool (s2). s2.toUpperCase() produces another new String \"ABC\" (s3) since the content differs. So at runtime: the pooled \"abc\", the heap \"abc\", and \"ABC\". Note: if toUpperCase() found no change needed it would return the same object — but here it changes, so a new one is created.",
-    keyPoints: [
-      "Literal \"abc\" → pooled object; new String(\"abc\") → separate heap object.",
-      "toUpperCase() returns a new String when content changes.",
-      "s1 == s2 is false; s1.equals(s2) is true.",
-    ],
-  },
-  {
-    id: "code-21", topic: "coding", difficulty: "medium", freq: "Common",
-    companies: ["BANK", "PRODUCT"],
-    q: "Output? intern(): s1=\"Java\"; s2=\"Java\"; s3=new String(\"Java\"); s4=s3.intern();",
-    a: "s1==s2 → true (both the same pooled literal). s1==s3 → false (s3 is a distinct heap object). s1==s4 → true (intern() returns the pooled reference, which is the same object as the literal s1). So interning lets a heap string 'rejoin' the pool, making == with the literal true again. equals() is true in all cases.",
-    keyPoints: [
-      "s1==s2: true (shared pooled literal).",
-      "s1==s3: false (new String is a separate object).",
-      "s1==s4: true (intern() returns the pooled reference).",
-    ],
-    code: "String s1 = \"Java\", s2 = \"Java\";\nString s3 = new String(\"Java\");\nString s4 = s3.intern();\nSystem.out.println(s1 == s2);  // true\nSystem.out.println(s1 == s3);  // false\nSystem.out.println(s1 == s4);  // true",
-  },
-  {
-    id: "code-22", topic: "coding", difficulty: "medium", freq: "Common",
-    companies: ["SERVICE", "BANK"],
-    q: "Output? Does 5 * 0.1 == 0.5 return true or false?",
-    a: "It returns false. 0.1 has no exact binary floating-point representation (IEEE 754), so 5 * 0.1 accumulates a tiny rounding error and is not exactly 0.5. Never compare floating-point with ==; compare with a tolerance (Math.abs(a-b) < epsilon) or use BigDecimal (constructed from strings) for exact decimal arithmetic like money.",
-    keyPoints: [
-      "false — 0.1 isn't exact in binary floating point.",
-      "Don't use == on doubles; use an epsilon tolerance.",
-      "Use BigDecimal (from String) for money/exact decimals.",
-    ],
-  },
 
   // ===================== CONCURRENCY — DEEP DIVE (talking points only) =====================
   {
@@ -2027,126 +1680,6 @@ const QUESTIONS = [
     ],
     code: "List<Emp> top3 = emps.stream()\n    .sorted(Comparator.comparing(Emp::getSalary).reversed())\n    .limit(3).collect(Collectors.toList());",
   },
-  {
-    id: "sc-15", topic: "streams", difficulty: "medium", freq: "Very common",
-    companies: ["SERVICE", "BANK", "PRODUCT"],
-    q: "Count the occurrences of each character in a string, sorted by character.",
-    keyPoints: [
-      "chars() → mapToObj to Character; groupingBy into a TreeMap for sorted keys; counting() downstream.",
-      "TreeMap::new as the map factory keeps keys ordered.",
-    ],
-    code: "Map<Character,Long> freq = s.chars().mapToObj(c -> (char) c)\n    .collect(Collectors.groupingBy(c -> c, TreeMap::new, Collectors.counting()));",
-  },
-  {
-    id: "sc-16", topic: "streams", difficulty: "hard", freq: "Very common",
-    companies: ["BANK", "PRODUCT"],
-    q: "Scenario: group employees by department, then within each department find the highest-paid employee.",
-    keyPoints: [
-      "groupingBy(dept) with maxBy(comparing salary) as the downstream collector.",
-      "maxBy returns Optional<Emp>; use collectingAndThen + Optional::get to unwrap if every group is non-empty.",
-    ],
-    code: "Map<String, Emp> topPerDept = emps.stream()\n    .collect(Collectors.groupingBy(Emp::getDept,\n        Collectors.collectingAndThen(\n            Collectors.maxBy(Comparator.comparing(Emp::getSalary)),\n            Optional::get)));",
-  },
-  {
-    id: "sc-17", topic: "streams", difficulty: "medium", freq: "Common",
-    companies: ["BANK", "PRODUCT"],
-    q: "Scenario: from a list of orders, compute total revenue per customer and sort the result by revenue descending.",
-    keyPoints: [
-      "groupingBy(customer) + summingDouble(amount) → Map<Customer, Double>.",
-      "Stream the entrySet, sort by value reversed, collect to a LinkedHashMap to keep order.",
-    ],
-    code: "Map<String,Double> revenue = orders.stream()\n    .collect(Collectors.groupingBy(Order::getCustomer,\n             Collectors.summingDouble(Order::getAmount)));\nLinkedHashMap<String,Double> sorted = revenue.entrySet().stream()\n    .sorted(Map.Entry.<String,Double>comparingByValue().reversed())\n    .collect(Collectors.toMap(Map.Entry::getKey, Map.Entry::getValue,\n             (a,b)->a, LinkedHashMap::new));",
-  },
-  {
-    id: "sc-18", topic: "streams", difficulty: "medium", freq: "Common",
-    companies: ["SERVICE", "BANK", "PRODUCT"],
-    q: "Find the maximum, minimum, sum, count and average of a list of integers in one pass.",
-    keyPoints: [
-      "mapToInt(...).summaryStatistics() returns an IntSummaryStatistics with all of them.",
-      "One traversal — cleaner than five separate stream operations.",
-    ],
-    code: "IntSummaryStatistics stats = nums.stream()\n    .mapToInt(Integer::intValue).summaryStatistics();\n// stats.getMax(), getMin(), getSum(), getCount(), getAverage()",
-  },
-  {
-    id: "sc-19", topic: "streams", difficulty: "hard", freq: "Common",
-    companies: ["BANK", "PRODUCT"],
-    q: "Scenario: count how many employees fall in each salary band (e.g. <50k, 50k–100k, >100k).",
-    keyPoints: [
-      "groupingBy a classifier that returns a band label, with counting() downstream.",
-      "The classifier function maps each salary to its bucket name.",
-    ],
-    code: "Map<String,Long> bands = emps.stream().collect(\n    Collectors.groupingBy(e -> {\n        double s = e.getSalary();\n        if (s < 50_000) return \"<50k\";\n        if (s <= 100_000) return \"50k-100k\";\n        return \">100k\";\n    }, Collectors.counting()));",
-  },
-  {
-    id: "sc-20", topic: "streams", difficulty: "medium", freq: "Common",
-    companies: ["SERVICE", "BANK"],
-    q: "Check whether all / any / none of the elements satisfy a condition.",
-    keyPoints: [
-      "allMatch / anyMatch / noneMatch are short-circuiting terminal ops returning boolean.",
-      "On an empty stream allMatch and noneMatch return true; anyMatch returns false.",
-    ],
-    code: "boolean allActive = users.stream().allMatch(User::isActive);\nboolean anyAdmin  = users.stream().anyMatch(User::isAdmin);\nboolean noneBanned= users.stream().noneMatch(User::isBanned);",
-  },
-  {
-    id: "sc-21", topic: "streams", difficulty: "hard", freq: "Common",
-    companies: ["BANK", "PRODUCT"],
-    q: "Scenario: merge two Map<String,Integer> summing the values of common keys using streams.",
-    keyPoints: [
-      "Stream both entry sets through Collectors.toMap with a merge function (Integer::sum).",
-      "Concat the two entry streams, then collect with a sum merge for duplicate keys.",
-    ],
-    code: "Map<String,Integer> merged = Stream.concat(\n        m1.entrySet().stream(), m2.entrySet().stream())\n    .collect(Collectors.toMap(Map.Entry::getKey, Map.Entry::getValue,\n             Integer::sum));",
-  },
-  {
-    id: "sc-22", topic: "streams", difficulty: "medium", freq: "Very common",
-    companies: ["SERVICE", "BANK", "PRODUCT"],
-    q: "Convert a List<Employee> to a comma-separated String of names, only for active employees.",
-    keyPoints: [
-      "filter → map(name) → collect(joining(\", \")).",
-      "Composes filtering, projection and joining in one pipeline.",
-    ],
-    code: "String names = emps.stream()\n    .filter(Emp::isActive)\n    .map(Emp::getName)\n    .collect(Collectors.joining(\", \"));",
-  },
-  {
-    id: "sc-23", topic: "streams", difficulty: "medium", freq: "Common",
-    companies: ["BANK", "PRODUCT"],
-    q: "Scenario: given a list of transactions, find the three most expensive ones from year 2023.",
-    keyPoints: [
-      "filter by year, sort by amount descending, limit(3), collect.",
-      "Classic multi-step pipeline (filter → sort → limit) — a Java 8 textbook favourite.",
-    ],
-    code: "List<Txn> top = txns.stream()\n    .filter(t -> t.getYear() == 2023)\n    .sorted(Comparator.comparing(Txn::getAmount).reversed())\n    .limit(3)\n    .collect(Collectors.toList());",
-  },
-  {
-    id: "sc-24", topic: "streams", difficulty: "hard", freq: "Occasional",
-    companies: ["BANK", "PRODUCT"],
-    q: "Scenario: find the longest word(s) in a list — handle ties.",
-    keyPoints: [
-      "Find the max length first, then filter words matching that length (handles ties).",
-      "Single max() loses ties; computing max length then filtering keeps all of them.",
-    ],
-    code: "int maxLen = words.stream().mapToInt(String::length).max().orElse(0);\nList<String> longest = words.stream()\n    .filter(w -> w.length() == maxLen)\n    .collect(Collectors.toList());",
-  },
-  {
-    id: "sc-25", topic: "streams", difficulty: "medium", freq: "Common",
-    companies: ["SERVICE", "BANK"],
-    q: "Generate the first N Fibonacci numbers (or N squares) using Stream.iterate.",
-    keyPoints: [
-      "Stream.iterate(seed, next) with limit(N) for infinite-then-bounded generation.",
-      "Java 9+ Stream.iterate(seed, hasNext, next) adds a built-in predicate to stop.",
-    ],
-    code: "Stream.iterate(new long[]{0,1}, f -> new long[]{f[1], f[0]+f[1]})\n    .limit(n).map(f -> f[0])\n    .forEach(System.out::println);",
-  },
-  {
-    id: "sc-26", topic: "streams", difficulty: "hard", freq: "Common",
-    companies: ["BANK", "PRODUCT"],
-    q: "Scenario: build a Map<Department, Long> of headcount but only include departments with more than 5 employees.",
-    keyPoints: [
-      "groupingBy(dept, counting()) first, then filter the resulting entries.",
-      "Use Collectors.filtering only for per-group element filtering; here we filter whole groups afterward (or via collectingAndThen).",
-    ],
-    code: "Map<String,Long> big = emps.stream()\n    .collect(Collectors.groupingBy(Emp::getDept, Collectors.counting()))\n    .entrySet().stream()\n    .filter(e -> e.getValue() > 5)\n    .collect(Collectors.toMap(Map.Entry::getKey, Map.Entry::getValue));",
-  },
 
   // ===================== STRING PROBLEMS (approach + reference solution) =====================
   {
@@ -2366,43 +1899,6 @@ return (int) (sign * r);`,
         permute(a, i + 1, out);
         swap(a, i, j);            // backtrack
     }
-}`,
-  },
-  {
-    id: "strc-16", topic: "string-coding", difficulty: "medium", freq: "Very common",
-    companies: ["SERVICE", "BANK", "PRODUCT"],
-    q: "Group Anagrams — group words that are anagrams of each other.",
-    keyPoints: [
-      "Use the sorted characters as the map key; group originals under it.",
-      "computeIfAbsent keeps it concise. O(n·k log k).",
-    ],
-    code: `public List<List<String>> groupAnagrams(String[] strs) {
-    Map<String, List<String>> map = new HashMap<>();
-    for (String s : strs) {
-        char[] c = s.toCharArray();
-        Arrays.sort(c);
-        map.computeIfAbsent(new String(c), k -> new ArrayList<>()).add(s);
-    }
-    return new ArrayList<>(map.values());
-}`,
-  },
-  {
-    id: "strc-17", topic: "string-coding", difficulty: "easy", freq: "Common",
-    companies: ["SERVICE", "BANK"],
-    q: "Roman to Integer.",
-    keyPoints: [
-      "Map each symbol to its value; scan left to right.",
-      "Subtract when a smaller value precedes a larger (IV, IX). O(n).",
-    ],
-    code: `public int romanToInt(String s) {
-    Map<Character,Integer> m = Map.of('I',1,'V',5,'X',10,'L',50,'C',100,'D',500,'M',1000);
-    int sum = 0;
-    for (int i = 0; i < s.length(); i++) {
-        int v = m.get(s.charAt(i));
-        if (i + 1 < s.length() && v < m.get(s.charAt(i + 1))) sum -= v;
-        else sum += v;
-    }
-    return sum;
 }`,
   },
 
@@ -2637,1359 +2133,6 @@ for (int[] row : m)
         int t = row[i]; row[i] = row[j]; row[j] = t;       // reverse row
     }`,
   },
-  {
-    id: "arrc-17", topic: "array-coding", difficulty: "hard", freq: "Very common",
-    companies: ["PRODUCT", "BANK"],
-    q: "Trapping Rain Water — water trapped between bars.",
-    keyPoints: [
-      "Two pointers from both ends; move the side with the smaller height inward.",
-      "Track leftMax/rightMax; trapped = max-so-far − current height. O(n), O(1).",
-    ],
-    code: `public int trap(int[] h) {
-    int l = 0, r = h.length - 1, leftMax = 0, rightMax = 0, water = 0;
-    while (l < r) {
-        if (h[l] < h[r]) {
-            if (h[l] >= leftMax) leftMax = h[l]; else water += leftMax - h[l];
-            l++;
-        } else {
-            if (h[r] >= rightMax) rightMax = h[r]; else water += rightMax - h[r];
-            r--;
-        }
-    }
-    return water;
-}`,
-  },
-
-  // ===================== DOCKER & CONTAINERS =====================
-  {
-    id: "dkr-1", topic: "docker", difficulty: "easy", freq: "Very common",
-    companies: ["SERVICE", "BANK", "PRODUCT"],
-    q: "What is the difference between a container and a virtual machine?",
-    a: "A VM virtualizes hardware: each VM runs a full guest OS on top of a hypervisor — heavyweight (GBs), slow to boot, strong isolation. A container virtualizes the OS: it packages an app and its dependencies but SHARES the host kernel, using Linux namespaces (isolation) and cgroups (resource limits). Containers are lightweight (MBs), start in milliseconds, and are denser, which is why they suit microservices. The trade-off is weaker isolation (shared kernel) than a VM.",
-    keyPoints: [
-      "VM = virtualized hardware + full guest OS (heavy).",
-      "Container = shares host kernel via namespaces + cgroups (light).",
-      "Containers: faster boot, higher density; VMs: stronger isolation.",
-    ],
-  },
-  {
-    id: "dkr-2", topic: "docker", difficulty: "easy", freq: "Very common",
-    companies: ["SERVICE", "BANK", "PRODUCT"],
-    q: "Image vs container — what's the difference?",
-    a: "An image is an immutable, read-only template (the app + dependencies + filesystem layers + metadata) built from a Dockerfile. A container is a running (or stopped) INSTANCE of an image — the image plus a thin writable layer on top. One image can spawn many containers. Analogy: image is the class, container is the object; or image is the executable, container is the process.",
-    keyPoints: [
-      "Image = immutable template (read-only layers).",
-      "Container = runnable instance + a writable layer.",
-      "One image → many containers (like class → objects).",
-    ],
-  },
-  {
-    id: "dkr-3", topic: "docker", difficulty: "medium", freq: "Very common",
-    companies: ["SERVICE", "BANK", "PRODUCT"],
-    q: "Explain Docker image layers and the build cache.",
-    a: "Each instruction in a Dockerfile (FROM, RUN, COPY) creates a read-only layer; layers are cached and shared between images (content-addressable). On rebuild, Docker reuses cached layers up to the first changed instruction, then rebuilds everything after it. So ORDER matters: put rarely-changing steps (install dependencies) BEFORE frequently-changing ones (COPY source code). For Java/Maven, copy pom.xml and run dependency resolution first, then copy src — so code changes don't re-download dependencies.",
-    keyPoints: [
-      "Each Dockerfile instruction = a cached, shareable layer.",
-      "Cache invalidates from the first changed instruction onward.",
-      "Order stable steps first; copy deps before source for fast rebuilds.",
-    ],
-    code: "# Cache-friendly Java build:\nCOPY pom.xml .\nRUN mvn dependency:go-offline   # cached unless pom changes\nCOPY src ./src\nRUN mvn package -o",
-  },
-  {
-    id: "dkr-4", topic: "docker", difficulty: "medium", freq: "Very common",
-    companies: ["BANK", "PRODUCT"],
-    q: "What is a multi-stage build and why is it important for Java apps?",
-    a: "A multi-stage build uses multiple FROM statements: an early 'build' stage with the full JDK + Maven/Gradle compiles the app, then a final lightweight stage (JRE or distroless) copies ONLY the built artifact (the jar) from the build stage. This keeps the final image small and secure — no compilers, build tools, or source code shipped to production. It's the standard way to ship a Spring Boot jar: a 600MB build image yields a ~150MB runtime image.",
-    keyPoints: [
-      "Multiple FROM stages; copy only artifacts into the final image.",
-      "Smaller, more secure runtime (no JDK/Maven/source).",
-      "Use JRE or distroless/Alpine base for the final stage.",
-    ],
-    code: "FROM maven:3.9-eclipse-temurin-21 AS build\nWORKDIR /app\nCOPY . .\nRUN mvn -q package -DskipTests\n\nFROM eclipse-temurin:21-jre-alpine\nCOPY --from=build /app/target/app.jar app.jar\nENTRYPOINT [\"java\",\"-jar\",\"/app.jar\"]",
-  },
-  {
-    id: "dkr-5", topic: "docker", difficulty: "medium", freq: "Very common",
-    companies: ["SERVICE", "BANK", "PRODUCT"],
-    q: "CMD vs ENTRYPOINT vs RUN — when is each used?",
-    a: "RUN executes at BUILD time and creates a new layer (install packages, compile). ENTRYPOINT and CMD execute at RUNTIME when the container starts. ENTRYPOINT sets the fixed executable; CMD sets default arguments (or a default command). If both are present, CMD's values are passed as arguments to ENTRYPOINT. CLI args to `docker run` override CMD but not ENTRYPOINT (unless --entrypoint). Use exec form (JSON array) so signals reach the process for graceful shutdown.",
-    keyPoints: [
-      "RUN = build-time (creates layers); CMD/ENTRYPOINT = runtime.",
-      "ENTRYPOINT = the executable; CMD = default args overridable at run.",
-      "Prefer exec form [\"java\",\"-jar\",...] for proper signal handling.",
-    ],
-  },
-  {
-    id: "dkr-6", topic: "docker", difficulty: "medium", freq: "Common",
-    companies: ["SERVICE", "BANK", "PRODUCT"],
-    q: "How do you persist data in Docker? Volumes vs bind mounts.",
-    a: "Container writable layers are ephemeral — deleted when the container is removed. To persist data you mount external storage. A VOLUME is managed by Docker (stored under /var/lib/docker/volumes), portable, and the preferred way for databases and stateful data. A BIND MOUNT maps a specific host path into the container — great for local dev (live-editing source) but ties you to the host's filesystem layout. tmpfs mounts live in memory (sensitive, non-persistent data).",
-    keyPoints: [
-      "Container fs is ephemeral; use volumes/mounts for persistence.",
-      "Volume = Docker-managed, portable (DBs, prod data).",
-      "Bind mount = host path (dev/live-reload); tmpfs = in-memory.",
-    ],
-  },
-  {
-    id: "dkr-7", topic: "docker", difficulty: "medium", freq: "Common",
-    companies: ["BANK", "PRODUCT"],
-    q: "Explain Docker networking modes (bridge, host, none) and container-to-container communication.",
-    a: "bridge (default) puts containers on a private virtual network with NAT to the host; you publish ports with -p host:container. host shares the host's network stack directly (no isolation, no port mapping — faster, Linux only). none disables networking. For container-to-container communication, create a user-defined bridge network: containers on it can reach each other by CONTAINER NAME via Docker's built-in DNS (e.g. a Spring app connects to 'postgres:5432'). The default bridge does NOT provide name resolution.",
-    keyPoints: [
-      "bridge = default, isolated + port publishing; host = no isolation.",
-      "User-defined bridge gives DNS by container name.",
-      "Default bridge has no automatic name resolution → use a custom network.",
-    ],
-  },
-  {
-    id: "dkr-8", topic: "docker", difficulty: "medium", freq: "Common",
-    companies: ["SERVICE", "BANK", "PRODUCT"],
-    q: "What is Docker Compose and when do you use it?",
-    a: "Docker Compose defines and runs MULTI-container applications via a single YAML file (services, networks, volumes, env, depends_on). `docker compose up` starts the whole stack — e.g. a Spring Boot app + PostgreSQL + Redis — with one command, on a shared network where services reach each other by name. It's ideal for local development and integration testing. For production orchestration across many hosts you'd use Kubernetes (or Docker Swarm), not Compose.",
-    keyPoints: [
-      "Declarative multi-container stacks in one YAML file.",
-      "Single command brings up app + DB + cache on a shared network.",
-      "Great for dev/CI; use Kubernetes for prod orchestration.",
-    ],
-    code: "services:\n  app:\n    build: .\n    ports: [\"8080:8080\"]\n    depends_on: [db]\n    environment:\n      SPRING_DATASOURCE_URL: jdbc:postgresql://db:5432/app\n  db:\n    image: postgres:16\n    volumes: [\"pgdata:/var/lib/postgresql/data\"]\nvolumes:\n  pgdata:",
-  },
-  {
-    id: "dkr-9", topic: "docker", difficulty: "hard", freq: "Common",
-    companies: ["BANK", "PRODUCT"],
-    q: "How do you reduce Docker image size and improve security?",
-    a: "Use a minimal base (alpine, distroless, or eclipse-temurin:*-jre rather than the JDK), multi-stage builds to drop build tools, combine RUN commands and clean package caches in the same layer, add a .dockerignore to keep build context lean, and copy only what you need. For security: run as a NON-root user (USER directive), pin image tags/digests (not :latest), scan images (Trivy/Snyk/docker scout), and don't bake secrets into layers (they persist in history) — pass them at runtime or via a secrets manager.",
-    keyPoints: [
-      "Minimal base + multi-stage + .dockerignore + fewer layers.",
-      "Run as non-root USER; avoid :latest, pin digests.",
-      "Never bake secrets into layers; scan images (Trivy/scout).",
-    ],
-  },
-  {
-    id: "dkr-10", topic: "docker", difficulty: "medium", freq: "Common",
-    companies: ["SERVICE", "BANK", "PRODUCT"],
-    q: "Scenario: your Spring Boot container exits immediately on startup. How do you debug it?",
-    a: "Start with `docker ps -a` to see the exit code, then `docker logs <container>` for the stack trace — usually the app crashed (bad config, can't reach DB, port conflict, OOM). Common causes: the JVM was killed by the container memory limit (check exit 137 = OOMKilled), a missing/incorrect env var or datasource URL, or the ENTRYPOINT using shell form so signals/args were mishandled. You can override the entrypoint to get a shell: `docker run -it --entrypoint sh image` to inspect the filesystem, env, and run java manually.",
-    keyPoints: [
-      "docker ps -a (exit code) → docker logs (stack trace).",
-      "Exit 137 = OOMKilled (raise memory or tune -XX:MaxRAMPercentage).",
-      "Override entrypoint with sh to inspect env/config interactively.",
-    ],
-  },
-  {
-    id: "dkr-11", topic: "docker", difficulty: "hard", freq: "Occasional",
-    companies: ["BANK", "PRODUCT"],
-    q: "Scenario: a Java container gets OOMKilled even though heap looks fine. Why, and how do you size it?",
-    a: "The JVM counts only the heap in -Xmx, but the container's memory limit covers heap + metaspace + thread stacks + JIT code cache + direct/native buffers + GC overhead. If -Xmx is set near the container limit, non-heap memory pushes total usage past the cgroup limit and the kernel OOM-kills the process (exit 137). Modern JVMs (8u191+/11+) are container-aware and read cgroup limits; prefer -XX:MaxRAMPercentage=75 over a fixed -Xmx so the JVM leaves headroom for non-heap memory. Also right-size the container limit, not just the heap.",
-    keyPoints: [
-      "Container limit = heap + metaspace + stacks + native + GC, not just -Xmx.",
-      "Set -XX:MaxRAMPercentage (container-aware) instead of fixed -Xmx.",
-      "Exit code 137 = OOMKilled by the kernel/cgroup.",
-    ],
-  },
-  {
-    id: "dkr-12", topic: "docker", difficulty: "easy", freq: "Common",
-    companies: ["SERVICE", "BANK"],
-    q: "What does a typical Dockerfile for a Spring Boot app look like, and what are EXPOSE / WORKDIR / COPY for?",
-    a: "WORKDIR sets the working directory (and creates it). COPY brings files from the build context into the image. EXPOSE documents which port the app listens on (it's metadata only — it does NOT publish the port; you still need -p at run time). ENTRYPOINT/CMD define the start command. A typical flow: pick a JRE base, set WORKDIR, COPY the jar, EXPOSE 8080, then ENTRYPOINT java -jar app.jar.",
-    keyPoints: [
-      "WORKDIR = working dir; COPY = files into image.",
-      "EXPOSE is documentation only — use -p to actually publish.",
-      "ADD vs COPY: prefer COPY (ADD has surprising url/tar behavior).",
-    ],
-  },
-
-  // ===================== AWS & CLOUD =====================
-  {
-    id: "aws-1", topic: "aws", difficulty: "easy", freq: "Very common",
-    companies: ["SERVICE", "BANK", "PRODUCT"],
-    q: "Explain the core AWS compute, storage and database services you'd use for a Java app.",
-    a: "Compute: EC2 (virtual servers, full control), ECS/EKS (containers), Lambda (serverless functions), Elastic Beanstalk (managed app platform). Storage: S3 (object storage for files/backups/static assets), EBS (block storage attached to EC2), EFS (shared file system). Database: RDS (managed relational — MySQL/Postgres/Aurora), DynamoDB (managed NoSQL key-value), ElastiCache (Redis/Memcached). A typical Spring Boot deployment: app on EC2/ECS, data in RDS, files in S3, cache in ElastiCache, fronted by an ALB.",
-    keyPoints: [
-      "Compute: EC2 / ECS-EKS / Lambda / Beanstalk.",
-      "Storage: S3 (object), EBS (block), EFS (shared file).",
-      "DB: RDS/Aurora (SQL), DynamoDB (NoSQL), ElastiCache (cache).",
-    ],
-  },
-  {
-    id: "aws-2", topic: "aws", difficulty: "medium", freq: "Very common",
-    companies: ["SERVICE", "BANK", "PRODUCT"],
-    q: "What is IAM? Explain roles vs users vs policies, and least privilege.",
-    a: "IAM (Identity and Access Management) controls WHO can do WHAT on which resources. A USER is a long-lived identity (a person/app) with credentials. A ROLE is an identity with temporary credentials that can be ASSUMED — used for EC2/Lambda/services so you never hardcode keys (the service assumes a role and gets rotating short-lived credentials). A POLICY is a JSON document granting/denying actions on resources, attached to users/roles/groups. Least privilege = grant only the permissions actually needed. Best practice: apps use roles, not access keys.",
-    keyPoints: [
-      "User = long-lived identity; Role = assumable, temporary creds.",
-      "Policy = JSON of allowed/denied actions on resources.",
-      "Give EC2/Lambda a role — never hardcode access keys.",
-      "Follow least privilege; use groups for user permissions.",
-    ],
-  },
-  {
-    id: "aws-3", topic: "aws", difficulty: "medium", freq: "Very common",
-    companies: ["SERVICE", "BANK", "PRODUCT"],
-    q: "What is S3 and what are its key features (durability, classes, consistency)?",
-    a: "S3 is object storage: you store objects (files up to 5TB) in buckets, accessed via a key, with 11 nines (99.999999999%) durability. Storage classes trade cost vs access: Standard, Standard-IA (infrequent access), Intelligent-Tiering (auto), Glacier/Deep Archive (archival). Features: versioning, lifecycle policies (auto-transition/expire objects), server-side encryption (SSE-S3/KMS), and fine-grained access via bucket policies/IAM. Since Dec 2020 S3 provides strong read-after-write consistency. It is NOT a filesystem — it's a flat key-value object store (prefixes simulate folders).",
-    keyPoints: [
-      "Object store, 11 nines durability, buckets + keys.",
-      "Classes: Standard/IA/Intelligent-Tiering/Glacier for cost tiers.",
-      "Versioning, lifecycle, encryption; strong read-after-write consistency.",
-    ],
-  },
-  {
-    id: "aws-4", topic: "aws", difficulty: "medium", freq: "Very common",
-    companies: ["SERVICE", "BANK", "PRODUCT"],
-    q: "Difference between horizontal and vertical scaling, and how does Auto Scaling + Load Balancer fit?",
-    a: "Vertical scaling (scale up) = a bigger instance (more CPU/RAM) — simple but has a ceiling and downtime to resize. Horizontal scaling (scale out) = more instances — elastic and fault-tolerant, the cloud-native approach. An Auto Scaling Group adds/removes EC2 instances based on metrics (CPU, request count) between min/max bounds; an Elastic Load Balancer (ALB for HTTP) spreads traffic across healthy instances and runs health checks. For this to work the app should be STATELESS (session state in Redis/DynamoDB, not on the instance).",
-    keyPoints: [
-      "Vertical = bigger box (limited); Horizontal = more boxes (elastic).",
-      "ASG scales instance count on metrics; ELB/ALB distributes traffic.",
-      "Stateless apps required — externalize session state.",
-    ],
-  },
-  {
-    id: "aws-5", topic: "aws", difficulty: "medium", freq: "Very common",
-    companies: ["BANK", "PRODUCT"],
-    q: "What is a VPC? Explain subnets, security groups vs NACLs.",
-    a: "A VPC is your own isolated virtual network in AWS. You divide it into SUBNETS: public subnets (route to an Internet Gateway — for load balancers/bastions) and private subnets (no direct internet; outbound via a NAT Gateway — for app servers and databases). SECURITY GROUPS are stateful firewalls at the instance/ENI level (return traffic auto-allowed, allow-rules only). NETWORK ACLs are stateless firewalls at the subnet level (allow AND deny rules, evaluated in order, return traffic must be explicitly allowed). Typical design: ALB in public subnets, app + RDS in private subnets.",
-    keyPoints: [
-      "VPC = isolated network; public (IGW) vs private (NAT) subnets.",
-      "Security Group = stateful, instance-level, allow-only.",
-      "NACL = stateless, subnet-level, allow + deny, ordered.",
-      "Keep databases in private subnets.",
-    ],
-  },
-  {
-    id: "aws-6", topic: "aws", difficulty: "medium", freq: "Very common",
-    companies: ["SERVICE", "BANK", "PRODUCT"],
-    q: "What is AWS Lambda and when is serverless a good (or bad) fit?",
-    a: "Lambda runs your function code on demand without managing servers; you pay per request + execution time, and it auto-scales to zero and up massively. Good fit: event-driven and bursty workloads (S3 upload triggers, API backends via API Gateway, scheduled jobs, stream processing). Bad fit: long-running tasks (15-min max), very latency-sensitive paths hurt by COLD STARTS (JVM cold starts are notably slow — mitigate with provisioned concurrency, SnapStart for Java, or smaller runtimes), and steady high-throughput workloads that are cheaper on always-on compute.",
-    keyPoints: [
-      "Event-driven, auto-scaling, pay-per-use, no servers to manage.",
-      "Great for bursty/event/scheduled work; 15-min max runtime.",
-      "Java cold starts are slow → provisioned concurrency / SnapStart.",
-    ],
-  },
-  {
-    id: "aws-7", topic: "aws", difficulty: "medium", freq: "Common",
-    companies: ["BANK", "PRODUCT"],
-    q: "SQS vs SNS vs Kinesis — when do you use each?",
-    a: "SQS is a managed message QUEUE for decoupling producers/consumers — one consumer group pulls and processes each message (point-to-point), with at-least-once delivery (Standard) or exactly-once ordering (FIFO). SNS is pub/sub: one message FANS OUT to many subscribers (push to SQS queues, Lambda, email, HTTP). Kinesis is for high-throughput real-time STREAMING data (analytics, logs, clickstreams) with ordered, replayable shards and multiple consumers reading the same stream. Common pattern: SNS→multiple SQS queues (fan-out + buffering).",
-    keyPoints: [
-      "SQS = queue, decoupling, one logical consumer pulls.",
-      "SNS = pub/sub fan-out to many subscribers (push).",
-      "Kinesis = ordered, replayable real-time streaming.",
-    ],
-  },
-  {
-    id: "aws-8", topic: "aws", difficulty: "hard", freq: "Common",
-    companies: ["BANK", "PRODUCT"],
-    q: "Scenario: how would you deploy a containerized Spring Boot microservice on AWS for production?",
-    a: "Build the image (multi-stage), push to ECR (Elastic Container Registry). Run it on ECS Fargate (serverless containers, no EC2 to manage) or EKS (Kubernetes) for more control. Front it with an Application Load Balancer doing health checks and TLS termination; put tasks in PRIVATE subnets across multiple AZs for HA, ALB in public subnets. Store config/secrets in Parameter Store / Secrets Manager (injected at runtime, not baked in). Use RDS Multi-AZ for the database, CloudWatch for logs/metrics/alarms, an Auto Scaling policy on CPU/request count, and a CI/CD pipeline (CodePipeline/GitHub Actions) to build, scan, and roll out.",
-    keyPoints: [
-      "Image → ECR → ECS Fargate/EKS, multi-AZ private subnets.",
-      "ALB (health checks, TLS) in public subnets; tasks in private.",
-      "Secrets in Secrets Manager/Parameter Store; RDS Multi-AZ.",
-      "CloudWatch monitoring + autoscaling + CI/CD rollout.",
-    ],
-  },
-  {
-    id: "aws-9", topic: "aws", difficulty: "medium", freq: "Common",
-    companies: ["SERVICE", "BANK", "PRODUCT"],
-    q: "What are Regions and Availability Zones, and why do they matter for high availability?",
-    a: "A Region is a geographic area (e.g. ap-south-1 Mumbai); an Availability Zone is one or more discrete data centers within a region, isolated for failure but linked by low-latency networking. Deploying across MULTIPLE AZs gives high availability: if one AZ fails, instances in another keep serving (this is what RDS Multi-AZ, ASGs across AZs, and ELBs do). Multiple REGIONS give disaster recovery and lower latency to global users but add complexity and data-transfer cost. Choose region by latency, data-residency/compliance, and service availability.",
-    keyPoints: [
-      "Region = geographic area; AZ = isolated DC(s) within it.",
-      "Multi-AZ = high availability (survive a DC failure).",
-      "Multi-region = DR + global latency; pick region for compliance/latency.",
-    ],
-  },
-  {
-    id: "aws-10", topic: "aws", difficulty: "easy", freq: "Common",
-    companies: ["SERVICE", "BANK", "PRODUCT"],
-    q: "How should a Java app on AWS handle credentials and configuration securely?",
-    a: "Never hardcode AWS keys or DB passwords in code/images. For AWS API calls, attach an IAM ROLE to the EC2 instance / ECS task / Lambda — the AWS SDK's default credential provider chain automatically picks up the rotating temporary credentials. For app config and secrets (DB passwords, API keys), use Systems Manager Parameter Store (config) or Secrets Manager (secrets, with automatic rotation), read at startup or runtime. Encrypt with KMS. This keeps secrets out of source control and Docker layers.",
-    keyPoints: [
-      "Use IAM roles + SDK default credential chain (no hardcoded keys).",
-      "Secrets Manager (rotation) / Parameter Store for config + secrets.",
-      "Encrypt with KMS; keep secrets out of code and image layers.",
-    ],
-  },
-  {
-    id: "aws-11", topic: "aws", difficulty: "medium", freq: "Common",
-    companies: ["BANK", "PRODUCT"],
-    q: "RDS vs DynamoDB — how do you choose?",
-    a: "RDS is managed RELATIONAL (MySQL/Postgres/Aurora): use it when you need ACID transactions, complex joins, a fixed schema, and SQL — the default for most business apps. It scales reads with read replicas and HA with Multi-AZ, but write scaling is bounded by the instance. DynamoDB is managed NoSQL key-value/document: single-digit-millisecond latency at any scale, serverless, great for high-throughput, simple access patterns (user sessions, carts, IoT). The catch: you must DESIGN AROUND ACCESS PATTERNS (partition key choice), joins/ad-hoc queries are awkward, and it's eventually consistent by default.",
-    keyPoints: [
-      "RDS: relational, ACID, joins, SQL — default for business data.",
-      "DynamoDB: NoSQL, massive scale, low latency, design by access pattern.",
-      "RDS read replicas + Multi-AZ; DynamoDB needs good partition keys.",
-    ],
-  },
-  {
-    id: "aws-12", topic: "aws", difficulty: "medium", freq: "Common",
-    companies: ["SERVICE", "BANK", "PRODUCT"],
-    q: "What is CloudWatch and how do you monitor a Java app in production?",
-    a: "CloudWatch is AWS's observability service: METRICS (CPU, memory, request count, custom app metrics), LOGS (centralized via the CloudWatch agent or container log drivers), ALARMS (trigger on thresholds → SNS notification or auto-scaling action), and DASHBOARDS. For a Spring Boot app: ship logs to CloudWatch Logs, publish Micrometer/Actuator metrics, set alarms on error rate / p99 latency / CPU, and use X-Ray for distributed tracing across microservices. Alarms can drive Auto Scaling and page on-call.",
-    keyPoints: [
-      "Metrics + Logs + Alarms + Dashboards in one place.",
-      "Spring Boot: Actuator/Micrometer metrics + logs to CloudWatch.",
-      "Alarms → SNS/auto-scaling; X-Ray for distributed tracing.",
-    ],
-  },
-
-  // ===================== LINKED LIST PROBLEMS =====================
-  {
-    id: "ll-1", topic: "linkedlist", difficulty: "easy", freq: "Very common",
-    companies: ["SERVICE", "BANK", "PRODUCT"],
-    q: "Reverse a singly linked list (iterative).",
-    keyPoints: [
-      "Three pointers: prev, curr(head), next — re-point each node backward.",
-      "O(n) time, O(1) space; recursive version is O(n) stack.",
-    ],
-    code: `public ListNode reverseList(ListNode head) {
-    ListNode prev = null;
-    while (head != null) {
-        ListNode next = head.next;
-        head.next = prev;
-        prev = head;
-        head = next;
-    }
-    return prev;
-}`,
-  },
-  {
-    id: "ll-2", topic: "linkedlist", difficulty: "medium", freq: "Very common",
-    companies: ["SERVICE", "BANK", "PRODUCT"],
-    q: "Detect a cycle in a linked list (Floyd's tortoise & hare).",
-    keyPoints: [
-      "Slow moves 1 step, fast moves 2; if they meet, a cycle exists.",
-      "O(n) time, O(1) space. To find cycle start: reset one pointer to head, advance both 1 step.",
-    ],
-    code: `public boolean hasCycle(ListNode head) {
-    ListNode slow = head, fast = head;
-    while (fast != null && fast.next != null) {
-        slow = slow.next;
-        fast = fast.next.next;
-        if (slow == fast) return true;
-    }
-    return false;
-}`,
-  },
-  {
-    id: "ll-3", topic: "linkedlist", difficulty: "easy", freq: "Very common",
-    companies: ["SERVICE", "BANK", "PRODUCT"],
-    q: "Merge two sorted linked lists.",
-    keyPoints: [
-      "Dummy head + tail pointer; splice the smaller node each step.",
-      "Attach the remaining list at the end. O(n+m).",
-    ],
-    code: `public ListNode mergeTwoLists(ListNode l1, ListNode l2) {
-    ListNode dummy = new ListNode(-1), curr = dummy;
-    while (l1 != null && l2 != null) {
-        if (l1.val < l2.val) { curr.next = l1; l1 = l1.next; }
-        else                 { curr.next = l2; l2 = l2.next; }
-        curr = curr.next;
-    }
-    curr.next = (l1 != null) ? l1 : l2;
-    return dummy.next;
-}`,
-  },
-  {
-    id: "ll-4", topic: "linkedlist", difficulty: "medium", freq: "Common",
-    companies: ["BANK", "PRODUCT"],
-    q: "Check if a linked list is a palindrome.",
-    keyPoints: [
-      "Find middle (slow/fast), reverse the second half, compare both halves.",
-      "O(n) time, O(1) space (restore the list afterward if required).",
-    ],
-    code: `public boolean isPalindrome(ListNode head) {
-    if (head == null || head.next == null) return true;
-    ListNode slow = head, fast = head;
-    while (fast != null && fast.next != null) { slow = slow.next; fast = fast.next.next; }
-    ListNode second = reverse(slow), first = head;
-    while (second != null) {
-        if (first.val != second.val) return false;
-        first = first.next; second = second.next;
-    }
-    return true;
-}`,
-  },
-  {
-    id: "ll-5", topic: "linkedlist", difficulty: "medium", freq: "Very common",
-    companies: ["SERVICE", "BANK", "PRODUCT"],
-    q: "Remove the Nth node from the end of a list.",
-    keyPoints: [
-      "Two-pointer gap: advance first n+1 steps, then move both until first is null.",
-      "Dummy node handles removing the head cleanly. One pass, O(n).",
-    ],
-    code: `public ListNode removeNthFromEnd(ListNode head, int n) {
-    ListNode dummy = new ListNode(0); dummy.next = head;
-    ListNode first = dummy, second = dummy;
-    for (int i = 0; i <= n; i++) first = first.next;
-    while (first != null) { first = first.next; second = second.next; }
-    second.next = second.next.next;
-    return dummy.next;
-}`,
-  },
-
-  // ===================== TREE PROBLEMS =====================
-  {
-    id: "tree-1", topic: "tree", difficulty: "easy", freq: "Very common",
-    companies: ["SERVICE", "BANK", "PRODUCT"],
-    q: "Invert / mirror a binary tree.",
-    keyPoints: [
-      "Recursively swap left and right subtrees.",
-      "O(n) time, O(h) recursion stack.",
-    ],
-    code: `public TreeNode invertTree(TreeNode root) {
-    if (root == null) return null;
-    TreeNode left = invertTree(root.left);
-    TreeNode right = invertTree(root.right);
-    root.left = right; root.right = left;
-    return root;
-}`,
-  },
-  {
-    id: "tree-2", topic: "tree", difficulty: "medium", freq: "Very common",
-    companies: ["SERVICE", "BANK", "PRODUCT"],
-    q: "Level-order (BFS) traversal of a binary tree.",
-    keyPoints: [
-      "Queue; process one full level per outer iteration using queue.size().",
-      "Collect each level into its own list. O(n).",
-    ],
-    code: `public List<List<Integer>> levelOrder(TreeNode root) {
-    List<List<Integer>> res = new ArrayList<>();
-    if (root == null) return res;
-    Queue<TreeNode> q = new LinkedList<>();
-    q.offer(root);
-    while (!q.isEmpty()) {
-        int size = q.size();
-        List<Integer> level = new ArrayList<>();
-        for (int i = 0; i < size; i++) {
-            TreeNode n = q.poll();
-            level.add(n.val);
-            if (n.left != null) q.offer(n.left);
-            if (n.right != null) q.offer(n.right);
-        }
-        res.add(level);
-    }
-    return res;
-}`,
-  },
-  {
-    id: "tree-3", topic: "tree", difficulty: "medium", freq: "Very common",
-    companies: ["BANK", "PRODUCT"],
-    q: "Lowest Common Ancestor (LCA) of two nodes in a binary tree.",
-    keyPoints: [
-      "Recurse; if root is p or q (or null), return it.",
-      "If both subtrees return non-null, root is the LCA. O(n).",
-    ],
-    code: `public TreeNode lowestCommonAncestor(TreeNode root, TreeNode p, TreeNode q) {
-    if (root == null || root == p || root == q) return root;
-    TreeNode left = lowestCommonAncestor(root.left, p, q);
-    TreeNode right = lowestCommonAncestor(root.right, p, q);
-    if (left != null && right != null) return root;
-    return (left != null) ? left : right;
-}`,
-  },
-  {
-    id: "tree-4", topic: "tree", difficulty: "medium", freq: "Common",
-    companies: ["BANK", "PRODUCT"],
-    q: "Diameter of a binary tree (longest path between any two nodes).",
-    keyPoints: [
-      "DFS returns height; at each node update max with left+right heights.",
-      "Diameter counts edges = max(left+right). O(n).",
-    ],
-    code: `int max = 0;
-public int diameterOfBinaryTree(TreeNode root) { depth(root); return max; }
-private int depth(TreeNode node) {
-    if (node == null) return 0;
-    int left = depth(node.left), right = depth(node.right);
-    max = Math.max(max, left + right);
-    return 1 + Math.max(left, right);
-}`,
-  },
-  {
-    id: "tree-5", topic: "tree", difficulty: "easy", freq: "Common",
-    companies: ["SERVICE", "BANK"],
-    q: "Check if a binary tree is symmetric (a mirror of itself).",
-    keyPoints: [
-      "Compare left subtree with right subtree mirrored.",
-      "isMirror(a.left, b.right) && isMirror(a.right, b.left). O(n).",
-    ],
-    code: `public boolean isSymmetric(TreeNode root) {
-    return root == null || isMirror(root.left, root.right);
-}
-private boolean isMirror(TreeNode t1, TreeNode t2) {
-    if (t1 == null && t2 == null) return true;
-    if (t1 == null || t2 == null) return false;
-    return t1.val == t2.val
-        && isMirror(t1.left, t2.right)
-        && isMirror(t1.right, t2.left);
-}`,
-  },
-
-  // ===================== STACK & QUEUE PROBLEMS =====================
-  {
-    id: "sq-1", topic: "stack-queue", difficulty: "easy", freq: "Very common",
-    companies: ["SERVICE", "BANK", "PRODUCT"],
-    q: "Valid parentheses — check balanced brackets.",
-    keyPoints: [
-      "Push openers; on a closer, pop and verify it matches.",
-      "Valid only if the stack is empty at the end. O(n).",
-    ],
-    code: `public boolean isValid(String s) {
-    Deque<Character> st = new ArrayDeque<>();
-    Map<Character,Character> pair = Map.of(')','(', ']','[', '}','{');
-    for (char c : s.toCharArray()) {
-        if (c=='('||c=='['||c=='{') st.push(c);
-        else if (st.isEmpty() || st.pop() != pair.get(c)) return false;
-    }
-    return st.isEmpty();
-}`,
-  },
-  {
-    id: "sq-2", topic: "stack-queue", difficulty: "medium", freq: "Very common",
-    companies: ["BANK", "PRODUCT"],
-    q: "Design a Min Stack (push/pop/top/getMin in O(1)).",
-    keyPoints: [
-      "Second stack tracks the running minimum.",
-      "Push to minStack when val <= current min; pop in lockstep.",
-    ],
-    code: `class MinStack {
-    Deque<Integer> stack = new ArrayDeque<>(), min = new ArrayDeque<>();
-    public void push(int v) { stack.push(v); if (min.isEmpty() || v <= min.peek()) min.push(v); }
-    public void pop() { if (stack.pop().equals(min.peek())) min.pop(); }
-    public int top() { return stack.peek(); }
-    public int getMin() { return min.peek(); }
-}`,
-  },
-  {
-    id: "sq-3", topic: "stack-queue", difficulty: "medium", freq: "Common",
-    companies: ["BANK", "PRODUCT"],
-    q: "Evaluate Reverse Polish Notation (postfix expression).",
-    keyPoints: [
-      "Push numbers; on an operator pop two operands, apply, push result.",
-      "Mind operand order for - and /. O(n).",
-    ],
-    code: `public int evalRPN(String[] tokens) {
-    Deque<Integer> st = new ArrayDeque<>();
-    for (String t : tokens) {
-        switch (t) {
-            case "+": st.push(st.pop() + st.pop()); break;
-            case "*": st.push(st.pop() * st.pop()); break;
-            case "-": { int b = st.pop(); st.push(st.pop() - b); break; }
-            case "/": { int b = st.pop(); st.push(st.pop() / b); break; }
-            default: st.push(Integer.parseInt(t));
-        }
-    }
-    return st.pop();
-}`,
-  },
-  {
-    id: "sq-4", topic: "stack-queue", difficulty: "medium", freq: "Common",
-    companies: ["SERVICE", "BANK"],
-    q: "Implement a Queue using two stacks.",
-    keyPoints: [
-      "Push to 'in'; on pop/peek, if 'out' empty, drain 'in' into 'out'.",
-      "Amortized O(1) per operation.",
-    ],
-    code: `class MyQueue {
-    Deque<Integer> in = new ArrayDeque<>(), out = new ArrayDeque<>();
-    public void push(int x) { in.push(x); }
-    public int pop() { peek(); return out.pop(); }
-    public int peek() {
-        if (out.isEmpty()) while (!in.isEmpty()) out.push(in.pop());
-        return out.peek();
-    }
-    public boolean empty() { return in.isEmpty() && out.isEmpty(); }
-}`,
-  },
-  {
-    id: "sq-5", topic: "stack-queue", difficulty: "hard", freq: "Common",
-    companies: ["PRODUCT", "BANK"],
-    q: "Sliding window maximum (max of every window of size k).",
-    keyPoints: [
-      "Monotonic decreasing deque of indices; front is the window max.",
-      "Evict out-of-window indices from the front, smaller values from the back. O(n).",
-    ],
-    code: `public int[] maxSlidingWindow(int[] nums, int k) {
-    Deque<Integer> dq = new ArrayDeque<>();
-    int n = nums.length; int[] res = new int[n - k + 1];
-    for (int i = 0; i < n; i++) {
-        while (!dq.isEmpty() && dq.peekFirst() <= i - k) dq.pollFirst();
-        while (!dq.isEmpty() && nums[dq.peekLast()] < nums[i]) dq.pollLast();
-        dq.offerLast(i);
-        if (i >= k - 1) res[i - k + 1] = nums[dq.peekFirst()];
-    }
-    return res;
-}`,
-  },
-
-  // ===================== DYNAMIC PROGRAMMING =====================
-  {
-    id: "dp-1", topic: "dp", difficulty: "easy", freq: "Very common",
-    companies: ["SERVICE", "BANK", "PRODUCT"],
-    q: "Climbing stairs — number of ways to reach step n (1 or 2 steps).",
-    keyPoints: [
-      "Fibonacci recurrence: ways(n) = ways(n-1) + ways(n-2).",
-      "Two rolling variables → O(n) time, O(1) space.",
-    ],
-    code: `public int climbStairs(int n) {
-    if (n <= 2) return n;
-    int first = 1, second = 2;
-    for (int i = 3; i <= n; i++) { int third = first + second; first = second; second = third; }
-    return second;
-}`,
-  },
-  {
-    id: "dp-2", topic: "dp", difficulty: "medium", freq: "Very common",
-    companies: ["SERVICE", "BANK", "PRODUCT"],
-    q: "House Robber — max sum without robbing two adjacent houses.",
-    keyPoints: [
-      "dp[i] = max(skip = dp[i-1], take = dp[i-2] + nums[i]).",
-      "Track two previous values → O(n) time, O(1) space.",
-    ],
-    code: `public int rob(int[] nums) {
-    int prev1 = 0, prev2 = 0;
-    for (int num : nums) {
-        int temp = prev1;
-        prev1 = Math.max(prev2 + num, prev1);
-        prev2 = temp;
-    }
-    return prev1;
-}`,
-  },
-  {
-    id: "dp-3", topic: "dp", difficulty: "medium", freq: "Very common",
-    companies: ["BANK", "PRODUCT"],
-    q: "Coin Change — fewest coins to make an amount (−1 if impossible).",
-    keyPoints: [
-      "Bottom-up dp[a] = min coins for amount a; init to 'infinity'.",
-      "dp[a] = min(dp[a], 1 + dp[a - coin]). O(amount × coins).",
-    ],
-    code: `public int coinChange(int[] coins, int amount) {
-    int[] dp = new int[amount + 1];
-    Arrays.fill(dp, amount + 1);
-    dp[0] = 0;
-    for (int a = 1; a <= amount; a++)
-        for (int c : coins)
-            if (a - c >= 0) dp[a] = Math.min(dp[a], 1 + dp[a - c]);
-    return dp[amount] > amount ? -1 : dp[amount];
-}`,
-  },
-  {
-    id: "dp-4", topic: "dp", difficulty: "hard", freq: "Common",
-    companies: ["PRODUCT", "BANK"],
-    q: "Longest Increasing Subsequence (LIS).",
-    keyPoints: [
-      "Patience sorting: keep a 'tails' list, binary-search each number's slot.",
-      "Replace or append; list size is the LIS length. O(n log n).",
-    ],
-    code: `public int lengthOfLIS(int[] nums) {
-    List<Integer> sub = new ArrayList<>();
-    for (int num : nums) {
-        int i = Collections.binarySearch(sub, num);
-        if (i < 0) i = -(i + 1);
-        if (i == sub.size()) sub.add(num); else sub.set(i, num);
-    }
-    return sub.size();
-}`,
-  },
-  {
-    id: "dp-5", topic: "dp", difficulty: "hard", freq: "Common",
-    companies: ["PRODUCT", "BANK"],
-    q: "Edit Distance — min insert/delete/replace to convert word1 → word2.",
-    keyPoints: [
-      "2D dp; dp[i][j] = edits for prefixes of length i and j.",
-      "Match → carry diagonal; else 1 + min(replace, delete, insert). O(m×n).",
-    ],
-    code: `public int minDistance(String w1, String w2) {
-    int m = w1.length(), n = w2.length();
-    int[][] dp = new int[m + 1][n + 1];
-    for (int i = 0; i <= m; i++) dp[i][0] = i;
-    for (int j = 0; j <= n; j++) dp[0][j] = j;
-    for (int i = 1; i <= m; i++)
-        for (int j = 1; j <= n; j++)
-            dp[i][j] = w1.charAt(i-1) == w2.charAt(j-1)
-                ? dp[i-1][j-1]
-                : 1 + Math.min(dp[i-1][j-1], Math.min(dp[i-1][j], dp[i][j-1]));
-    return dp[m][n];
-}`,
-  },
-
-  // ===================== GREEDY =====================
-  {
-    id: "gr-1", topic: "greedy", difficulty: "medium", freq: "Very common",
-    companies: ["SERVICE", "BANK", "PRODUCT"],
-    q: "Jump Game — can you reach the last index?",
-    keyPoints: [
-      "Track the farthest reachable index as you scan.",
-      "If current index exceeds reach, you're stuck → false. O(n).",
-    ],
-    code: `public boolean canJump(int[] nums) {
-    int reach = 0;
-    for (int i = 0; i < nums.length; i++) {
-        if (i > reach) return false;
-        reach = Math.max(reach, i + nums[i]);
-    }
-    return true;
-}`,
-  },
-  {
-    id: "gr-2", topic: "greedy", difficulty: "medium", freq: "Common",
-    companies: ["BANK", "PRODUCT"],
-    q: "Gas Station — find the start index to complete the circuit.",
-    keyPoints: [
-      "If total gas < total cost, impossible (−1).",
-      "Reset start to i+1 whenever the running tank goes negative. O(n).",
-    ],
-    code: `public int canCompleteCircuit(int[] gas, int[] cost) {
-    int total = 0, curr = 0, start = 0;
-    for (int i = 0; i < gas.length; i++) {
-        int diff = gas[i] - cost[i];
-        total += diff; curr += diff;
-        if (curr < 0) { start = i + 1; curr = 0; }
-    }
-    return total < 0 ? -1 : start;
-}`,
-  },
-  {
-    id: "gr-3", topic: "greedy", difficulty: "medium", freq: "Very common",
-    companies: ["SERVICE", "BANK", "PRODUCT"],
-    q: "Merge overlapping intervals.",
-    keyPoints: [
-      "Sort by start; merge when current end >= next start.",
-      "Otherwise push current and move on. O(n log n).",
-    ],
-    code: `public int[][] merge(int[][] intervals) {
-    Arrays.sort(intervals, (a, b) -> a[0] - b[0]);
-    List<int[]> res = new ArrayList<>();
-    int[] cur = intervals[0];
-    for (int i = 1; i < intervals.length; i++) {
-        if (cur[1] >= intervals[i][0]) cur[1] = Math.max(cur[1], intervals[i][1]);
-        else { res.add(cur); cur = intervals[i]; }
-    }
-    res.add(cur);
-    return res.toArray(new int[0][]);
-}`,
-  },
-  {
-    id: "gr-4", topic: "greedy", difficulty: "medium", freq: "Common",
-    companies: ["BANK", "PRODUCT"],
-    q: "Non-overlapping intervals — min removals to make the rest non-overlapping.",
-    keyPoints: [
-      "Sort by END time; greedily keep the earliest-finishing interval.",
-      "Count overlaps where next start < current end. O(n log n).",
-    ],
-    code: `public int eraseOverlapIntervals(int[][] intervals) {
-    Arrays.sort(intervals, (a, b) -> a[1] - b[1]);
-    int end = intervals[0][1], count = 0;
-    for (int i = 1; i < intervals.length; i++) {
-        if (intervals[i][0] < end) count++;
-        else end = intervals[i][1];
-    }
-    return count;
-}`,
-  },
-  {
-    id: "gr-5", topic: "greedy", difficulty: "easy", freq: "Common",
-    companies: ["SERVICE"],
-    q: "Assign Cookies — maximize content children with greedy matching.",
-    keyPoints: [
-      "Sort greed and sizes; give the smallest sufficient cookie to each child.",
-      "Two pointers advance together. O(n log n).",
-    ],
-    code: `public int findContentChildren(int[] g, int[] s) {
-    Arrays.sort(g); Arrays.sort(s);
-    int child = 0, cookie = 0;
-    while (child < g.length && cookie < s.length) {
-        if (s[cookie] >= g[child]) child++;
-        cookie++;
-    }
-    return child;
-}`,
-  },
-
-  // ===================== BACKTRACKING =====================
-  {
-    id: "bt-1", topic: "backtracking", difficulty: "medium", freq: "Very common",
-    companies: ["SERVICE", "BANK", "PRODUCT"],
-    q: "Generate all subsets (the power set).",
-    keyPoints: [
-      "At each index, choose to include or skip; record the path at every node.",
-      "Add a copy of the path, recurse forward, then backtrack. O(2^n).",
-    ],
-    code: `public List<List<Integer>> subsets(int[] nums) {
-    List<List<Integer>> res = new ArrayList<>();
-    backtrack(0, nums, new ArrayList<>(), res);
-    return res;
-}
-void backtrack(int start, int[] nums, List<Integer> path, List<List<Integer>> res) {
-    res.add(new ArrayList<>(path));
-    for (int i = start; i < nums.length; i++) {
-        path.add(nums[i]);
-        backtrack(i + 1, nums, path, res);
-        path.remove(path.size() - 1);
-    }
-}`,
-  },
-  {
-    id: "bt-2", topic: "backtracking", difficulty: "medium", freq: "Very common",
-    companies: ["SERVICE", "BANK", "PRODUCT"],
-    q: "Generate all permutations of an array.",
-    keyPoints: [
-      "Build paths of full length; skip elements already used.",
-      "Add/recurse/remove to backtrack. O(n!).",
-    ],
-    code: `public List<List<Integer>> permute(int[] nums) {
-    List<List<Integer>> res = new ArrayList<>();
-    backtrack(nums, new ArrayList<>(), res);
-    return res;
-}
-void backtrack(int[] nums, List<Integer> path, List<List<Integer>> res) {
-    if (path.size() == nums.length) { res.add(new ArrayList<>(path)); return; }
-    for (int num : nums) {
-        if (path.contains(num)) continue;
-        path.add(num);
-        backtrack(nums, path, res);
-        path.remove(path.size() - 1);
-    }
-}`,
-  },
-  {
-    id: "bt-3", topic: "backtracking", difficulty: "hard", freq: "Common",
-    companies: ["PRODUCT", "BANK"],
-    q: "Word Search — does a word exist in a 2D grid (4-directional)?",
-    keyPoints: [
-      "DFS from each cell; mark visited with a sentinel, restore on backtrack.",
-      "Prune on bounds and character mismatch. O(m·n·4^L).",
-    ],
-    code: `public boolean exist(char[][] b, String word) {
-    for (int i = 0; i < b.length; i++)
-        for (int j = 0; j < b[0].length; j++)
-            if (dfs(b, word, 0, i, j)) return true;
-    return false;
-}
-boolean dfs(char[][] b, String w, int k, int i, int j) {
-    if (k == w.length()) return true;
-    if (i<0||j<0||i>=b.length||j>=b[0].length||b[i][j]!=w.charAt(k)) return false;
-    char tmp = b[i][j]; b[i][j] = '#';
-    boolean found = dfs(b,w,k+1,i+1,j)||dfs(b,w,k+1,i-1,j)||dfs(b,w,k+1,i,j+1)||dfs(b,w,k+1,i,j-1);
-    b[i][j] = tmp;
-    return found;
-}`,
-  },
-  {
-    id: "bt-4", topic: "backtracking", difficulty: "hard", freq: "Occasional",
-    companies: ["PRODUCT", "BANK"],
-    q: "N-Queens — place N queens so none attack each other.",
-    keyPoints: [
-      "Place one queen per row; check column and both diagonals for safety.",
-      "Backtrack on conflict. O(n!).",
-    ],
-    code: `void backtrack(int row, char[][] board, List<List<String>> res) {
-    if (row == board.length) { res.add(build(board)); return; }
-    for (int col = 0; col < board.length; col++) {
-        if (isSafe(board, row, col)) {
-            board[row][col] = 'Q';
-            backtrack(row + 1, board, res);
-            board[row][col] = '.';
-        }
-    }
-}`,
-  },
-  {
-    id: "bt-5", topic: "backtracking", difficulty: "hard", freq: "Occasional",
-    companies: ["PRODUCT"],
-    q: "Palindrome Partitioning — all ways to split a string into palindromes.",
-    keyPoints: [
-      "Try every prefix; if it's a palindrome, recurse on the remainder.",
-      "Add/recurse/remove to backtrack. Exponential.",
-    ],
-    code: `void backtrack(int start, String s, List<String> path, List<List<String>> res) {
-    if (start == s.length()) { res.add(new ArrayList<>(path)); return; }
-    for (int end = start + 1; end <= s.length(); end++) {
-        String sub = s.substring(start, end);
-        if (isPalindrome(sub)) {
-            path.add(sub);
-            backtrack(end, s, path, res);
-            path.remove(path.size() - 1);
-        }
-    }
-}`,
-  },
-
-  // ===================== LLD / DESIGN PROBLEMS =====================
-  {
-    id: "ds-1", topic: "design", difficulty: "hard", freq: "Very common",
-    companies: ["PRODUCT", "BANK"],
-    q: "Design an LRU Cache with O(1) get and put.",
-    keyPoints: [
-      "HashMap (key → node) + doubly-linked list ordered by recency.",
-      "On access, move node to front; on overflow, evict the tail.",
-      "Interview shortcut: LinkedHashMap(accessOrder=true) + removeEldestEntry.",
-    ],
-    code: `class LRUCache {
-    private final int cap;
-    private final LinkedHashMap<Integer,Integer> map;
-    public LRUCache(int capacity) {
-        cap = capacity;
-        map = new LinkedHashMap<>(16, 0.75f, true) {
-            protected boolean removeEldestEntry(Map.Entry<Integer,Integer> e) {
-                return size() > cap;
-            }
-        };
-    }
-    public int get(int k) { return map.getOrDefault(k, -1); }
-    public void put(int k, int v) { map.put(k, v); }
-}`,
-  },
-  {
-    id: "ds-2", topic: "design", difficulty: "medium", freq: "Common",
-    companies: ["PRODUCT", "BANK"],
-    q: "Design a Hit Counter (hits in the last 5 minutes / 300s).",
-    keyPoints: [
-      "Queue of timestamps; evict entries older than 300s on each query.",
-      "getHits returns the queue size. Circular array is the bounded variant.",
-    ],
-    code: `class HitCounter {
-    Queue<Integer> q = new LinkedList<>();
-    public void hit(int timestamp) { q.offer(timestamp); }
-    public int getHits(int timestamp) {
-        while (!q.isEmpty() && timestamp - q.peek() >= 300) q.poll();
-        return q.size();
-    }
-}`,
-  },
-  {
-    id: "ds-3", topic: "design", difficulty: "hard", freq: "Common",
-    companies: ["PRODUCT"],
-    q: "Design Twitter (post tweet, follow/unfollow, news feed of 10).",
-    keyPoints: [
-      "Users → set of followees + linked list of tweets with a global timestamp.",
-      "News feed merges followees' tweets via a max-heap on timestamp (k-way merge).",
-    ],
-    code: `public List<Integer> getNewsFeed(int userId) {
-    List<Integer> res = new ArrayList<>();
-    PriorityQueue<Tweet> pq = new PriorityQueue<>((a, b) -> b.time - a.time);
-    for (int uid : userMap.get(userId).followed) {
-        Tweet t = userMap.get(uid).head;
-        if (t != null) pq.offer(t);
-    }
-    while (!pq.isEmpty() && res.size() < 10) {
-        Tweet t = pq.poll();
-        res.add(t.id);
-        if (t.next != null) pq.offer(t.next);
-    }
-    return res;
-}`,
-  },
-  {
-    id: "ds-4", topic: "design", difficulty: "medium", freq: "Common",
-    companies: ["SERVICE", "PRODUCT"],
-    q: "Design a Parking Lot (OOP modeling).",
-    keyPoints: [
-      "Vehicle hierarchy (abstract Vehicle → Car/Bike/Truck) + enum VehicleType.",
-      "ParkingSpot typed by size; ParkingLot finds the first compatible free spot.",
-      "Shows encapsulation + polymorphism — a classic LLD warm-up.",
-    ],
-    code: `enum VehicleType { BIKE, CAR, TRUCK }
-abstract class Vehicle { VehicleType type; String license; }
-class ParkingSpot {
-    VehicleType type; boolean free = true; Vehicle vehicle;
-    boolean park(Vehicle v) {
-        if (free && v.type == type) { vehicle = v; free = false; return true; }
-        return false;
-    }
-    void leave() { vehicle = null; free = true; }
-}`,
-  },
-  {
-    id: "ds-5", topic: "design", difficulty: "medium", freq: "Common",
-    companies: ["PRODUCT", "BANK"],
-    q: "Design a URL Shortener (encode / decode).",
-    keyPoints: [
-      "Map a unique incrementing id to a base-36/62 code; store code → longUrl.",
-      "Keep a reverse map to dedupe identical long URLs.",
-      "At scale: distributed id generation (Snowflake) + persistent KV store.",
-    ],
-    code: `class Codec {
-    Map<String,String> map = new HashMap<>(), reverse = new HashMap<>();
-    String base = "http://short.ly/"; int id = 1;
-    public String encode(String longUrl) {
-        if (reverse.containsKey(longUrl)) return base + reverse.get(longUrl);
-        String code = Integer.toString(id++, 36);
-        map.put(code, longUrl); reverse.put(longUrl, code);
-        return base + code;
-    }
-    public String decode(String shortUrl) {
-        return map.getOrDefault(shortUrl.replace(base, ""), "");
-    }
-}`,
-  },
-
-  // ===================== SPRING & SPRING BOOT =====================
-  {
-    id: "spr-1", topic: "spring", difficulty: "easy", freq: "Very common",
-    companies: ["SERVICE", "BANK", "PRODUCT"],
-    q: "What is IoC and Dependency Injection? What are the types of DI?",
-    a: "Inversion of Control means the framework — not your code — creates and wires objects; the Spring IoC container owns the lifecycle of beans. Dependency Injection is how IoC is achieved: dependencies are handed to a class rather than created by it. Types: constructor injection (preferred — enforces mandatory deps, supports immutability and final fields, testable), setter injection (for optional deps), and field injection (@Autowired on a field — concise but discouraged because it hides dependencies and can't be made final or easily unit-tested).",
-    keyPoints: [
-      "IoC: container creates/wires/manages beans, not your code.",
-      "DI types: constructor (preferred), setter, field.",
-      "Constructor injection → immutable, mandatory deps, easy testing.",
-    ],
-  },
-  {
-    id: "spr-2", topic: "spring", difficulty: "medium", freq: "Very common",
-    companies: ["SERVICE", "BANK", "PRODUCT"],
-    q: "Is a Spring singleton bean thread-safe? How is it different from a Java singleton?",
-    a: "No — a Spring singleton bean is NOT automatically thread-safe. 'Singleton' in Spring means ONE instance PER container (per ApplicationContext), not the JVM-wide Java singleton. Because that one instance is shared across all threads, any mutable instance state is a race condition. Keep beans stateless (most services are), or use local variables, ThreadLocal, or synchronization for any shared mutable state. Java's singleton (Effective Java enum/holder) guarantees one instance per classloader and you implement it yourself.",
-    keyPoints: [
-      "Spring singleton = one bean per container, not per JVM.",
-      "Shared instance → NOT thread-safe if it has mutable state.",
-      "Keep beans stateless; scope to prototype/request when stateful.",
-    ],
-  },
-  {
-    id: "spr-3", topic: "spring", difficulty: "medium", freq: "Common",
-    companies: ["SERVICE", "BANK", "PRODUCT"],
-    q: "Explain the Spring bean lifecycle.",
-    a: "The container: (1) instantiates the bean, (2) populates dependencies (DI), (3) calls aware interfaces (BeanNameAware, ApplicationContextAware), (4) runs BeanPostProcessor's before-init, (5) calls @PostConstruct / afterPropertiesSet (InitializingBean) / custom init-method, (6) runs BeanPostProcessor's after-init (where AOP proxies are created), then the bean is ready for use. On shutdown it calls @PreDestroy / destroy() (DisposableBean) / custom destroy-method. @PostConstruct and @PreDestroy are the idiomatic hooks.",
-    keyPoints: [
-      "Instantiate → inject deps → aware → post-process → init → use → destroy.",
-      "Init hooks: @PostConstruct / InitializingBean / init-method.",
-      "BeanPostProcessor after-init is where AOP proxies wrap the bean.",
-    ],
-  },
-  {
-    id: "spr-4", topic: "spring", difficulty: "medium", freq: "Common",
-    companies: ["SERVICE", "BANK", "PRODUCT"],
-    q: "If two classes implement the same interface, how does Spring know which to inject? (@Primary vs @Qualifier)",
-    a: "By default Spring throws NoUniqueBeanDefinitionException when two candidates match by type. Resolve it with: @Primary on one bean to make it the default winner, or @Qualifier(\"beanName\") at the injection point to pick a specific bean explicitly. @Qualifier overrides @Primary. Spring also falls back to matching by the field/parameter name (convention over configuration) if it equals a bean name. @Primary is for a sensible global default; @Qualifier is for per-injection precision.",
-    keyPoints: [
-      "Two candidates by type → NoUniqueBeanDefinitionException.",
-      "@Primary = default winner; @Qualifier = explicit pick (overrides @Primary).",
-      "Falls back to bean-name matching the variable name.",
-    ],
-  },
-  {
-    id: "spr-5", topic: "spring", difficulty: "easy", freq: "Very common",
-    companies: ["SERVICE", "BANK", "PRODUCT"],
-    q: "@Controller vs @RestController, and @ResponseBody vs ResponseEntity.",
-    a: "@Controller returns view names (MVC); to return data you annotate methods with @ResponseBody. @RestController = @Controller + @ResponseBody on every method, so it's the default for REST APIs returning JSON/XML. @ResponseBody serializes the return value into the response body. ResponseEntity wraps the body AND lets you control the HTTP status code and headers (e.g. return 201 Created with a Location header, or 404). Use ResponseEntity when you need status/header control; a plain body when 200 OK is fine.",
-    keyPoints: [
-      "@RestController = @Controller + @ResponseBody (REST default).",
-      "@ResponseBody serializes the return into the body.",
-      "ResponseEntity adds status code + headers control.",
-    ],
-  },
-  {
-    id: "spr-6", topic: "spring", difficulty: "easy", freq: "Very common",
-    companies: ["SERVICE", "BANK", "PRODUCT"],
-    q: "@RequestParam vs @PathVariable vs @RequestBody.",
-    a: "@PathVariable binds a value embedded in the URL path — /users/{id} → @PathVariable Long id, used to identify a resource. @RequestParam binds a query string or form parameter — /users?active=true → @RequestParam boolean active, used for filters/options. @RequestBody binds and deserializes the HTTP request body (usually JSON) into an object — used for POST/PUT payloads. Rule of thumb: path = which resource, query param = how to filter, body = the data being sent.",
-    keyPoints: [
-      "@PathVariable: value in the URL path (resource identity).",
-      "@RequestParam: query/form parameter (filters/options).",
-      "@RequestBody: deserialized request body (POST/PUT payload).",
-    ],
-    code: "@PostMapping(\"/users/{deptId}\")\nUser create(@PathVariable Long deptId,\n            @RequestParam boolean notify,\n            @RequestBody UserDto dto) { ... }",
-  },
-  {
-    id: "spr-7", topic: "spring", difficulty: "medium", freq: "Common",
-    companies: ["SERVICE", "BANK", "PRODUCT"],
-    q: "What does @SpringBootApplication do?",
-    a: "It's a convenience meta-annotation combining three: @SpringBootConfiguration (a @Configuration marking the class as a source of bean definitions), @EnableAutoConfiguration (Boot's auto-configuration — it inspects the classpath and configures beans automatically, e.g. a DataSource if a JDBC driver is present), and @ComponentScan (scans the package of the annotated class and its sub-packages for @Component/@Service/@Repository/@Controller). That's why you place the main class at the root package.",
-    keyPoints: [
-      "= @SpringBootConfiguration + @EnableAutoConfiguration + @ComponentScan.",
-      "Auto-config wires beans based on classpath + properties.",
-      "Component scan starts at the main class's package — keep it at the root.",
-    ],
-  },
-  {
-    id: "spr-8", topic: "spring", difficulty: "medium", freq: "Very common",
-    companies: ["SERVICE", "BANK", "PRODUCT"],
-    q: "How do you handle exceptions globally in Spring Boot REST? (@ControllerAdvice)",
-    a: "Use a @RestControllerAdvice (= @ControllerAdvice + @ResponseBody) class with @ExceptionHandler methods that map specific exceptions to consistent error responses (status + body). This centralizes error handling instead of scattering try/catch in controllers. You can extend ResponseEntityExceptionHandler to also customize Spring's built-in exceptions (e.g. MethodArgumentNotValidException from @Valid failures). Return a ResponseEntity with the right HTTP status and a structured error DTO.",
-    keyPoints: [
-      "@RestControllerAdvice + @ExceptionHandler = centralized handling.",
-      "Map each exception to a status + structured error body.",
-      "Extend ResponseEntityExceptionHandler for validation/Spring exceptions.",
-    ],
-    code: "@RestControllerAdvice\nclass GlobalHandler {\n  @ExceptionHandler(ResourceNotFoundException.class)\n  ResponseEntity<ApiError> handle(ResourceNotFoundException e) {\n    return ResponseEntity.status(404).body(new ApiError(e.getMessage()));\n  }\n}",
-  },
-  {
-    id: "spr-9", topic: "spring", difficulty: "medium", freq: "Common",
-    companies: ["BANK", "PRODUCT"],
-    q: "Which HTTP methods are idempotent, and why does it matter?",
-    a: "Idempotent = the same request made multiple times has the same effect as once. GET, PUT, DELETE, HEAD, OPTIONS are idempotent; POST and PATCH are generally NOT. GET is also 'safe' (no side effects). It matters for retries: a client or proxy can safely retry an idempotent request after a timeout without risking duplicate effects (e.g. PUT /users/1 sets the same state; POST /users twice creates two users). Designing idempotent endpoints (or idempotency keys for POST) is key to resilient distributed systems.",
-    keyPoints: [
-      "Idempotent: GET, PUT, DELETE, HEAD, OPTIONS. Not: POST, PATCH.",
-      "GET is also safe (no side effects).",
-      "Enables safe retries; use idempotency keys for POST.",
-    ],
-  },
-  {
-    id: "spr-10", topic: "spring", difficulty: "medium", freq: "Common",
-    companies: ["BANK", "PRODUCT"],
-    q: "How does @Cacheable work, and what's the difference vs @CachePut and @CacheEvict?",
-    a: "@Cacheable wraps a method: on call it checks the cache by key; on a hit it returns the cached value and SKIPS the method; on a miss it runs the method and stores the result. @CachePut ALWAYS executes the method and updates the cache (use for updates so the cache stays fresh). @CacheEvict removes entries (e.g. on delete). It works via a Spring AOP proxy + CacheInterceptor + CacheManager — so self-invocation (calling the cached method from within the same bean) bypasses the proxy and the cache. Use 'unless'/'condition' for conditional caching.",
-    keyPoints: [
-      "@Cacheable: return cached / run-and-store on miss (skips method on hit).",
-      "@CachePut: always run + update cache; @CacheEvict: remove entries.",
-      "Proxy-based → self-invocation bypasses caching.",
-    ],
-  },
-  {
-    id: "spr-11", topic: "spring", difficulty: "hard", freq: "Common",
-    companies: ["BANK", "PRODUCT"],
-    q: "How do you secure a REST API with Spring Security + JWT? Describe the JWT structure.",
-    a: "Stateless auth: the client logs in, the server issues a signed JWT, and the client sends it in the Authorization: Bearer header on each request. A filter (OncePerRequestFilter) validates the token's signature and expiry, then sets the SecurityContext — no server-side session. A JWT has three base64url parts: HEADER (alg, type), PAYLOAD (claims — sub, roles, exp, iat), and SIGNATURE (HMAC/RSA over header.payload, proving integrity). Keep tokens short-lived and use refresh tokens; never put secrets in the payload (it's only encoded, not encrypted).",
-    keyPoints: [
-      "Stateless: signed JWT in Bearer header, validated per request by a filter.",
-      "Structure: header.payload.signature (base64url), signature = integrity.",
-      "Short-lived access + refresh tokens; payload is readable, not secret.",
-    ],
-  },
-
-  // ===================== JPA & HIBERNATE =====================
-  {
-    id: "jpa-1", topic: "jpa", difficulty: "easy", freq: "Very common",
-    companies: ["SERVICE", "BANK", "PRODUCT"],
-    q: "Difference between JPA, Hibernate, and Spring Data JPA.",
-    a: "JPA is the SPECIFICATION (an interface/standard for ORM — annotations like @Entity, the EntityManager API). Hibernate is the most popular IMPLEMENTATION (provider) of that spec, plus extra features. Spring Data JPA is an ABSTRACTION on top of JPA/Hibernate that removes boilerplate: you declare a repository interface (extends JpaRepository) and Spring generates the implementation, including derived query methods (findByEmailAndActive). So: JPA = contract, Hibernate = engine, Spring Data JPA = convenience layer.",
-    keyPoints: [
-      "JPA = specification; Hibernate = implementation; Spring Data JPA = abstraction.",
-      "Spring Data generates repositories + derived queries.",
-      "You can swap providers because you code to the JPA API.",
-    ],
-  },
-  {
-    id: "jpa-2", topic: "jpa", difficulty: "medium", freq: "Very common",
-    companies: ["SERVICE", "BANK", "PRODUCT"],
-    q: "FetchType.LAZY vs EAGER — and the N+1 query problem.",
-    a: "LAZY loads an association only when first accessed; EAGER loads it immediately with the parent. Defaults: @OneToMany/@ManyToMany are LAZY, @ManyToOne/@OneToOne are EAGER. Prefer LAZY to avoid loading unneeded data. The N+1 problem: you fetch N parents (1 query), then accessing each parent's lazy collection fires 1 query per parent → N+1 queries, killing performance. Fixes: a JOIN FETCH JPQL query, an @EntityGraph, or batch fetching (@BatchSize / hibernate.default_batch_fetch_size). EAGER can also cause N+1, so it's not a fix.",
-    keyPoints: [
-      "LAZY = load on access; EAGER = load with parent.",
-      "N+1: 1 query for parents + N for each lazy association.",
-      "Fix with JOIN FETCH, @EntityGraph, or batch fetching.",
-    ],
-  },
-  {
-    id: "jpa-3", topic: "jpa", difficulty: "medium", freq: "Common",
-    companies: ["BANK", "PRODUCT"],
-    q: "@GeneratedValue strategies — IDENTITY vs SEQUENCE vs AUTO vs TABLE.",
-    a: "IDENTITY uses an auto-increment column; simple but disables JDBC batch inserts (the DB assigns the id on insert, so Hibernate can't batch). SEQUENCE uses a DB sequence — preferred for performance because Hibernate can pre-fetch ids (allocationSize) and batch inserts; default on Postgres/Oracle. TABLE emulates a sequence with a separate table — portable but slow (extra locking), rarely used. AUTO lets the provider pick based on the dialect. For high-throughput inserts, SEQUENCE with a tuned allocationSize wins.",
-    keyPoints: [
-      "IDENTITY: auto-increment, simple, but no batch inserts.",
-      "SEQUENCE: DB sequence, pre-fetchable, batch-friendly (preferred).",
-      "TABLE: portable but slow; AUTO: provider chooses.",
-    ],
-  },
-  {
-    id: "jpa-4", topic: "jpa", difficulty: "medium", freq: "Common",
-    companies: ["BANK", "PRODUCT"],
-    q: "Optimistic vs pessimistic locking in JPA.",
-    a: "Optimistic locking assumes conflicts are rare: a @Version field (int/timestamp) is checked on update; if another transaction changed the row meanwhile, the version mismatch throws OptimisticLockException and you retry. No DB locks held — great for high concurrency / low contention. Pessimistic locking actually locks the row in the DB (@Lock(PESSIMISTIC_WRITE) → SELECT ... FOR UPDATE) so others block until you commit — use for high-contention critical sections where retries are costly, at the price of reduced concurrency and deadlock risk.",
-    keyPoints: [
-      "Optimistic: @Version check on update, retry on conflict (no locks).",
-      "Pessimistic: DB row lock (SELECT FOR UPDATE), others block.",
-      "Optimistic for low contention; pessimistic for hot rows.",
-    ],
-  },
-  {
-    id: "jpa-5", topic: "jpa", difficulty: "medium", freq: "Common",
-    companies: ["SERVICE", "BANK"],
-    q: "What do @Transactional and @Modifying do, and what is the transient keyword?",
-    a: "@Transactional wraps a method in a DB transaction — commit on success, rollback on a RuntimeException (checked exceptions don't roll back by default). It's proxy-based, so self-invocation and private methods bypass it. @Modifying marks a custom @Query that's an UPDATE/DELETE (not a SELECT) so Spring Data executes it as an update and you can clear the persistence context. The Java 'transient' keyword excludes a field from Java serialization; in JPA, @Transient excludes a field from persistence (don't confuse the two — they're different mechanisms).",
-    keyPoints: [
-      "@Transactional: commit/rollback boundary; rolls back on RuntimeException.",
-      "@Modifying: marks @Query as UPDATE/DELETE.",
-      "transient (Java) = skip serialization; @Transient (JPA) = skip persistence.",
-    ],
-  },
-  {
-    id: "jpa-6", topic: "jpa", difficulty: "hard", freq: "Occasional",
-    companies: ["PRODUCT", "BANK"],
-    q: "How do you avoid infinite recursion in JSON serialization of bidirectional relationships?",
-    a: "A bidirectional @OneToMany/@ManyToOne serialized to JSON loops forever (parent → children → parent → ...). Fixes: @JsonManagedReference on the parent side + @JsonBackReference on the child (the back side is omitted); or @JsonIgnore on one side; or @JsonIdentityInfo to serialize by id reference; best practice is to serialize DTOs instead of entities, decoupling the API from the persistence model and avoiding lazy-loading-in-serializer issues entirely.",
-    keyPoints: [
-      "Bidirectional entity → JSON infinite loop.",
-      "@JsonManagedReference/@JsonBackReference or @JsonIgnore breaks the cycle.",
-      "Best: map entities to DTOs for the API layer.",
-    ],
-  },
-
-  // ===================== SQL & DATABASES =====================
-  {
-    id: "sql-1", topic: "sql", difficulty: "easy", freq: "Very common",
-    companies: ["SERVICE", "BANK", "PRODUCT"],
-    q: "DELETE vs TRUNCATE vs DROP, and WHERE vs HAVING.",
-    a: "DELETE is DML — removes rows (optionally with WHERE), is logged per row, fires triggers, and can be rolled back. TRUNCATE is DDL — removes ALL rows quickly by deallocating pages, resets identity, can't use WHERE, doesn't fire row triggers, and is usually not transactional. DROP removes the whole table (structure + data). WHERE filters individual rows BEFORE grouping; HAVING filters GROUPS after GROUP BY (it can use aggregate functions like COUNT/SUM, which WHERE cannot).",
-    keyPoints: [
-      "DELETE: row-by-row DML, WHERE, rollback-able, triggers.",
-      "TRUNCATE: fast DDL, all rows, resets identity, no WHERE.",
-      "WHERE filters rows pre-grouping; HAVING filters groups post-aggregation.",
-    ],
-  },
-  {
-    id: "sql-2", topic: "sql", difficulty: "easy", freq: "Very common",
-    companies: ["SERVICE", "BANK", "PRODUCT"],
-    q: "Explain INNER JOIN vs LEFT JOIN, and the SQL order of execution.",
-    a: "INNER JOIN returns only rows with a match in both tables; LEFT (OUTER) JOIN returns all rows from the left table plus matched right rows (NULLs where no match) — used to find 'all X, with their Y if any', e.g. all employees including those without a department. Logical order of execution: FROM → JOIN → WHERE → GROUP BY → HAVING → SELECT → ORDER BY → LIMIT/OFFSET. That's why you can't use a SELECT alias in WHERE (WHERE runs before SELECT) but can in ORDER BY.",
-    keyPoints: [
-      "INNER = matches only; LEFT = all left rows + matched right (NULLs).",
-      "Order: FROM→JOIN→WHERE→GROUP BY→HAVING→SELECT→ORDER BY→LIMIT.",
-      "Aliases from SELECT aren't visible in WHERE, only in ORDER BY.",
-    ],
-  },
-  {
-    id: "sql-3", topic: "sql", difficulty: "easy", freq: "Very common",
-    companies: ["SERVICE", "BANK", "PRODUCT"],
-    q: "What are the ACID properties?",
-    a: "Atomicity — a transaction is all-or-nothing (rolls back fully on failure). Consistency — a transaction moves the DB from one valid state to another, respecting constraints. Isolation — concurrent transactions don't interfere; the effect is as if serial (governed by isolation levels that trade off against anomalies like dirty/non-repeatable reads and phantoms). Durability — once committed, changes survive crashes (persisted via write-ahead log). ACID is the relational guarantee; many NoSQL stores relax it for availability/scale (BASE).",
-    keyPoints: [
-      "Atomicity, Consistency, Isolation, Durability.",
-      "Isolation levels trade anomalies (dirty/non-repeatable/phantom) vs concurrency.",
-      "Durability via write-ahead logging; NoSQL often relaxes ACID (BASE).",
-    ],
-  },
-  {
-    id: "sql-4", topic: "sql", difficulty: "medium", freq: "Very common",
-    companies: ["SERVICE", "BANK", "PRODUCT"],
-    q: "What is indexing? When should you add an index, and what are the downsides?",
-    a: "An index (usually a B-tree) is a sorted auxiliary structure that lets the DB find rows without a full table scan — turning O(n) lookups into O(log n). Add indexes on columns used in WHERE, JOIN, and ORDER BY, and on foreign keys. Downsides: every INSERT/UPDATE/DELETE must also update the indexes (slower writes) and indexes consume storage. So index read-heavy query columns, not everything. Composite indexes follow the left-most prefix rule; over-indexing hurts write throughput.",
-    keyPoints: [
-      "B-tree index → O(log n) lookups, avoids full scans.",
-      "Index WHERE/JOIN/ORDER BY/FK columns.",
-      "Cost: slower writes + storage; don't over-index.",
-    ],
-  },
-  {
-    id: "sql-5", topic: "sql", difficulty: "hard", freq: "Very common",
-    companies: ["BANK", "PRODUCT"],
-    q: "Find the Nth highest salary, and the top-3 earners per department.",
-    a: "Nth highest: use DENSE_RANK() (handles ties) in a subquery and filter the rank, or a correlated subquery / LIMIT-OFFSET for a quick 2nd-highest. Top-3 per department: PARTITION BY department in a window function and keep ranks ≤ 3. Window functions (RANK/DENSE_RANK/ROW_NUMBER over PARTITION BY) are the standard, readable way to express 'per-group top-K' and are a very common senior SQL screen.",
-    keyPoints: [
-      "Nth highest: DENSE_RANK() in a subquery, filter rnk = N.",
-      "Top-K per group: window function with PARTITION BY.",
-      "DENSE_RANK handles ties; ROW_NUMBER doesn't.",
-    ],
-    code: "-- Top 3 paid per department:\nSELECT * FROM (\n  SELECT e.*, DENSE_RANK() OVER (\n    PARTITION BY department_id ORDER BY salary DESC) AS rnk\n  FROM employee e\n) t WHERE rnk <= 3;",
-  },
-  {
-    id: "sql-6", topic: "sql", difficulty: "medium", freq: "Common",
-    companies: ["BANK", "PRODUCT"],
-    q: "Find employees earning more than their department's average salary.",
-    a: "Use a correlated subquery or a window function. Window approach: compute AVG(salary) OVER (PARTITION BY department_id) alongside each row, then filter where salary > that average — single pass, no self-join. Correlated subquery: WHERE salary > (SELECT AVG(salary) FROM employee e2 WHERE e2.department_id = e1.department_id), which re-evaluates per row. The window-function version is usually clearer and faster.",
-    keyPoints: [
-      "Window: AVG(salary) OVER (PARTITION BY dept) then filter.",
-      "Or a correlated subquery on the same department.",
-      "Window version avoids a self-join / per-row re-evaluation.",
-    ],
-    code: "SELECT * FROM (\n  SELECT e.*, AVG(salary) OVER (PARTITION BY department_id) avg_sal\n  FROM employee e\n) t WHERE salary > avg_sal;",
-  },
-  {
-    id: "sql-7", topic: "sql", difficulty: "medium", freq: "Common",
-    companies: ["SERVICE", "BANK"],
-    q: "Primary key vs unique key vs candidate vs surrogate keys; can a table have no PK?",
-    a: "A candidate key is any minimal set of columns that uniquely identifies a row; the PRIMARY KEY is the chosen candidate (unique + NOT NULL, one per table, usually clustered). A UNIQUE key also enforces uniqueness but allows one NULL and you can have many. A surrogate key is an artificial id (auto-increment/UUID) with no business meaning, vs a natural key from the data. A table CAN exist without a PK, but it risks duplicate rows, no reliable row identity, replication issues, and poor performance — so it's strongly discouraged.",
-    keyPoints: [
-      "Candidate = minimal unique; PK = chosen candidate (unique + NOT NULL).",
-      "UNIQUE allows a NULL and multiple per table; surrogate = artificial id.",
-      "No-PK tables risk dupes, weak identity, replication/perf problems.",
-    ],
-  },
-  {
-    id: "sql-8", topic: "sql", difficulty: "medium", freq: "Common",
-    companies: ["BANK", "PRODUCT"],
-    q: "Views vs materialized views, and how do you paginate in SQL?",
-    a: "A VIEW is a stored query — a virtual table evaluated each time you query it (always fresh, no storage, can simplify/secure access). A MATERIALIZED VIEW stores the result physically for fast reads but must be refreshed (can be stale) — good for expensive aggregations queried often. Pagination: LIMIT n OFFSET m (simple but OFFSET gets slow on large offsets because the DB still scans skipped rows); for large datasets prefer keyset/'seek' pagination (WHERE id > last_seen_id ORDER BY id LIMIT n), which uses the index and stays fast.",
-    keyPoints: [
-      "View = virtual (fresh, no storage); materialized view = stored (fast, stale).",
-      "Pagination: LIMIT/OFFSET (slow at high offsets).",
-      "Keyset pagination (WHERE id > last) scales for large datasets.",
-    ],
-  },
-
-  // ===================== MICROSERVICES =====================
-  {
-    id: "ms-1", topic: "microservices", difficulty: "easy", freq: "Very common",
-    companies: ["SERVICE", "BANK", "PRODUCT"],
-    q: "What are microservices? How do they differ from a monolith, with trade-offs.",
-    a: "Microservices structure an app as small, independently deployable services, each owning a single business capability and its own data store, communicating over the network. A monolith is one deployable unit. Benefits: independent deployment/scaling, technology diversity, fault isolation, team autonomy. Downsides: distributed-system complexity (network failures, eventual consistency, distributed transactions), operational overhead (observability, orchestration), testing/debugging across services, and data consistency challenges. Don't start with microservices for a small app — the complexity rarely pays off until scale/team size demands it.",
-    keyPoints: [
-      "Small, independently deployable, single-capability, own data.",
-      "Pros: independent scaling/deploy, fault isolation, team autonomy.",
-      "Cons: distributed complexity, eventual consistency, ops overhead.",
-    ],
-  },
-  {
-    id: "ms-2", topic: "microservices", difficulty: "medium", freq: "Very common",
-    companies: ["SERVICE", "BANK", "PRODUCT"],
-    q: "How do microservices communicate? Synchronous vs asynchronous.",
-    a: "Synchronous: the caller waits for a response — REST/HTTP (simple, ubiquitous) or gRPC (binary, fast, contract-first via protobuf). Tight coupling in time: if the callee is down/slow, the caller suffers (mitigate with timeouts, retries, circuit breakers). Asynchronous: message brokers (Kafka, RabbitMQ) decouple services via events/queues — the producer doesn't wait, giving resilience, buffering, and scalability at the cost of eventual consistency and harder debugging. Use sync for request/response queries; async events for decoupling and propagating state changes.",
-    keyPoints: [
-      "Sync: REST/gRPC — simple but temporally coupled.",
-      "Async: Kafka/RabbitMQ — decoupled, resilient, eventually consistent.",
-      "Protect sync calls with timeouts, retries, circuit breakers.",
-    ],
-  },
-  {
-    id: "ms-3", topic: "microservices", difficulty: "hard", freq: "Very common",
-    companies: ["BANK", "PRODUCT"],
-    q: "What is the Saga pattern and how does it handle distributed transactions?",
-    a: "You can't use a single ACID transaction across services (no distributed 2PC at scale), so a Saga breaks a business transaction into a sequence of LOCAL transactions, each publishing an event that triggers the next. If a step fails, the Saga runs COMPENSATING transactions to undo the prior steps (semantic rollback), achieving eventual consistency. Two styles: choreography (services react to each other's events — decentralized, simple but can get tangled) and orchestration (a central orchestrator directs each step — clearer control/visibility). Steps must be idempotent and retry-safe.",
-    keyPoints: [
-      "Sequence of local txns + compensating txns for rollback.",
-      "Eventual consistency instead of distributed ACID/2PC.",
-      "Choreography (event-driven) vs orchestration (central coordinator).",
-      "Steps must be idempotent and retryable.",
-    ],
-  },
-  {
-    id: "ms-4", topic: "microservices", difficulty: "hard", freq: "Common",
-    companies: ["BANK", "PRODUCT"],
-    q: "Explain the Circuit Breaker pattern and other resilience patterns.",
-    a: "A circuit breaker (Resilience4j/Hysterix) wraps a remote call and tracks failures: CLOSED (calls flow, counting failures), OPEN (after a threshold, calls fail fast without hitting the dead service — preventing cascading failures and resource exhaustion), HALF-OPEN (after a wait, lets a few trial calls through; success → close, failure → re-open). Companion patterns: retry with exponential backoff (transient faults), timeouts (don't wait forever), bulkhead (isolate resource pools so one slow dependency can't sink everything), rate limiting, and fallbacks (graceful degradation).",
-    keyPoints: [
-      "States: CLOSED → OPEN (fail fast) → HALF-OPEN (probe) → CLOSED.",
-      "Stops cascading failures / resource exhaustion.",
-      "Pair with retry+backoff, timeout, bulkhead, rate limit, fallback.",
-    ],
-  },
-  {
-    id: "ms-5", topic: "microservices", difficulty: "medium", freq: "Common",
-    companies: ["BANK", "PRODUCT"],
-    q: "What is CQRS and how does eventual consistency work with it?",
-    a: "CQRS (Command Query Responsibility Segregation) splits the WRITE model (commands that change state) from the READ model (queries) — often separate data stores optimized for each (normalized for writes, denormalized/materialized views for fast reads). The write side emits events that update the read side asynchronously, so the read model is EVENTUALLY consistent (briefly stale after a write). Benefits: independent scaling of reads vs writes and tailored read models; costs: complexity and handling the consistency lag (e.g. show 'pending' UI, or read-your-writes via the write store).",
-    keyPoints: [
-      "Separate write model (commands) from read model (queries).",
-      "Read side updated via events → eventually consistent.",
-      "Scales reads/writes independently; must handle staleness.",
-    ],
-  },
-  {
-    id: "ms-6", topic: "microservices", difficulty: "medium", freq: "Common",
-    companies: ["SERVICE", "BANK", "PRODUCT"],
-    q: "What is service discovery, and client-side vs server-side load balancing?",
-    a: "Service instances come and go (autoscaling, restarts) with changing IPs, so hardcoding addresses fails. Service discovery keeps a registry (Eureka, Consul, Kubernetes DNS) where instances register and clients look them up by logical name. Client-side load balancing: the client gets the instance list and picks one (e.g. Spring Cloud LoadBalancer/Ribbon) — fewer hops, smarter routing. Server-side: a proxy/load balancer (an API gateway, AWS ALB, or Kubernetes Service) fronts the instances and distributes traffic — clients stay simple. Kubernetes gives you DNS-based discovery + a Service LB out of the box.",
-    keyPoints: [
-      "Registry maps logical name → live instances (Eureka/Consul/K8s DNS).",
-      "Client-side LB: client picks instance (fewer hops).",
-      "Server-side LB: proxy/gateway/Service distributes (simpler clients).",
-    ],
-  },
-  {
-    id: "ms-7", topic: "microservices", difficulty: "medium", freq: "Common",
-    companies: ["BANK", "PRODUCT"],
-    q: "What is distributed tracing and why is it essential in microservices?",
-    a: "A single user request fans out across many services, so a stack trace in one service isn't enough to debug latency or failures. Distributed tracing assigns a TRACE ID to the whole request and a SPAN ID to each service hop, propagated via headers (W3C traceparent) so you can stitch the full end-to-end timeline. Tools: Micrometer Tracing / Spring Cloud Sleuth + Zipkin/Jaeger/OpenTelemetry. It shows where time is spent and which service failed — indispensable for performance and root-cause analysis in a distributed system.",
-    keyPoints: [
-      "Trace ID spans the whole request; span ID per service hop.",
-      "Context propagated via headers (W3C traceparent) across calls.",
-      "Sleuth/Micrometer + Zipkin/Jaeger/OpenTelemetry; finds latency/root cause.",
-    ],
-  },
 ];
 
 // ---- Market insights from research (2025–2026 trend snapshot) ----
@@ -4047,12 +2190,257 @@ const PROFILE = {
     "Add concrete metrics when you answer (you already quantify: 30% fewer vulnerabilities, 90%+ coverage) — bring that habit into verbal answers.",
   ],
 };
+
+// ---- Project Roadmap: build-from-scratch microservices project to crack interviews ----
+const ROADMAP_INTRO = {
+  project: "ShopFlow — an e-commerce order backend",
+  tagline:
+    "Build ONE project deeply instead of five shallow ones. Each phase introduces one hard concept, you make it fail on purpose and then fix it, and you walk away with a story you can defend. Phases 1–4 alone give you ~70% of the talking points — you can start interviewing after Phase 4 and finish Docker/AWS in parallel. Tick every build step AND every topic so you know you're ready in both practice and theory.",
+};
+
+const ROADMAP = [
+  {
+    id: "p1", num: 1, star: false,
+    title: "Product Service — one service, done right",
+    goal: "Build a standalone product-catalog service with clean REST design and solid JPA. This is your foundation — and where you close your database gap. Don't rush it.",
+    topics: ["Spring Boot", "REST", "Spring Data JPA", "PostgreSQL", "Testing"],
+    tasks: [
+      { id: "p1t1", text: "Generate a Spring Boot project (Initializr: Web, JPA, PostgreSQL, Validation, Lombok). Run a hello endpoint." },
+      { id: "p1t2", text: "Model a Product entity + ProductRepository; connect to a local Postgres (run it in Docker)." },
+      { id: "p1t3", text: "Build full CRUD with layering: controller -> service -> repository, using DTOs (never expose entities)." },
+      { id: "p1t4", text: "Add Bean Validation and a global @ControllerAdvice returning clean, consistent error responses." },
+      { id: "p1t5", text: "Add a Category related to Product. Trigger the N+1 problem, see it in SQL logs, fix with JOIN FETCH / @EntityGraph." },
+      { id: "p1t6", text: "Add pagination + sorting, one custom JPQL query, and one native query." },
+      { id: "p1t7", text: "Add Flyway migrations and a DB index on a frequently-searched column." },
+      { id: "p1t8", text: "Write unit tests (JUnit + Mockito) and one integration test using Testcontainers (a real Postgres)." },
+    ],
+    coverage: [
+      { t: "REST API design: resources, verbs, status codes", kind: "build" },
+      { t: "Exception handling in Spring Boot (@ControllerAdvice, @ExceptionHandler)", kind: "build" },
+      { t: "Bean validation (@Valid, custom validators)", kind: "build" },
+      { t: "Spring Data JPA, repositories, derived queries", kind: "build" },
+      { t: "Entity relationships; lazy vs eager fetching", kind: "build" },
+      { t: "N+1 problem and how to fix it", kind: "build" },
+      { t: "Flyway migrations & DB indexing", kind: "build" },
+      { t: "Testing: JUnit, Mockito, Testcontainers", kind: "build" },
+      { t: "@Transactional: propagation & isolation levels", kind: "theory" },
+      { t: "ACID & DB isolation (dirty / non-repeatable / phantom reads)", kind: "theory" },
+      { t: "Optimistic vs pessimistic locking", kind: "theory" },
+      { t: "Connection pooling (HikariCP), query optimization", kind: "theory" },
+      { t: "REST maturity: idempotency, statelessness, versioning", kind: "theory" },
+    ],
+    interview: [
+      "Explain layered architecture and why you map entities to DTOs.",
+      "The N+1 problem — what causes it and how you fixed it.",
+      "Lazy vs eager loading; @Transactional propagation & isolation.",
+      "ACID, isolation levels, and optimistic vs pessimistic locking.",
+    ],
+  },
+  {
+    id: "p2", num: 2, star: false,
+    title: "Second service + synchronous calls + resilience",
+    goal: "Create an Order service that calls the Product service over HTTP — then make that call survive failure. Your first taste of real microservice pain.",
+    topics: ["Microservices", "OpenFeign", "Resilience4j"],
+    tasks: [
+      { id: "p2t1", text: "Scaffold a second Spring Boot service (Order) with its own database." },
+      { id: "p2t2", text: "Place-order endpoint that calls the Product service (check stock/price) using OpenFeign / RestClient." },
+      { id: "p2t3", text: "Define request/response DTOs as the explicit contract between services." },
+      { id: "p2t4", text: "Stop the Product service and watch the Order call fail — observe the cascade." },
+      { id: "p2t5", text: "Add Resilience4j: circuit breaker + retry + timeout + a fallback method." },
+      { id: "p2t6", text: "Verify: kill Product, see the circuit open and your fallback respond instead of hanging." },
+    ],
+    coverage: [
+      { t: "Synchronous inter-service calls (Feign / RestClient)", kind: "build" },
+      { t: "Service contracts (request/response DTOs)", kind: "build" },
+      { t: "Circuit breaker pattern + states", kind: "build" },
+      { t: "Retry, timeout, fallback", kind: "build" },
+      { t: "Microservices vs monolith — trade-offs", kind: "theory" },
+      { t: "Service decomposition & bounded context", kind: "theory" },
+      { t: "Sync vs async communication — when to use which", kind: "theory" },
+      { t: "Bulkhead, rate limiting, API versioning", kind: "theory" },
+    ],
+    interview: [
+      "How services communicate synchronously and the cascading-failure risk.",
+      "Circuit breaker states: closed -> open -> half-open.",
+      "Retry vs timeout vs fallback; bulkhead isolation.",
+      "Microservices vs monolith and how you'd split a domain.",
+    ],
+  },
+  {
+    id: "p3", num: 3, star: false,
+    title: "Service discovery, API gateway & central config",
+    goal: "Stop hardcoding service URLs and put a single front door on your system — the standard microservices plumbing interviewers expect.",
+    topics: ["Eureka", "Spring Cloud Gateway", "Config"],
+    tasks: [
+      { id: "p3t1", text: "Add a Eureka server; register Product + Order; call services by name, not host:port." },
+      { id: "p3t2", text: "Add Spring Cloud Gateway as the entry point; route /products/** and /orders/**." },
+      { id: "p3t3", text: "Add one gateway filter (request logging or a correlation-id header)." },
+      { id: "p3t4", text: "Externalize configuration (Spring Cloud Config or profiles) read centrally." },
+    ],
+    coverage: [
+      { t: "Service discovery (Eureka) & registration", kind: "build" },
+      { t: "API gateway: routing & cross-cutting concerns", kind: "build" },
+      { t: "Gateway filters (auth, logging, correlation id)", kind: "build" },
+      { t: "Centralized configuration", kind: "build" },
+      { t: "Client-side vs server-side load balancing", kind: "theory" },
+      { t: "Managing secrets & config per environment", kind: "theory" },
+    ],
+    interview: [
+      "Why service discovery instead of hardcoded URLs.",
+      "What an API gateway does and where cross-cutting concerns live.",
+      "Client-side vs server-side load balancing.",
+      "How config & secrets are managed across environments.",
+    ],
+  },
+  {
+    id: "p4", num: 4, star: true,
+    title: "Async messaging + the distributed-transaction story",
+    goal: "Decouple services with events and learn to keep data consistent WITHOUT a distributed transaction. The single biggest mid -> senior differentiator — invest the most time here.",
+    topics: ["Kafka / RabbitMQ", "Saga", "Eventual consistency"],
+    tasks: [
+      { id: "p4t1", text: "Add a message broker (Kafka or RabbitMQ) via Docker." },
+      { id: "p4t2", text: "On order placed, PUBLISH an OrderPlaced event instead of calling downstream synchronously." },
+      { id: "p4t3", text: "Add a Notification service that consumes OrderPlaced and 'sends' a confirmation (log it)." },
+      { id: "p4t4", text: "Have the Product service consume the event and reserve/decrement stock." },
+      { id: "p4t5", text: "Make the consumer idempotent — handle duplicate deliveries (dedupe by event id)." },
+      { id: "p4t6", text: "Implement a basic Saga (choreography): on stock failure, publish a compensating cancel event." },
+      { id: "p4t7", text: "Stretch: add the outbox pattern so the DB write and event publish can't drift." },
+    ],
+    coverage: [
+      { t: "Event-driven architecture & messaging basics", kind: "build" },
+      { t: "Kafka/RabbitMQ: topics, partitions, consumer groups", kind: "build" },
+      { t: "Saga pattern (choreography)", kind: "build" },
+      { t: "Idempotent consumers (duplicate handling)", kind: "build" },
+      { t: "Outbox pattern", kind: "build" },
+      { t: "Distributed transactions: why 2PC is avoided", kind: "theory" },
+      { t: "Eventual consistency & CAP theorem", kind: "theory" },
+      { t: "Delivery semantics: at-least-once vs exactly-once", kind: "theory" },
+      { t: "Dead-letter queues, retries, message ordering", kind: "theory" },
+      { t: "Choreography vs orchestration", kind: "theory" },
+    ],
+    interview: [
+      "\"How do you handle a transaction across services?\" -> Saga, not 2PC.",
+      "Eventual consistency, CAP, and the trade-off vs strong consistency.",
+      "Idempotent consumers and at-least-once delivery.",
+      "Outbox pattern; choreography vs orchestration.",
+    ],
+  },
+  {
+    id: "p5", num: 5, star: false,
+    title: "Security — stateless auth across services",
+    goal: "Secure the system with JWT so the gateway and services trust requests without server-side sessions.",
+    topics: ["Spring Security", "JWT"],
+    tasks: [
+      { id: "p5t1", text: "Add an auth endpoint that issues a JWT on login." },
+      { id: "p5t2", text: "Validate the JWT at the gateway (or per service); reject unauthenticated requests." },
+      { id: "p5t3", text: "Add role-based access (e.g. only ADMIN can create products)." },
+      { id: "p5t4", text: "Propagate the authenticated user's identity to downstream services." },
+    ],
+    coverage: [
+      { t: "JWT structure & verification", kind: "build" },
+      { t: "Role-based access control", kind: "build" },
+      { t: "Securing inter-service calls / identity propagation", kind: "build" },
+      { t: "Spring Security filter chain", kind: "theory" },
+      { t: "Stateless (token) vs session auth", kind: "theory" },
+      { t: "Authentication vs authorization", kind: "theory" },
+      { t: "OAuth2 / OpenID Connect & refresh tokens (overview)", kind: "theory" },
+    ],
+    interview: [
+      "Why stateless token auth fits microservices.",
+      "Where you validate tokens (gateway vs service) and trade-offs.",
+      "JWT structure and how it's verified; authn vs authz.",
+      "OAuth2 / OIDC at a high level.",
+    ],
+  },
+  {
+    id: "p6", num: 6, star: false,
+    title: "Dockerize the whole stack",
+    goal: "Package every service as a container and bring the entire system up with ONE command. This is where Docker finally clicks — by doing it, not reading about it.",
+    topics: ["Docker", "docker-compose"],
+    tasks: [
+      { id: "p6t1", text: "Write a multi-stage Dockerfile for each service (build stage + slim JRE runtime)." },
+      { id: "p6t2", text: "Build and run a single service as a container; inspect its image layers." },
+      { id: "p6t3", text: "Write a docker-compose.yml that starts all services + Postgres + broker + Eureka." },
+      { id: "p6t4", text: "Wire networking (by service name), env vars, a DB volume, and healthchecks." },
+      { id: "p6t5", text: "Bring the whole stack up with a single `docker compose up`." },
+    ],
+    coverage: [
+      { t: "Dockerfile & multi-stage builds", kind: "build" },
+      { t: "Layer caching", kind: "build" },
+      { t: "docker-compose orchestration", kind: "build" },
+      { t: "Container networking, volumes, env vars", kind: "build" },
+      { t: "Healthchecks", kind: "build" },
+      { t: "Image vs container; Docker vs VM", kind: "theory" },
+      { t: "Image size & security best practices", kind: "theory" },
+    ],
+    interview: [
+      "Image vs container; what multi-stage builds buy you.",
+      "Layer caching and how it speeds rebuilds.",
+      "How docker-compose wires a multi-service stack & networking.",
+      "Container vs VM.",
+    ],
+  },
+  {
+    id: "p7", num: 7, star: false,
+    title: "Deploy to AWS — literacy, not DevOps depth",
+    goal: "Get ONE real cloud deployment working end-to-end, enough to speak to it confidently. For a backend role they want cloud literacy, not a DevOps career. Use the free tier, then stop.",
+    topics: ["AWS", "ECS / ECR", "RDS"],
+    tasks: [
+      { id: "p7t1", text: "Push your service images to ECR." },
+      { id: "p7t2", text: "Provision a Postgres on RDS and point a service at it." },
+      { id: "p7t3", text: "Deploy containers to ECS Fargate (or run docker-compose on one EC2 box to start)." },
+      { id: "p7t4", text: "Put an Application Load Balancer in front; open the right security-group ports." },
+      { id: "p7t5", text: "Understand IAM roles & a VPC at a basic level; store one asset in S3." },
+      { id: "p7t6", text: "Get one deploy working — then stop and return to interview prep." },
+    ],
+    coverage: [
+      { t: "Core services: EC2, ECS, ECR, RDS, S3", kind: "build" },
+      { t: "Load balancer (ALB) + target groups", kind: "build" },
+      { t: "VPC, subnets, security groups", kind: "theory" },
+      { t: "IAM roles & least privilege", kind: "theory" },
+      { t: "Managed (RDS) vs self-hosted DB", kind: "theory" },
+      { t: "Scaling & high availability (overview)", kind: "theory" },
+    ],
+    interview: [
+      "\"Deployed to AWS using ECR / ECS / RDS behind an ALB.\"",
+      "Basic networking: VPC, subnets, security groups.",
+      "IAM roles and least privilege.",
+      "Managed DB vs self-hosted and scaling basics.",
+    ],
+  },
+  {
+    id: "p8", num: 8, star: false,
+    title: "Package it into offers",
+    goal: "Convert the build into stories and a defensible architecture. This phase is what actually turns the project into interview wins.",
+    topics: ["Storytelling", "Observability"],
+    tasks: [
+      { id: "p8t1", text: "Draw the full architecture diagram from memory; explain every single arrow." },
+      { id: "p8t2", text: "For each phase write 3 lines: what you built, the hardest problem, the trade-off." },
+      { id: "p8t3", text: "Add observability: centralized logging + /actuator health & metrics. Stretch: tracing (Micrometer + Zipkin)." },
+      { id: "p8t4", text: "Prepare your \"tell me about a challenging project\" answer around a real failure you fixed." },
+      { id: "p8t5", text: "Push to GitHub with a clear README + architecture diagram." },
+    ],
+    coverage: [
+      { t: "Architecture diagramming & explaining trade-offs", kind: "build" },
+      { t: "Observability: logging, metrics, health", kind: "build" },
+      { t: "Distributed tracing (correlation id, Zipkin)", kind: "build" },
+      { t: "Debugging a production issue (your approach)", kind: "theory" },
+      { t: "STAR-style behavioral storytelling", kind: "theory" },
+    ],
+    interview: [
+      "The behavioral / architecture round and the \"challenging project\" story.",
+      "Whiteboarding the whole system and justifying each decision.",
+      "How you'd observe and debug a production issue.",
+    ],
+  },
+];
+
+
 // ============================================================
 //  Core Java Prep — single-file dashboard
 // ============================================================
 
-const ICONS = { Boxes, Hash, Layers, Cpu, Shield, Zap, Sparkles, Code2, Database, Terminal, Cloud, Container,
-  Link2, Trees, SquareStack, TrendingUp, Coins, GitFork, Component, Sprout, Table2, DatabaseZap, Network };
+const ICONS = { Boxes, Hash, Layers, Cpu, Shield, Zap, Sparkles, Code2, Database, Terminal };
 const COMPANY_LABELS = { SERVICE: "Service-based", BANK: "Banking", PRODUCT: "Product" };
 const COMPANY_SHORT = { SERVICE: "Service", BANK: "Bank", PRODUCT: "Product" };
 const STORE_KEY = "coreJavaPrep_v1";
@@ -4405,6 +2793,56 @@ const CSS = `
 .trk-note{margin-top:14px;font-size:11.5px;color:var(--faint);text-align:center;line-height:1.5}
 
 @media(prefers-reduced-motion:reduce){.cjp *{animation:none!important;transition:none!important}}
+/* project roadmap */
+.rmap{max-width:820px;margin:0 auto}
+.rm-intro{background:linear-gradient(150deg,var(--panel2),var(--panel));border:1px solid var(--line);border-radius:14px;padding:18px 20px;margin-top:4px}
+.rm-intro h2{font-size:15px;font-weight:700;letter-spacing:-.2px}
+.rm-intro p{font-size:13px;color:var(--dim);line-height:1.65;margin-top:7px}
+.rm-prog{background:var(--panel);border:1px solid var(--line);border-radius:14px;padding:16px 18px;margin:14px 0 22px;display:flex;align-items:center;gap:18px}
+.rm-prog .rring{position:relative;width:64px;height:64px;flex:none}
+.rm-prog .rinfo{flex:1;min-width:0}
+.rm-prog .rtitle{font-weight:700;font-size:14.5px}
+.rm-prog .rsub{font-size:12.3px;color:var(--dim);margin-top:2px}
+.rm-prog .rbar{height:7px;border-radius:5px;background:var(--line);margin-top:10px;overflow:hidden}
+.rm-prog .rbar i{display:block;height:100%;background:linear-gradient(90deg,var(--amber),var(--amber2));border-radius:5px;transition:width .5s}
+.timeline{position:relative;display:flex;flex-direction:column}
+.phase{position:relative;display:flex;gap:15px}
+.phase .node{flex:none;display:flex;flex-direction:column;align-items:center;width:38px}
+.phase .node .num{width:38px;height:38px;border-radius:50%;display:grid;place-items:center;font-weight:800;font-size:14px;background:var(--panel2);border:2px solid var(--line);color:var(--dim);z-index:1;transition:.2s}
+.phase.done .node .num{background:var(--emerald);border-color:var(--emerald);color:#06281d}
+.phase .node .line{flex:1;width:2px;background:var(--line);margin:3px 0;min-height:14px}
+.phase:last-child .node .line{display:none}
+.phase .pcard{flex:1;min-width:0;background:var(--panel);border:1px solid var(--line-soft);border-radius:14px;margin-bottom:14px;transition:.16s;overflow:hidden}
+.phase .pcard:hover{border-color:var(--line)}
+.phase.done .pcard{border-color:rgba(47,211,160,.3)}
+.phead{padding:15px 17px;cursor:pointer;display:flex;gap:13px;align-items:flex-start}
+.phead .pmain{flex:1;min-width:0}
+.phead .ptitle{font-weight:700;font-size:14.5px;letter-spacing:-.2px;display:flex;align-items:center;gap:8px;flex-wrap:wrap}
+.phead .pgoal{font-size:12.6px;color:var(--dim);line-height:1.55;margin-top:6px}
+.phead .ptopics{display:flex;gap:6px;flex-wrap:wrap;margin-top:10px}
+.tchip{font-size:10px;font-weight:600;padding:3px 8px;border-radius:6px;background:var(--indigo-bg);color:var(--indigo)}
+.pmeta{flex:none;display:flex;flex-direction:column;align-items:flex-end;gap:7px;min-width:74px}
+.pmeta .pfrac{font-family:var(--mono);font-size:11px;color:var(--dim)}
+.pmeta .pbar{width:74px;height:5px;border-radius:4px;background:var(--line);overflow:hidden}
+.pmeta .pbar i{display:block;height:100%;background:linear-gradient(90deg,var(--amber),var(--amber2));transition:width .4s}
+.star-badge{font-size:9px;font-weight:700;letter-spacing:.4px;text-transform:uppercase;color:var(--amber2);background:var(--amber-bg);border:1px solid rgba(242,169,59,.4);padding:2px 7px;border-radius:5px;display:inline-flex;align-items:center;gap:4px}
+.pbody{padding:0 17px 16px 17px;animation:slide .25s}
+.steph{font-family:var(--mono);font-size:10px;letter-spacing:1px;text-transform:uppercase;color:var(--faint);margin:4px 0 8px;display:flex;align-items:center;gap:6px}
+.task{display:flex;gap:11px;padding:9px 10px;border-radius:9px;cursor:pointer;transition:.13s;align-items:flex-start}
+.task:hover{background:var(--bg2)}
+.task .box{width:20px;height:20px;border-radius:6px;border:2px solid var(--line);flex:none;display:grid;place-items:center;margin-top:1px;transition:.14s;background:var(--bg2);color:#06281d}
+.task.done .box{background:var(--emerald);border-color:var(--emerald)}
+.task .ttext{font-size:12.9px;line-height:1.55;color:var(--ink)}
+.task.done .ttext{color:var(--faint);text-decoration:line-through}
+.payoff{margin-top:14px;background:var(--bg2);border:1px solid var(--line-soft);border-radius:10px;padding:12px 14px}
+.payoff .ph2{font-family:var(--mono);font-size:10px;letter-spacing:1px;text-transform:uppercase;color:var(--amber);margin-bottom:8px;display:flex;align-items:center;gap:6px}
+.payoff ul{list-style:none;display:flex;flex-direction:column;gap:6px}
+.payoff li{font-size:12.4px;color:var(--dim);line-height:1.5;display:flex;gap:8px}
+.payoff li::before{content:"▹";color:var(--amber);flex:none}
+
+.kindb{font-size:8.5px;font-weight:700;letter-spacing:.5px;text-transform:uppercase;padding:2px 6px;border-radius:5px;margin-left:8px;white-space:nowrap}
+.kindb.build{color:var(--emerald);background:var(--emerald-bg)}
+.kindb.theory{color:var(--indigo);background:var(--indigo-bg)}
 :focus-visible{outline:2px solid var(--amber);outline-offset:2px;border-radius:6px}
 `;
 
@@ -5307,9 +3745,124 @@ function Tracker({ attendance, setAttendance, streaks }) {
   );
 }
 
+function Roadmap({ done, setDone }) {
+  const [open, setOpen] = useState({ p1: true });
+  const toggleTask = (id) =>
+    setDone((d) => { const n = { ...d }; if (n[id]) delete n[id]; else n[id] = true; return n; });
+  const toggleOpen = (id) => setOpen((o) => ({ ...o, [id]: !o[id] }));
+
+  const covId = (p, i) => `${p.id}-c${i}`;
+  const itemsOf = (p) => p.tasks.length + (p.coverage ? p.coverage.length : 0);
+  const doneOf = (p) =>
+    p.tasks.filter((t) => done[t.id]).length +
+    (p.coverage ? p.coverage.filter((c, i) => done[covId(p, i)]).length : 0);
+
+  const totalItems = ROADMAP.reduce((s, p) => s + itemsOf(p), 0);
+  const doneItems = ROADMAP.reduce((s, p) => s + doneOf(p), 0);
+  const overall = totalItems ? doneItems / totalItems : 0;
+  const phasesDone = ROADMAP.filter((p) => itemsOf(p) > 0 && doneOf(p) === itemsOf(p)).length;
+
+  return (
+    <div className="rmap">
+      <div className="page-h">
+        <h1>Project roadmap</h1>
+        <p>{ROADMAP_INTRO.project} — build it from scratch, and each phase becomes an interview answer.</p>
+      </div>
+
+      <div className="rm-intro">
+        <h2>Why one project, built deeply</h2>
+        <p>{ROADMAP_INTRO.tagline}</p>
+      </div>
+
+      <div className="rm-prog">
+        <div className="rring">
+          <Ring pct={overall} size={64} stroke={7} />
+          <div style={{ position: "absolute", inset: 0, display: "grid", placeItems: "center", fontWeight: 800, fontSize: 14 }}>
+            {Math.round(overall * 100)}%
+          </div>
+        </div>
+        <div className="rinfo">
+          <div className="rtitle">{phasesDone} / {ROADMAP.length} phases complete</div>
+          <div className="rsub">{doneItems} of {totalItems} build steps & topics checked — tick each as you cover it in practice or theory.</div>
+          <div className="rbar"><i style={{ width: `${overall * 100}%` }} /></div>
+        </div>
+      </div>
+
+      <div className="timeline">
+        {ROADMAP.map((p) => {
+          const total = itemsOf(p);
+          const dc = doneOf(p);
+          const isDone = dc === total;
+          const pct = total ? dc / total : 0;
+          const isOpen = !!open[p.id];
+          return (
+            <div className={`phase ${isDone ? "done" : ""}`} key={p.id}>
+              <div className="node">
+                <div className="num">{isDone ? <Check size={16} strokeWidth={3} /> : p.num}</div>
+                <div className="line" />
+              </div>
+              <div className="pcard">
+                <div className="phead" onClick={() => toggleOpen(p.id)}>
+                  <div className="pmain">
+                    <div className="ptitle">
+                      {p.title}
+                      {p.star && <span className="star-badge"><Star size={10} /> Senior differentiator</span>}
+                    </div>
+                    <div className="pgoal">{p.goal}</div>
+                    <div className="ptopics">
+                      {p.topics.map((t) => <span className="tchip" key={t}>{t}</span>)}
+                    </div>
+                  </div>
+                  <div className="pmeta">
+                    <ChevronRight size={17} style={{ transform: isOpen ? "rotate(90deg)" : "none", transition: "transform .2s", color: "var(--faint)" }} />
+                    <div className="pfrac">{dc}/{total}</div>
+                    <div className="pbar"><i style={{ width: `${pct * 100}%` }} /></div>
+                  </div>
+                </div>
+                {isOpen && (
+                  <div className="pbody">
+                    <div className="steph"><ListChecks size={12} /> Build steps (hands-on)</div>
+                    {p.tasks.map((t) => (
+                      <div className={`task ${done[t.id] ? "done" : ""}`} key={t.id} onClick={() => toggleTask(t.id)}>
+                        <span className="box">{done[t.id] && <Check size={12} strokeWidth={3} />}</span>
+                        <span className="ttext">{t.text}</span>
+                      </div>
+                    ))}
+
+                    {p.coverage && (
+                      <>
+                        <div className="steph" style={{ marginTop: 16 }}><BookOpen size={12} /> Topics to be ready on — theory + practical</div>
+                        {p.coverage.map((c, i) => {
+                          const cid = covId(p, i);
+                          return (
+                            <div className={`task ${done[cid] ? "done" : ""}`} key={cid} onClick={() => toggleTask(cid)}>
+                              <span className="box">{done[cid] && <Check size={12} strokeWidth={3} />}</span>
+                              <span className="ttext">{c.t}<span className={`kindb ${c.kind}`}>{c.kind === "build" ? "Build" : "Theory"}</span></span>
+                            </div>
+                          );
+                        })}
+                      </>
+                    )}
+
+                    <div className="payoff">
+                      <div className="ph2"><Target size={12} /> Interview payoff</div>
+                      <ul>{p.interview.map((x, i) => <li key={i}>{x}</li>)}</ul>
+                    </div>
+                  </div>
+                )}
+              </div>
+            </div>
+          );
+        })}
+      </div>
+    </div>
+  );
+}
+
 export default function App() {
   const [progress, setProgress] = useProgress();
   const [attendance, setAttendance] = usePersisted("coreJavaPrep_attendance_v1", {});
+  const [roadmapDone, setRoadmapDone] = usePersisted("coreJavaPrep_roadmap_v1", {});
   const [view, setView] = useState("dashboard");
   const [activeTopic, setActiveTopic] = useState("all");
   const [theme, setTheme] = useState("dark");
@@ -5352,6 +3905,7 @@ export default function App() {
     { id: "practice", label: "Practice", icon: <Brain size={17} /> },
     { id: "console", label: "Java console", icon: <Terminal size={17} /> },
     { id: "tracker", label: "Daily tracker", icon: <Calendar size={17} /> },
+    { id: "roadmap", label: "Project roadmap", icon: <Map size={17} /> },
   ];
 
   return (
@@ -5417,6 +3971,9 @@ export default function App() {
           {view === "console" && <Console />}
           {view === "tracker" && (
             <Tracker attendance={attendance} setAttendance={setAttendance} streaks={streaks} />
+          )}
+          {view === "roadmap" && (
+            <Roadmap done={roadmapDone} setDone={setRoadmapDone} />
           )}
         </main>
       </div>
