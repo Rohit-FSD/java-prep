@@ -2133,6 +2133,39 @@ for (int[] row : m)
         int t = row[i]; row[i] = row[j]; row[j] = t;       // reverse row
     }`,
   },
+
+  // --- merged from Stream API Workbench ---
+  { id: "swb-q1", topic: "streams", difficulty: "easy", freq: "Very common", companies: ["SERVICE","BANK","PRODUCT"], q: "Given a list of integers, return a list containing only the even numbers.", keyPoints: ["filter() keeps elements matching the predicate; collect() gathers them into a new list."], code: "List<Integer> nums = Arrays.asList(1, 2, 3, 4, 5, 6);\n\nList<Integer> even = nums.stream()\n    .filter(n -> n % 2 == 0)\n    .collect(Collectors.toList());" },
+  { id: "swb-q2", topic: "streams", difficulty: "easy", freq: "Very common", companies: ["SERVICE","BANK","PRODUCT"], q: "Find the maximum value in a list of integers.", keyPoints: ["max() takes a comparator and returns an Optional; .get() unwraps it (orElse is safer if empty)."], code: "List<Integer> nums = Arrays.asList(10, 15, 8, 49, 25, 98, 32);\n\nint max = nums.stream()\n    .max(Integer::compare)\n    .get();" },
+  { id: "swb-q3", topic: "streams", difficulty: "easy", freq: "Very common", companies: ["SERVICE","BANK","PRODUCT"], q: "Find the minimum value in a list of integers.", keyPoints: ["min() mirrors max() — returns the smallest element wrapped in an Optional."], code: "List<Integer> nums = Arrays.asList(10, 15, 8, 49, 25, 98, 32);\n\nint min = nums.stream()\n    .min(Integer::compare)\n    .get();" },
+  { id: "swb-q4", topic: "streams", difficulty: "easy", freq: "Very common", companies: ["SERVICE","BANK","PRODUCT"], q: "Calculate the sum of all elements in a list of integers.", keyPoints: ["mapToInt() produces an IntStream which exposes sum() directly. reduce(0, Integer::sum) also works."], code: "List<Integer> nums = Arrays.asList(1, 2, 3, 4, 5);\n\nint sum = nums.stream()\n    .mapToInt(Integer::intValue)\n    .sum();" },
+  { id: "swb-q5", topic: "streams", difficulty: "easy", freq: "Very common", companies: ["SERVICE","BANK","PRODUCT"], q: "Convert every string in a list to uppercase.", keyPoints: ["map() transforms each element by applying the method reference String::toUpperCase."], code: "List<String> names = Arrays.asList(\"alice\", \"bob\", \"charlie\");\n\nList<String> upper = names.stream()\n    .map(String::toUpperCase)\n    .collect(Collectors.toList());" },
+  { id: "swb-q6", topic: "streams", difficulty: "easy", freq: "Very common", companies: ["SERVICE","BANK","PRODUCT"], q: "Sort a list of integers in ascending (natural) order.", keyPoints: ["sorted() with no argument sorts by natural ordering."], code: "List<Integer> nums = Arrays.asList(10, 15, 8, 49, 25, 98, 32);\n\nList<Integer> sorted = nums.stream()\n    .sorted()\n    .collect(Collectors.toList());" },
+  { id: "swb-q7", topic: "streams", difficulty: "easy", freq: "Very common", companies: ["SERVICE","BANK","PRODUCT"], q: "Sort a list of integers in descending order.", keyPoints: ["Pass a reversed comparator. Comparator.reverseOrder() or Collections.reverseOrder() both work."], code: "List<Integer> nums = Arrays.asList(10, 15, 8, 49, 25, 98, 32);\n\nList<Integer> desc = nums.stream()\n    .sorted(Comparator.reverseOrder())\n    .collect(Collectors.toList());" },
+  { id: "swb-q8", topic: "streams", difficulty: "easy", freq: "Very common", companies: ["SERVICE","BANK","PRODUCT"], q: "Count how many numbers in a list are greater than 5.", keyPoints: ["filter() narrows the stream; count() returns the number of remaining elements as a long."], code: "List<Integer> nums = Arrays.asList(1, 4, 6, 8, 3, 9, 5);\n\nlong count = nums.stream()\n    .filter(n -> n > 5)\n    .count();" },
+  { id: "swb-q9", topic: "streams", difficulty: "easy", freq: "Very common", companies: ["SERVICE","BANK","PRODUCT"], q: "Return only the distinct (unique) elements from a list.", keyPoints: ["distinct() removes duplicates using equals()."], code: "List<Integer> nums = Arrays.asList(1, 1, 2, 3, 3, 4, 5, 5);\n\nList<Integer> distinct = nums.stream()\n    .distinct()\n    .collect(Collectors.toList());" },
+  { id: "swb-q10", topic: "streams", difficulty: "easy", freq: "Very common", companies: ["SERVICE","BANK","PRODUCT"], q: "Reduce a list of integers to a single sum value using reduce().", keyPoints: ["reduce() takes an identity (0) and an accumulator (Integer::sum) to fold the stream into one value."], code: "List<Integer> nums = Arrays.asList(1, 2, 3, 4, 5);\n\nint total = nums.stream()\n    .reduce(0, Integer::sum);" },
+  { id: "swb-q11", topic: "streams", difficulty: "easy", freq: "Very common", companies: ["SERVICE","BANK","PRODUCT"], q: "Find the first element of a list using streams.", keyPoints: ["findFirst() returns the first element as an Optional; ifPresent() runs only if a value exists."], code: "List<Integer> nums = Arrays.asList(10, 15, 8, 49);\n\nnums.stream()\n    .findFirst()\n    .ifPresent(System.out::println);" },
+  { id: "swb-q12", topic: "streams", difficulty: "easy", freq: "Very common", companies: ["SERVICE","BANK","PRODUCT"], q: "Return any element from a list (useful with parallel streams).", keyPoints: ["findAny() may return any element — faster than findFirst() on parallel streams."], code: "List<Integer> nums = Arrays.asList(10, 15, 8, 49);\n\nOptional<Integer> any = nums.stream()\n    .findAny();" },
+  { id: "swb-q13", topic: "streams", difficulty: "easy", freq: "Very common", companies: ["SERVICE","BANK","PRODUCT"], q: "Extract only the first name from a list of full names.", keyPoints: ["map() splits each name on space and selects index 0."], code: "List<String> full = Arrays.asList(\"Alice Johnson\", \"Bob Harris\", \"Charlie Lou\");\n\nList<String> firstNames = full.stream()\n    .map(name -> name.split(\" \")[0])\n    .collect(Collectors.toList());" },
+  { id: "swb-q14", topic: "streams", difficulty: "easy", freq: "Very common", companies: ["SERVICE","BANK","PRODUCT"], q: "Check whether all numbers in a list are positive.", keyPoints: ["allMatch() returns true only if every element satisfies the predicate."], code: "List<Integer> nums = Arrays.asList(3, 7, 1, 9, 4);\n\nboolean allPos = nums.stream()\n    .allMatch(n -> n > 0);" },
+  { id: "swb-q15", topic: "streams", difficulty: "easy", freq: "Very common", companies: ["SERVICE","BANK","PRODUCT"], q: "Check that a list contains no negative numbers.", keyPoints: ["noneMatch() returns true if zero elements match the predicate."], code: "List<Integer> nums = Arrays.asList(3, 7, 1, 9, 4);\n\nboolean noneNeg = nums.stream()\n    .noneMatch(n -> n < 0);" },
+  { id: "swb-q16", topic: "streams", difficulty: "easy", freq: "Very common", companies: ["SERVICE","BANK","PRODUCT"], q: "Check whether at least one even number exists in the list.", keyPoints: ["anyMatch() short-circuits and returns true as soon as one element matches."], code: "List<Integer> nums = Arrays.asList(1, 3, 5, 8, 9);\n\nboolean hasEven = nums.stream()\n    .anyMatch(n -> n % 2 == 0);" },
+  { id: "swb-q18", topic: "streams", difficulty: "medium", freq: "Common", companies: ["SERVICE","BANK","PRODUCT"], q: "Group a list of users by their age into a Map<Integer, List<User>>.", keyPoints: ["groupingBy() builds a map keyed by the classifier; each value is the list of items sharing that key."], code: "List<User> users = ...; // each User has getAge()\n\nMap<Integer, List<User>> byAge = users.stream()\n    .collect(Collectors.groupingBy(User::getAge));" },
+  { id: "swb-q19", topic: "streams", difficulty: "easy", freq: "Very common", companies: ["SERVICE","BANK","PRODUCT"], q: "Return only the first 3 elements of a list.", keyPoints: ["limit(n) truncates the stream to at most n elements."], code: "List<Integer> nums = Arrays.asList(5, 6, 7, 8, 9, 10);\n\nList<Integer> first3 = nums.stream()\n    .limit(3)\n    .collect(Collectors.toList());" },
+  { id: "swb-q20", topic: "streams", difficulty: "easy", freq: "Very common", companies: ["SERVICE","BANK","PRODUCT"], q: "Skip the first 2 elements and return the rest.", keyPoints: ["skip(n) discards the first n elements."], code: "List<Integer> nums = Arrays.asList(5, 6, 7, 8, 9, 10);\n\nList<Integer> rest = nums.stream()\n    .skip(2)\n    .collect(Collectors.toList());" },
+  { id: "swb-q21", topic: "streams", difficulty: "easy", freq: "Very common", companies: ["SERVICE","BANK","PRODUCT"], q: "Convert a list of integers into a Set to drop duplicates.", keyPoints: ["Collecting into a Set removes duplicates automatically."], code: "List<Integer> nums = Arrays.asList(1, 2, 2, 3, 3, 3);\n\nSet<Integer> set = nums.stream()\n    .collect(Collectors.toSet());" },
+  { id: "swb-q22", topic: "streams", difficulty: "medium", freq: "Common", companies: ["SERVICE","BANK","PRODUCT"], q: "Get count, sum, min, max and average for a list of integers in one pass.", keyPoints: ["summaryStatistics() computes all aggregate values in a single traversal."], code: "List<Integer> nums = Arrays.asList(4, 8, 15, 16, 23, 42);\n\nIntSummaryStatistics stats = nums.stream()\n    .mapToInt(Integer::intValue)\n    .summaryStatistics();\n// stats.getMax(), getMin(), getAverage(), getSum(), getCount()" },
+  { id: "swb-q23", topic: "streams", difficulty: "easy", freq: "Very common", companies: ["SERVICE","BANK","PRODUCT"], q: "Find the average of all elements in a list.", keyPoints: ["average() on an IntStream returns an OptionalDouble; orElse handles the empty case."], code: "List<Integer> nums = Arrays.asList(10, 20, 30, 40, 50);\n\ndouble avg = nums.stream()\n    .mapToInt(Integer::intValue)\n    .average()\n    .orElse(0.0);" },
+  { id: "swb-q24", topic: "streams", difficulty: "medium", freq: "Common", companies: ["SERVICE","BANK","PRODUCT"], q: "Find all numbers whose decimal representation starts with the digit 1.", keyPoints: ["Convert each number to a String and test startsWith(\"1\")."], code: "List<Integer> nums = Arrays.asList(10, 15, 8, 49, 25, 98, 32);\n\nList<Integer> startsWith1 = nums.stream()\n    .filter(n -> String.valueOf(n).startsWith(\"1\"))\n    .collect(Collectors.toList());" },
+  { id: "swb-q27", topic: "streams", difficulty: "hard", freq: "Occasional", companies: ["BANK","PRODUCT"], q: "Find the first character in a string that repeats (case-insensitive).", keyPoints: ["As you stream chars, the first one that Set.add() rejects is the first repeat."], code: "String input = \"Java Articles are Awesome\";\n\nSet<Character> seen = new HashSet<>();\nCharacter result = input.toLowerCase().chars()\n    .mapToObj(c -> (char) c)\n    .filter(c -> !seen.add(c))\n    .findFirst()\n    .orElse(null);" },
+  { id: "swb-q28", topic: "streams", difficulty: "medium", freq: "Common", companies: ["SERVICE","BANK","PRODUCT"], q: "Return true if any value appears at least twice in an array, false if all are distinct.", keyPoints: ["anyMatch short-circuits the moment Set.add() fails on a repeated value."], code: "int[] nums = {1, 2, 3, 1};  // -> true\n\nSet<Integer> seen = new HashSet<>();\nboolean hasDup = Arrays.stream(nums)\n    .anyMatch(n -> !seen.add(n));" },
+  { id: "swb-q29", topic: "streams", difficulty: "medium", freq: "Common", companies: ["SERVICE","BANK","PRODUCT"], q: "Concatenate two lists into a single stream and print the joined result.", keyPoints: ["Stream.concat() merges two streams; joining() with a delimiter builds the output string."], code: "List<String> a = Arrays.asList(\"Java\", \"8\");\nList<String> b = Arrays.asList(\"is\", \"fun\");\n\nStream<String> joined = Stream.concat(a.stream(), b.stream());\nString result = joined.collect(Collectors.joining(\" \"));" },
+  { id: "swb-q30", topic: "streams", difficulty: "medium", freq: "Common", companies: ["SERVICE","BANK","PRODUCT"], q: "Cube each element of a list, then keep only the results greater than 50.", keyPoints: ["map() transforms (cube), then filter() narrows — order of operations matters."], code: "List<Integer> nums = Arrays.asList(4, 5, 6, 7, 1, 2, 3);\n\nList<Integer> result = nums.stream()\n    .map(i -> i * i * i)\n    .filter(i -> i > 50)\n    .collect(Collectors.toList());" },
+  { id: "swb-q32", topic: "streams", difficulty: "hard", freq: "Occasional", companies: ["BANK","PRODUCT"], q: "From a list of strings, return only the elements that appear more than once, with their counts.", keyPoints: ["Build the frequency map first, then stream its entries and keep counts > 1. Result: {AA=2}."], code: "List<String> names = Arrays.asList(\"AA\", \"BB\", \"AA\", \"CC\");\n\nMap<String, Long> dups = names.stream()\n    .collect(Collectors.groupingBy(Function.identity(), Collectors.counting()))\n    .entrySet().stream()\n    .filter(e -> e.getValue() > 1)\n    .collect(Collectors.toMap(Map.Entry::getKey, Map.Entry::getValue));" },
+  { id: "swb-q33", topic: "streams", difficulty: "medium", freq: "Common", companies: ["SERVICE","BANK","PRODUCT"], q: "Count the frequency of each character in a string (lowercased).", keyPoints: ["split(\"\") gives single-char strings; LinkedHashMap keeps first-seen order."], code: "String s = \"stream data\";\n\nMap<String, Long> charCount = Arrays.stream(s.split(\"\"))\n    .map(String::toLowerCase)\n    .collect(Collectors.groupingBy(\n        Function.identity(),\n        LinkedHashMap::new,\n        Collectors.counting()));" },
+  { id: "swb-q34", topic: "streams", difficulty: "hard", freq: "Occasional", companies: ["BANK","PRODUCT"], q: "Convert a list of objects into a Map, keeping the first value on key collisions and preserving order.", keyPoints: ["The merge function (oldV, newV) -> oldV resolves duplicate keys; LinkedHashMap preserves order."], code: "List<Notes> notes = ...; // getTagName(), getTagId()\n\nMap<String, Long> map = notes.stream()\n    .sorted(Comparator.comparingLong(Notes::getTagId).reversed())\n    .collect(Collectors.toMap(\n        Notes::getTagName,\n        Notes::getTagId,\n        (oldV, newV) -> oldV,        // keep first on duplicate key\n        LinkedHashMap::new));" },
+  { id: "swb-q39", topic: "streams", difficulty: "easy", freq: "Very common", companies: ["SERVICE","BANK","PRODUCT"], q: "Print the current date, time, and date-time using the Java 8 Date/Time API.", keyPoints: ["LocalDate, LocalTime and LocalDateTime are the immutable Java 8 replacements for the old Date class."], code: "System.out.println(LocalDate.now());\nSystem.out.println(LocalTime.now());\nSystem.out.println(LocalDateTime.now());" },
 ];
 
 // ---- Market insights from research (2025–2026 trend snapshot) ----
@@ -2843,6 +2876,57 @@ const CSS = `
 .kindb{font-size:8.5px;font-weight:700;letter-spacing:.5px;text-transform:uppercase;padding:2px 6px;border-radius:5px;margin-left:8px;white-space:nowrap}
 .kindb.build{color:var(--emerald);background:var(--emerald-bg)}
 .kindb.theory{color:var(--indigo);background:var(--indigo-bg)}
+/* workbench (write-from-memory practice) */
+.wb-top{display:flex;flex-wrap:wrap;align-items:flex-end;justify-content:space-between;gap:14px;margin:6px 0 10px}
+.wb-stats{display:flex;gap:20px}
+.wb-stat{text-align:right}
+.wb-stat .n{font-family:var(--mono);font-size:19px;font-weight:800;line-height:1}
+.wb-stat .l{font-size:10px;color:var(--faint);text-transform:uppercase;letter-spacing:.6px;margin-top:3px}
+.wb-stat.solved .n{color:var(--emerald)}
+.wb-stat.review .n{color:var(--rose)}
+.wb-bar{height:6px;border-radius:99px;background:var(--line);overflow:hidden;margin-bottom:16px}
+.wb-bar i{display:block;height:100%;background:linear-gradient(90deg,var(--amber),var(--amber2));transition:width .35s}
+.wb-grid{display:grid;grid-template-columns:300px 1fr;gap:16px;align-items:start}
+@media(max-width:880px){.wb-grid{grid-template-columns:1fr}}
+.wb-list{background:var(--panel);border:1px solid var(--line);border-radius:13px;overflow:hidden;max-height:72vh;overflow-y:auto}
+@media(max-width:880px){.wb-list{max-height:340px}}
+.wb-row{display:flex;align-items:center;gap:10px;padding:10px 12px;border-bottom:1px solid var(--line-soft);cursor:pointer;transition:.12s}
+.wb-row:last-child{border-bottom:none}
+.wb-row:hover{background:var(--panel2)}
+.wb-row.active{background:var(--panel2);box-shadow:inset 3px 0 0 var(--amber)}
+.wb-num{font-family:var(--mono);font-size:11px;color:var(--faint);width:22px;flex:none}
+.wb-name{font-size:12.5px;flex:1;min-width:0;overflow:hidden;text-overflow:ellipsis;white-space:nowrap}
+.wb-dot{width:8px;height:8px;border-radius:99px;flex:none;background:var(--line)}
+.wb-dot.progress{background:var(--amber)}
+.wb-dot.solved{background:var(--emerald)}
+.wb-dot.review{background:var(--rose)}
+.wb-work{background:var(--panel);border:1px solid var(--line);border-radius:13px;padding:20px;min-height:72vh}
+.wb-wtop{display:flex;align-items:flex-start;justify-content:space-between;gap:14px}
+.wb-meta{display:flex;gap:7px;align-items:center;flex-wrap:wrap}
+.wb-timer{display:flex;align-items:center;gap:8px;flex:none}
+.wb-clock{font-family:var(--mono);font-size:15px;font-weight:700;min-width:52px}
+.wb-clock.run{color:var(--amber)}
+.tbtn{font-size:11.5px;font-weight:600;padding:5px 11px;border-radius:8px;border:1px solid var(--line);color:var(--dim);background:var(--bg2);transition:.15s}
+.tbtn:hover{color:var(--ink);border-color:var(--dim)}
+.wb-title{font-size:16px;font-weight:700;letter-spacing:-.2px;margin:13px 0 4px;line-height:1.45}
+.wb-lbl{font-family:var(--mono);font-size:10px;letter-spacing:.8px;text-transform:uppercase;color:var(--faint);margin:16px 0 6px;display:flex;align-items:center;justify-content:space-between}
+.saved-tag{font-size:11px;color:var(--emerald);opacity:0;transition:opacity .3s;text-transform:none;letter-spacing:0;font-family:var(--sans)}
+.saved-tag.show{opacity:1}
+.wb-editor{width:100%;min-height:210px;resize:vertical;font-family:var(--mono);font-size:13px;line-height:1.65;background:#06090E;color:#dbe0ee;border:1px solid var(--line);border-radius:10px;padding:14px;outline:none;tab-size:2;white-space:pre;overflow:auto;transition:border-color .15s}
+.cjp.light .wb-editor{background:#0E1117}
+.wb-editor:focus{border-color:var(--amber)}
+.wb-actions{display:flex;flex-wrap:wrap;gap:8px;margin-top:12px}
+.wb-btn{font-size:12.5px;font-weight:600;padding:8px 15px;border-radius:9px;border:1px solid var(--line);background:var(--bg2);color:var(--dim);transition:.15s;display:inline-flex;align-items:center;gap:7px}
+.wb-btn:hover{color:var(--ink);border-color:var(--dim)}
+.wb-btn.primary{background:linear-gradient(140deg,var(--amber),#D98A24);color:#1a1205;border-color:transparent}
+.wb-btn.primary:hover{filter:brightness(1.05)}
+.wb-btn.sv.on{background:var(--emerald-bg);color:var(--emerald);border-color:rgba(47,211,160,.4)}
+.wb-btn.rv.on{background:var(--rose-bg);color:var(--rose);border-color:rgba(255,107,138,.4)}
+.wb-sol{margin-top:18px;border-top:1px dashed var(--line);padding-top:14px}
+.wb-soltoggle{font-size:12.5px;font-weight:600;color:var(--dim);cursor:pointer;display:inline-flex;align-items:center;gap:8px;user-select:none}
+.wb-soltoggle:hover{color:var(--ink)}
+.wb-notes{width:100%;margin-top:16px;min-height:58px;resize:vertical;font-family:var(--sans);font-size:13px;background:var(--bg2);color:var(--ink);border:1px solid var(--line-soft);border-radius:9px;padding:10px 12px;outline:none;transition:.15s}
+.wb-notes:focus{border-color:var(--amber)}
 :focus-visible{outline:2px solid var(--amber);outline-offset:2px;border-radius:6px}
 `;
 
@@ -3859,10 +3943,181 @@ function Roadmap({ done, setDone }) {
   );
 }
 
+const WB_TOPICS = { streams: "Streams", "string-coding": "Strings", "array-coding": "Arrays" };
+
+function Workbench({ wb, setWb }) {
+  const POOL = useMemo(
+    () => QUESTIONS.filter((q) => WB_TOPICS[q.topic] && q.code),
+    []
+  );
+  const [topicF, setTopicF] = useState("all");
+  const [statusF, setStatusF] = useState("all");
+  const [activeId, setActiveId] = useState(POOL[0] ? POOL[0].id : null);
+  const [showSol, setShowSol] = useState(false);
+  const [sec, setSec] = useState(0);
+  const [running, setRunning] = useState(false);
+  const [saved, setSaved] = useState(false);
+
+  const get = (id) => wb[id] || { code: "", status: "none", notes: "" };
+
+  useEffect(() => {
+    if (!running) return;
+    const t = setInterval(() => setSec((s) => s + 1), 1000);
+    return () => clearInterval(t);
+  }, [running]);
+
+  const counts = POOL.reduce((a, q) => {
+    const st = get(q.id).status;
+    if (st === "solved") a.solved++; else if (st === "review") a.review++;
+    a.total++; return a;
+  }, { solved: 0, review: 0, total: 0 });
+  const pct = counts.total ? Math.round((counts.solved / counts.total) * 100) : 0;
+
+  const visible = POOL.filter((q) => {
+    if (topicF !== "all" && q.topic !== topicF) return false;
+    const st = get(q.id).status || "none";
+    if (statusF !== "all" && st !== statusF) return false;
+    return true;
+  });
+  const active = POOL.find((q) => q.id === activeId) || visible[0] || POOL[0];
+  const e = active ? get(active.id) : { code: "", status: "none", notes: "" };
+
+  const selectQ = (id) => { setActiveId(id); setShowSol(false); setRunning(false); setSec(0); };
+  const update = (patch) => setWb((w) => ({ ...w, [active.id]: { ...get(active.id), ...patch } }));
+  const setCode = (code) => {
+    const cur = get(active.id);
+    update({ code, status: cur.status === "none" && code.trim() ? "progress" : cur.status });
+  };
+  const setStatus = (status) => update({ status: get(active.id).status === status ? "progress" : status });
+  const setNotes = (notes) => update({ notes });
+  const onSave = () => { setSaved(true); setTimeout(() => setSaved(false), 1400); };
+
+  const onKeyDown = (ev) => {
+    if (ev.key === "Tab") {
+      ev.preventDefault();
+      const ta = ev.target, st = ta.selectionStart, en = ta.selectionEnd;
+      setCode(e.code.substring(0, st) + "  " + e.code.substring(en));
+      requestAnimationFrame(() => { ta.selectionStart = ta.selectionEnd = st + 2; });
+    }
+  };
+  const fmt = (n) => { const m = Math.floor(n / 60), s = n % 60; return (m < 10 ? "0" : "") + m + ":" + (s < 10 ? "0" : "") + s; };
+
+  const statusChips = [["all", "All"], ["none", "Not started"], ["progress", "In progress"], ["solved", "Solved"], ["review", "Review"]];
+
+  return (
+    <div>
+      <div className="page-h">
+        <h1>Workbench</h1>
+        <p>Write each solution from memory, time yourself, then reveal and compare. Status and notes save automatically.</p>
+      </div>
+
+      <div className="wb-top">
+        <div className="chiprow" style={{ overflow: "visible" }}>
+          <button className={`chip ${topicF === "all" ? "on" : ""}`} onClick={() => setTopicF("all")}>All coding <span className="cc">{POOL.length}</span></button>
+          {Object.keys(WB_TOPICS).map((t) => (
+            <button key={t} className={`chip ${topicF === t ? "on" : ""}`} onClick={() => setTopicF(t)}>
+              {WB_TOPICS[t]} <span className="cc">{POOL.filter((q) => q.topic === t).length}</span>
+            </button>
+          ))}
+        </div>
+        <div className="wb-stats">
+          <div className="wb-stat"><div className="n">{counts.total}</div><div className="l">Questions</div></div>
+          <div className="wb-stat solved"><div className="n">{counts.solved}</div><div className="l">Solved</div></div>
+          <div className="wb-stat review"><div className="n">{counts.review}</div><div className="l">Review</div></div>
+        </div>
+      </div>
+      <div className="wb-bar"><i style={{ width: pct + "%" }} /></div>
+
+      <div className="wb-grid">
+        <div>
+          <div className="fgroup" style={{ marginBottom: 10 }}>
+            {statusChips.map(([v, l]) => (
+              <button key={v} className={`chip sm ${statusF === v ? "on" : ""}`} onClick={() => setStatusF(v)}>{l}</button>
+            ))}
+          </div>
+          <div className="wb-list">
+            {visible.length === 0 && <div style={{ padding: 18, color: "var(--faint)", fontSize: 13 }}>No questions match this filter.</div>}
+            {visible.map((q, i) => {
+              const st = get(q.id).status;
+              return (
+                <div key={q.id} className={`wb-row ${active && q.id === active.id ? "active" : ""}`} onClick={() => selectQ(q.id)}>
+                  <span className="wb-num">{String(i + 1).padStart(2, "0")}</span>
+                  <span className="wb-name">{q.q}</span>
+                  <span className={`wb-dot ${st}`} />
+                </div>
+              );
+            })}
+          </div>
+        </div>
+
+        <div className="wb-work">
+          {active && (
+            <>
+              <div className="wb-wtop">
+                <div className="wb-meta">
+                  <span className={`badge ${active.difficulty}`}>{active.difficulty}</span>
+                  <span className="badge co">{WB_TOPICS[active.topic]}</span>
+                  <span className="badge freq">{active.freq}</span>
+                </div>
+                <div className="wb-timer">
+                  <span className={`wb-clock ${running ? "run" : ""}`}>{fmt(sec)}</span>
+                  <button className="tbtn" onClick={() => setRunning((r) => !r)}>{running ? "Pause" : "Start"}</button>
+                  <button className="tbtn" onClick={() => { setRunning(false); setSec(0); }}>Reset</button>
+                </div>
+              </div>
+
+              <div className="wb-title">{active.q}</div>
+
+              <div className="wb-lbl">
+                <span>Your solution</span>
+                <span className={`saved-tag ${saved ? "show" : ""}`}>Saved</span>
+              </div>
+              <textarea className="wb-editor" spellCheck={false} value={e.code} onChange={(ev) => setCode(ev.target.value)} onKeyDown={onKeyDown}
+                placeholder="// write your solution here — it saves as you type" />
+
+              <div className="wb-actions">
+                <button className="wb-btn primary" onClick={onSave}>Save</button>
+                <button className={`wb-btn sv ${e.status === "solved" ? "on" : ""}`} onClick={() => setStatus("solved")}>
+                  <Check size={14} strokeWidth={3} />{e.status === "solved" ? "Solved" : "Mark solved"}
+                </button>
+                <button className={`wb-btn rv ${e.status === "review" ? "on" : ""}`} onClick={() => setStatus("review")}>
+                  <Star size={14} />{e.status === "review" ? "For review" : "Mark for review"}
+                </button>
+              </div>
+
+              <div className="wb-sol">
+                <span className="wb-soltoggle" onClick={() => setShowSol((v) => !v)}>
+                  {showSol ? <EyeOff size={15} /> : <Eye size={15} />}{showSol ? "Hide model solution" : "Reveal model solution"}
+                </span>
+                {showSol && (
+                  <>
+                    <div className="code" style={{ marginTop: 12 }}><pre>{active.code}</pre></div>
+                    {active.keyPoints && (
+                      <div className="kp" style={{ marginTop: 10 }}>
+                        <div className="kh"><Target size={12} /> Why it works</div>
+                        <ul>{active.keyPoints.map((k, i) => <li key={i}>{k}</li>)}</ul>
+                      </div>
+                    )}
+                  </>
+                )}
+              </div>
+
+              <div className="wb-lbl" style={{ marginTop: 4 }}><span>Notes</span></div>
+              <textarea className="wb-notes" value={e.notes} onChange={(ev) => setNotes(ev.target.value)}
+                placeholder="Gotchas, alternative approaches, things you forgot…" />
+            </>
+          )}
+        </div>
+      </div>
+    </div>
+  );
+}
+
 export default function App() {
   const [progress, setProgress] = useProgress();
   const [attendance, setAttendance] = usePersisted("coreJavaPrep_attendance_v1", {});
   const [roadmapDone, setRoadmapDone] = usePersisted("coreJavaPrep_roadmap_v1", {});
+  const [workbench, setWorkbench] = usePersisted("coreJavaPrep_workbench_v1", {});
   const [view, setView] = useState("dashboard");
   const [activeTopic, setActiveTopic] = useState("all");
   const [theme, setTheme] = useState("dark");
@@ -3903,6 +4158,7 @@ export default function App() {
     { id: "dashboard", label: "Dashboard", icon: <Activity size={17} /> },
     { id: "questions", label: "Question bank", icon: <ListChecks size={17} /> },
     { id: "practice", label: "Practice", icon: <Brain size={17} /> },
+    { id: "workbench", label: "Workbench", icon: <Code2 size={17} /> },
     { id: "console", label: "Java console", icon: <Terminal size={17} /> },
     { id: "tracker", label: "Daily tracker", icon: <Calendar size={17} /> },
     { id: "roadmap", label: "Project roadmap", icon: <Map size={17} /> },
@@ -3967,6 +4223,9 @@ export default function App() {
           )}
           {view === "practice" && (
             <Practice progress={progress} setStatus={setStatus} />
+          )}
+          {view === "workbench" && (
+            <Workbench wb={workbench} setWb={setWorkbench} />
           )}
           {view === "console" && <Console />}
           {view === "tracker" && (
