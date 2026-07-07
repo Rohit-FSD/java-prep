@@ -5,7 +5,7 @@ import {
   Eye, EyeOff, BookOpen, Award, Cpu, Database, Layers, Boxes, Shield,
   Code2, Zap, Hash, Terminal, GraduationCap, ListChecks, Star, ArrowRight,
   ArrowLeft, Lightbulb, Activity, Coffee, Brain, Sun, Moon, Shuffle, CircleDot,
-  Play, Copy, Loader2, AlertTriangle, Calendar, ChevronLeft, Map, Leaf, Globe, Network, Server
+  Play, Copy, Loader2, AlertTriangle, Calendar, ChevronLeft, Map, Leaf, Globe, Network, Server, Volume2, VolumeX, Mic
 } from "lucide-react";
 
 
@@ -47,6 +47,7 @@ const TOPICS = [
   { id: "spring-web", name: "Spring Web & REST", icon: "Globe", blurb: "Controllers, validation, caching, security." },
   { id: "database", name: "Database & SQL", icon: "Server", blurb: "Joins, ACID, indexing, partitioning, queries." },
   { id: "microservices", name: "Microservices", icon: "Network", blurb: "Communication, Saga, CQRS, resilience, tracing." },
+  { id: "experience", name: "My Experience (Barclays)", icon: "Building2", blurb: "Resume, migrations, Service Mesh, incidents - how to answer." },
 ];
 
 const DIFF = { easy: "Easy", medium: "Medium", hard: "Hard" };
@@ -2344,6 +2345,22 @@ for (int[] row : m)
   { id: "db-31", topic: "database", difficulty: "medium", freq: "Common", companies: ["SERVICE","BANK","PRODUCT"], q: "How does a composite index and the leftmost-prefix rule work?", a: "A composite index covers multiple columns and the column ORDER matters: the DB can use it for queries filtering on a leftmost prefix (col1, or col1+col2) but not for col2 alone. Put the most selective / most-filtered column first, matching your WHERE and ORDER BY.", keyPoints: ["Index (a,b,c): column order matters","Usable for a, a+b, a+b+c (leftmost prefix)","Not usable for b alone; selective column first"] },
   { id: "db-32", topic: "database", difficulty: "medium", freq: "Common", companies: ["SERVICE","BANK","PRODUCT"], q: "How do you debug and optimize a slow SQL query?", a: "Read the EXPLAIN plan to spot full scans, missing indexes, and bad join orders. Add indexes on WHERE/JOIN/ORDER BY columns, avoid SELECT *, keep predicates SARGable (don't wrap an indexed column in a function - WHERE YEAR(d)=2025 blocks the index), and filter rows early.", keyPoints: ["EXPLAIN to find scans / missing indexes","Index WHERE/JOIN/ORDER BY; avoid SELECT *","Keep predicates SARGable (no function on indexed col)"] },
   { id: "db-33", topic: "database", difficulty: "medium", freq: "Common", companies: ["SERVICE","BANK","PRODUCT"], q: "Correlated vs non-correlated subquery?", a: "A non-correlated subquery runs once, independently, and its result feeds the outer query. A correlated subquery references the outer row and runs once per outer row (often slower) - it can frequently be rewritten as a JOIN or window function for better performance.", keyPoints: ["Non-correlated: runs once, independent","Correlated: references outer row, runs per row","Often rewrite correlated as JOIN / window"] },
+
+  // --- My Experience: Barclays project + Service Mesh (resume-based) ---
+  { id: "exp-1", topic: "experience", difficulty: "medium", freq: "Very common", companies: ["SERVICE","BANK","PRODUCT"], q: "Walk me through your current project at Barclays - what is it and what is your role?", a: "HOW TO ANSWER: Give a 60-second structured overview. (1) What the system does: the backend of the corporate banking platform handling payment processing. (2) Your role: core backend developer who owns migrations and production releases. (3) Scale/criticality: payment services with 99.9% uptime. (4) Two or three headline contributions: Java 8->21 migration, Spring->Spring Boot upgrade, Service Mesh migration. Structure it: what it does -> your role -> biggest impact, then pause and let them dig in.", keyPoints: ["System: corporate banking backend, payment processing","Your role + criticality (99.9% uptime)","Headline wins: Java 21 migration, Spring Boot, Service Mesh"] },
+  { id: "exp-2", topic: "experience", difficulty: "medium", freq: "Very common", companies: ["SERVICE","BANK","PRODUCT"], q: "You migrated Java 8 to Java 21. How did you approach it and what were the challenges?", a: "HOW TO ANSWER: Frame it as a phased, low-risk migration. Approach: audit dependencies for Java 21 compatibility, upgrade the build, fix removed/deprecated APIs, run the full regression suite, migrate module by module. Challenges: removed/changed APIs across versions, library/dependency upgrades, and heavy regression testing given payment criticality. Close with the payoff: modern language features, performance, and security. If pushed on features, mention records, sealed classes, pattern matching, var, and virtual-thread awareness.", keyPoints: ["Phased: audit -> upgrade -> fix APIs -> test -> module by module","Challenges: removed APIs, dependency upgrades, regression risk","Payoff: modern features, performance, security"] },
+  { id: "exp-3", topic: "experience", difficulty: "medium", freq: "Common", companies: ["SERVICE","BANK","PRODUCT"], q: "Which Java 17/21 features did you adopt, and why?", a: "HOW TO ANSWER: Talk about what genuinely helped - records for immutable DTOs/value objects, sealed classes for closed domain hierarchies, pattern matching and switch expressions for cleaner branching, var for readability, text blocks for embedded JSON/SQL. Be honest about adopted vs evaluated: interviewers respect 'we adopted records and sealed types, and we are evaluating virtual threads for our I/O-bound endpoints.'", keyPoints: ["records (DTOs), sealed (closed domains), pattern matching/switch","var, text blocks for readability","Be honest: adopted vs evaluating (e.g. virtual threads)"] },
+  { id: "exp-4", topic: "experience", difficulty: "medium", freq: "Common", companies: ["SERVICE","BANK","PRODUCT"], q: "You upgraded Spring to Spring Boot. What changed and what was hard?", a: "HOW TO ANSWER: Explain the value first - auto-configuration, starters, embedded server, externalized config, and actuator mean far less boilerplate XML. What was hard: reconciling existing Spring Security, caching, and logging configuration with Boot's auto-config, overriding defaults where needed, and careful regression testing. Tie it to the outcome you delivered: improved performance and maintainability.", keyPoints: ["Boot value: auto-config, starters, embedded server, actuator","Hard parts: migrating Security/caching/logging, overriding defaults","Outcome: less boilerplate, better maintainability"] },
+  { id: "exp-5", topic: "experience", difficulty: "medium", freq: "Very common", companies: ["SERVICE","BANK","PRODUCT"], q: "Explain the Service Mesh migration (ApaaS v3 to v4). What problem did it solve?", a: "HOW TO ANSWER: Set the context - you moved service-to-service communication onto a service mesh during the platform's v3 to v4 transition. The mesh handles cross-cutting concerns (traffic routing, load balancing, retries, mutual TLS, observability) outside application code via sidecar proxies. Explain how you ensured zero downtime: rolling/canary deployment, backward-compatible APIs, and health checks. Benefit: consistent, secure, observable inter-service communication managed centrally.", keyPoints: ["Moved inter-service comms onto a mesh (sidecars)","Mesh handles routing, retries, mTLS, observability outside app code","Zero downtime via rolling/canary + backward-compatible APIs"] },
+  { id: "exp-6", topic: "experience", difficulty: "medium", freq: "Very common", companies: ["SERVICE","BANK","PRODUCT"], q: "What is a service mesh and why would you use one?", a: "HOW TO ANSWER: A service mesh is an infrastructure layer that manages service-to-service communication using sidecar proxies (e.g. Envoy) deployed alongside each service. It provides traffic management (routing, retries, timeouts, circuit breaking), security (mutual TLS, authz), and observability (metrics, tracing) without changing application code. Use it when you have many services and want consistent, secure, observable communication centrally instead of reimplementing it in every service.", keyPoints: ["Sidecar proxies handle inter-service traffic","Traffic mgmt + mTLS + observability, no app-code changes","Use at scale for consistent, secure comms"] },
+  { id: "exp-7", topic: "experience", difficulty: "medium", freq: "Common", companies: ["SERVICE","BANK","PRODUCT"], q: "How did you ensure zero-downtime deployment?", a: "HOW TO ANSWER: Cover the standard techniques - rolling deployments that update instances gradually behind a load balancer, readiness/health probes so traffic only reaches ready instances, backward-compatible API changes so nothing breaks mid-deploy, backward-compatible DB migrations (expand then contract), and canary/blue-green where needed. Add that you monitor during rollout and can roll back quickly.", keyPoints: ["Rolling/canary/blue-green behind a load balancer","Readiness/health checks; backward-compatible APIs + DB changes","Monitor during rollout; fast rollback"] },
+  { id: "exp-8", topic: "experience", difficulty: "medium", freq: "Common", companies: ["SERVICE","BANK","PRODUCT"], q: "You integrated REST Client/WebClient with SOAP services. How, and why WebClient?", a: "HOW TO ANSWER: You built RESTful APIs in Spring Boot and called external services - some REST, some legacy SOAP - using REST Client/WebClient. WebClient is the modern non-blocking, reactive HTTP client (versus the older blocking RestTemplate), which is better for concurrent external calls. For SOAP you marshalled XML payloads (JAXB) and handled the envelope. Mention resilience on those external calls: timeouts, retries, and error handling.", keyPoints: ["Spring Boot APIs calling REST + legacy SOAP","WebClient: modern non-blocking client (vs RestTemplate)","SOAP: XML/JAXB; add timeouts/retries"] },
+  { id: "exp-9", topic: "experience", difficulty: "medium", freq: "Common", companies: ["SERVICE","BANK","PRODUCT"], q: "You reduced vulnerabilities by 30% using SonarQube. How did you do it?", a: "HOW TO ANSWER: Describe the process - SonarQube scanning in the CI pipeline flagged vulnerable dependencies, code smells, and security hotspots. You removed vulnerable/outdated JARs and legacy OBI code, upgraded dependencies, fixed flagged issues, and enforced quality gates so new issues block the build. The 30% is the measured drop in reported vulnerabilities. Emphasize you made it continuous, not a one-off cleanup.", keyPoints: ["SonarQube in CI flags vulnerable deps + hotspots","Removed vulnerable/legacy JARs, upgraded deps, fixed issues","Quality gates block new issues - continuous"] },
+  { id: "exp-10", topic: "experience", difficulty: "medium", freq: "Very common", companies: ["SERVICE","BANK","PRODUCT"], q: "How do you maintain 99.9% uptime and handle production incidents?", a: "HOW TO ANSWER: Walk through your incident approach - monitoring and alerting (Kibana, logs) to detect fast, triage and mitigate first (rollback or hotfix), then root-cause analysis to prevent recurrence. Mention rapid turnaround, careful release management, and capturing post-incident learnings. 99.9% uptime comes from good testing, gradual rollouts, observability, and quick response. Have one concrete incident story ready in STAR form.", keyPoints: ["Detect fast (monitoring) -> mitigate -> RCA","Careful releases + observability + quick rollback","Prepare one concrete incident story (STAR)"] },
+  { id: "exp-11", topic: "experience", difficulty: "medium", freq: "Common", companies: ["SERVICE","BANK","PRODUCT"], q: "Your testing strategy reached 90% coverage - is coverage enough?", a: "HOW TO ANSWER: Explain the strategy - JUnit + Mockito for unit tests with mocked dependencies, plus integration tests for critical payment flows. Then show maturity: coverage is a proxy, not the goal. 90% with meaningful assertions on business-critical paths beats 100% of trivial getters. Mention edge cases, negative tests, and that you test behaviour, not just lines executed.", keyPoints: ["JUnit + Mockito units + integration for critical flows","Coverage is a proxy - assert behaviour, not lines","Prioritise critical paths, edge/negative cases"] },
+  { id: "exp-12", topic: "experience", difficulty: "medium", freq: "Very common", companies: ["SERVICE","BANK","PRODUCT"], q: "Tell me about a challenging production issue you solved.", a: "HOW TO ANSWER: Use STAR. Situation: a specific payment-processing issue in production. Task: restore service and find the cause. Action: how you triaged, mitigated, and did RCA (logs/Kibana, isolating the recent change, applying the fix). Result: restored uptime, prevented recurrence, and the quantified impact. Pick one real, specific example and keep it to two minutes. This is where nerves show most - rehearse it out loud until it is automatic.", keyPoints: ["STAR: Situation -> Task -> Action -> Result","One specific real incident; quantify the result","Rehearse out loud until automatic"] },
+  { id: "exp-13", topic: "experience", difficulty: "easy", freq: "Very common", companies: ["SERVICE","BANK","PRODUCT"], q: "Why are you looking to switch?", a: "HOW TO ANSWER: Keep it positive and forward-looking. Good framing: you have grown a lot at Barclays - migrations, production ownership, mentoring - and you want bigger technical challenges, broader ownership, and exposure to newer tech (cloud, microservices at scale) that the next role offers. Never bad-mouth your current employer. Tie your reason to what this specific role offers.", keyPoints: ["Positive, forward-looking (growth, bigger challenges)","Never bad-mouth your current employer","Tie it to what the new role offers"] },
+  { id: "exp-14", topic: "experience", difficulty: "medium", freq: "Common", companies: ["SERVICE","BANK","PRODUCT"], q: "How do you mentor juniors and approach code reviews?", a: "HOW TO ANSWER: Show leadership without arrogance. Mentoring: pair programming, knowledge-sharing sessions, and reviewing with explanations (the why, not just the what). Code reviews: you look for correctness, readability, tests, security, and adherence to standards, and you give constructive, kind feedback. Mention that mentoring also sharpens your own understanding. A concrete example of helping a junior grow lands well.", keyPoints: ["Pairing, knowledge-sharing, review with the 'why'","Reviews: correctness, tests, security, readability, standards","Constructive/kind feedback; one concrete example"] },
 ];
 
 // ---- Market insights from research (2025–2026 trend snapshot) ----
@@ -2651,7 +2668,7 @@ const ROADMAP = [
 //  Core Java Prep — single-file dashboard
 // ============================================================
 
-const ICONS = { Boxes, Hash, Layers, Cpu, Shield, Zap, Sparkles, Code2, Database, Terminal, Leaf, Globe, Network, Server };
+const ICONS = { Boxes, Hash, Layers, Cpu, Shield, Zap, Sparkles, Code2, Database, Terminal, Leaf, Globe, Network, Server, Building2 };
 const COMPANY_LABELS = { SERVICE: "Service-based", BANK: "Banking", PRODUCT: "Product" };
 const COMPANY_SHORT = { SERVICE: "Service", BANK: "Bank", PRODUCT: "Product" };
 const STORE_KEY = "coreJavaPrep_v1";
@@ -3105,6 +3122,120 @@ const CSS = `
 .wb-soltoggle:hover{color:var(--ink)}
 .wb-notes{width:100%;margin-top:16px;min-height:58px;resize:vertical;font-family:var(--sans);font-size:13px;background:var(--bg2);color:var(--ink);border:1px solid var(--line-soft);border-radius:9px;padding:10px 12px;outline:none;transition:.15s}
 .wb-notes:focus{border-color:var(--amber)}
+/* mock interview */
+.mi{max-width:820px;margin:0 auto}
+.mi-hero{background:linear-gradient(150deg,var(--panel2),var(--panel));border:1px solid var(--line);border-radius:16px;padding:22px 24px}
+.mi-hero h1{font-size:22px;font-weight:800;letter-spacing:-.5px}
+.mi-hero p{color:var(--dim);font-size:13.5px;margin-top:8px;line-height:1.6}
+.mi-tips{margin-top:14px;display:flex;flex-direction:column;gap:8px}
+.mi-tip{display:flex;gap:9px;font-size:12.8px;color:var(--dim);line-height:1.5}
+.mi-tip svg{flex:none;margin-top:2px;color:var(--amber)}
+.mi-sec{font-family:var(--mono);font-size:10px;letter-spacing:1.2px;text-transform:uppercase;color:var(--faint);margin:22px 0 10px}
+.mi-areas{display:flex;flex-wrap:wrap;gap:8px}
+.mi-area{padding:8px 13px;border-radius:9px;font-size:12.5px;font-weight:600;border:1px solid var(--line-soft);background:var(--panel);color:var(--dim);transition:.14s;display:inline-flex;align-items:center;gap:7px}
+.mi-area:hover{border-color:var(--line);color:var(--ink)}
+.mi-area.on{background:var(--amber-bg);border-color:rgba(242,169,59,.4);color:var(--amber2)}
+.mi-area .ct{font-family:var(--mono);font-size:10px;opacity:.7}
+.mi-row{display:flex;flex-wrap:wrap;gap:10px;align-items:center;margin-top:8px}
+.mi-toggle{display:inline-flex;align-items:center;gap:8px;font-size:12.5px;color:var(--dim);cursor:pointer;user-select:none}
+.mi-start{margin-top:22px;width:100%;padding:15px;border-radius:13px;font-weight:800;font-size:15px;background:linear-gradient(140deg,var(--amber),#D98A24);color:#1a1205;display:flex;align-items:center;justify-content:center;gap:10px;transition:.15s;box-shadow:0 8px 22px -10px rgba(242,169,59,.6)}
+.mi-start:hover{filter:brightness(1.05)}
+.mi-start:disabled{opacity:.5;box-shadow:none;cursor:default}
+.mi-bar{height:6px;border-radius:99px;background:var(--line);overflow:hidden;margin:2px 0 16px}
+.mi-bar i{display:block;height:100%;background:linear-gradient(90deg,var(--amber),var(--amber2));transition:width .4s}
+.mi-top{display:flex;align-items:center;justify-content:space-between;margin-bottom:8px}
+.mi-qn{font-family:var(--mono);font-size:11.5px;color:var(--faint)}
+.mi-clock{font-family:var(--mono);font-size:12px;color:var(--dim)}
+.mi-card{background:var(--panel);border:1px solid var(--line);border-radius:16px;padding:26px;box-shadow:0 24px 60px -34px rgba(0,0,0,.6)}
+.mi-who{display:flex;align-items:center;gap:11px;margin-bottom:16px}
+.mi-av{width:40px;height:40px;border-radius:11px;background:var(--indigo-bg);color:var(--indigo);display:grid;place-items:center;flex:none}
+.mi-who b{font-size:13px;display:block}
+.mi-who span{font-size:11.5px;color:var(--faint)}
+.mi-badges{display:flex;gap:7px;flex-wrap:wrap;margin-bottom:12px}
+.mi-q{font-size:19px;font-weight:700;letter-spacing:-.3px;line-height:1.45}
+.mi-prompt{margin-top:18px;background:var(--bg2);border:1px dashed var(--line);border-radius:11px;padding:13px 15px;font-size:12.6px;color:var(--faint);display:flex;gap:10px;align-items:flex-start;line-height:1.5}
+.mi-prompt svg{flex:none;margin-top:1px;color:var(--amber)}
+.mi-revealbtn{margin-top:18px;width:100%;padding:13px;border-radius:12px;background:var(--indigo-bg);border:1px solid rgba(136,150,255,.4);color:var(--indigo);font-weight:700;font-size:14px;display:flex;align-items:center;justify-content:center;gap:9px;transition:.15s}
+.mi-revealbtn:hover{background:rgba(136,150,255,.2)}
+.mi-ans{margin-top:16px;animation:slide .3s}
+.mi-ans .al{font-family:var(--mono);font-size:10px;letter-spacing:1px;text-transform:uppercase;color:var(--emerald);margin-bottom:8px;display:flex;align-items:center;gap:6px}
+.mi-ans .atext{font-size:13.6px;line-height:1.7;color:var(--ink);opacity:.94}
+.mi-rate{margin-top:22px}
+.mi-rate .rl{font-size:12.5px;color:var(--dim);text-align:center;margin-bottom:11px}
+.mi-rbtns{display:grid;grid-template-columns:repeat(3,1fr);gap:10px}
+.mi-rbtn{padding:13px 10px;border-radius:12px;font-weight:700;font-size:13px;border:1px solid;display:flex;flex-direction:column;align-items:center;gap:5px;transition:.15s;cursor:pointer}
+.mi-rbtn small{font-weight:500;font-size:10px;opacity:.85}
+.mi-rbtn.bad{background:var(--rose-bg);border-color:rgba(255,107,138,.4);color:var(--rose)}
+.mi-rbtn.mid{background:var(--amber-bg);border-color:rgba(242,169,59,.4);color:var(--amber2)}
+.mi-rbtn.good{background:var(--emerald-bg);border-color:rgba(47,211,160,.4);color:var(--emerald)}
+.mi-rbtn:hover{filter:brightness(1.08)}
+.mi-quit{margin-top:16px;text-align:center}
+.mi-quit button{font-size:12px;color:var(--faint);cursor:pointer}
+.mi-quit button:hover{color:var(--dim)}
+.mi-score{text-align:center;padding:10px 0 4px}
+.mi-score .big{font-size:52px;font-weight:800;letter-spacing:-2px;line-height:1}
+.mi-score .lbl{font-size:13px;color:var(--dim);margin-top:6px}
+.mi-msg{text-align:center;color:var(--dim);font-size:14px;line-height:1.6;max-width:540px;margin:10px auto 0}
+.mi-stats3{display:grid;grid-template-columns:repeat(3,1fr);gap:12px;margin:20px 0 6px}
+.mi-st{background:var(--panel);border:1px solid var(--line-soft);border-radius:12px;padding:14px;text-align:center}
+.mi-st .v{font-size:20px;font-weight:800}
+.mi-st .l{font-size:11px;color:var(--dim);margin-top:2px}
+.mi-break{display:flex;flex-direction:column;gap:9px}
+.mi-brow{display:flex;align-items:center;gap:12px}
+.mi-brow .bn{font-size:12.6px;width:150px;flex:none;color:var(--dim);white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
+.mi-brow .bb{flex:1;height:8px;border-radius:5px;background:var(--line);overflow:hidden}
+.mi-brow .bb i{display:block;height:100%;border-radius:5px}
+.mi-brow .bp{font-family:var(--mono);font-size:11px;color:var(--faint);width:44px;text-align:right;flex:none}
+.mi-actions{display:flex;gap:10px;margin-top:22px;flex-wrap:wrap}
+.mi-actions button{flex:1;min-width:150px;padding:13px;border-radius:12px;font-weight:700;font-size:13.5px;display:flex;align-items:center;justify-content:center;gap:8px;transition:.15s;cursor:pointer}
+.mi-again{background:linear-gradient(140deg,var(--amber),#D98A24);color:#1a1205;border:none}
+.mi-again:hover{filter:brightness(1.05)}
+.mi-review{background:var(--panel);border:1px solid var(--line);color:var(--dim)}
+.mi-review:hover{color:var(--ink);border-color:var(--dim)}
+.mi-revq{margin-top:8px;border:1px solid var(--line-soft);border-radius:11px;overflow:hidden}
+.mi-revq details{border-bottom:1px solid var(--line-soft)}
+.mi-revq details:last-child{border-bottom:none}
+.mi-revq summary{padding:12px 14px;cursor:pointer;font-size:12.8px;font-weight:600;list-style:none;display:flex;gap:8px;align-items:flex-start}
+.mi-revq summary::-webkit-details-marker{display:none}
+.mi-revq .rc{padding:0 14px 14px 14px;font-size:12.8px;color:var(--dim);line-height:1.65}
+.mi-hist{display:flex;flex-direction:column;gap:7px}
+.mi-hrow{display:flex;align-items:center;gap:12px;background:var(--panel);border:1px solid var(--line-soft);border-radius:10px;padding:9px 13px}
+.mi-hrow .hd{font-size:12px;color:var(--dim);flex:1}
+.mi-hrow .hbar{width:90px;height:6px;border-radius:5px;background:var(--line);overflow:hidden}
+.mi-hrow .hbar i{display:block;height:100%;border-radius:5px}
+.mi-hrow .hs{font-family:var(--mono);font-size:13px;font-weight:700;width:40px;text-align:right}
+.mi-voicebar{display:flex;gap:10px;align-items:center;margin-top:16px;flex-wrap:wrap}
+.mi-vbtn{font-size:12px;font-weight:600;padding:6px 12px;border-radius:8px;border:1px solid var(--line);color:var(--dim);background:var(--bg2);display:inline-flex;align-items:center;gap:7px;transition:.15s;cursor:pointer}
+.mi-vbtn:hover{color:var(--ink);border-color:var(--dim)}
+.mi-mic{margin-top:14px;width:100%;padding:15px;border-radius:12px;border:1px solid rgba(242,169,59,.45);background:var(--amber-bg);color:var(--amber2);font-weight:700;font-size:14.5px;display:flex;align-items:center;justify-content:center;gap:10px;transition:.15s;cursor:pointer}
+.mi-mic:hover{background:rgba(242,169,59,.2)}
+.mi-mic.live{background:var(--rose-bg);border-color:rgba(255,107,138,.5);color:var(--rose);animation:mipulse 1.3s ease-in-out infinite}
+@keyframes mipulse{0%,100%{box-shadow:0 0 0 0 rgba(255,107,138,.4)}50%{box-shadow:0 0 0 9px rgba(255,107,138,0)}}
+.mi-transcript{width:100%;margin-top:12px;min-height:92px;resize:vertical;font-family:var(--sans);font-size:13.5px;line-height:1.6;background:var(--bg2);color:var(--ink);border:1px solid var(--line-soft);border-radius:11px;padding:12px 14px;outline:none;transition:.15s}
+.mi-transcript:focus{border-color:var(--amber)}
+.mi-your{margin-top:2px;margin-bottom:16px;background:var(--indigo-bg);border:1px solid rgba(136,150,255,.25);border-radius:11px;padding:13px 15px}
+.mi-your .al{font-family:var(--mono);font-size:10px;letter-spacing:1px;text-transform:uppercase;margin-bottom:7px;display:flex;align-items:center;gap:6px}
+.mi-your .atext{font-size:13.4px;line-height:1.65}
+.mi-micnote{margin-top:12px;font-size:11.5px;color:var(--faint);line-height:1.5}
+.mi-micerr{margin-top:10px;font-size:12px;color:var(--rose);display:flex;gap:7px;align-items:flex-start;line-height:1.5}
+.mi-micerr svg{flex:none;margin-top:1px}
+.mi-eval{margin:14px 0 4px;background:var(--bg2);border:1px solid var(--line-soft);border-radius:11px;padding:12px 15px;display:flex;align-items:center;gap:13px}
+.mi-evpct{font-family:var(--mono);font-size:22px;font-weight:800;flex:none}
+.mi-evtxt{font-size:12.8px;color:var(--dim);line-height:1.4}
+.mi-kplist{margin-top:12px;background:var(--bg2);border:1px solid var(--line-soft);border-radius:10px;padding:12px 14px}
+.mi-kplist .kh{font-family:var(--mono);font-size:10px;letter-spacing:1px;text-transform:uppercase;color:var(--amber);margin-bottom:9px;display:flex;align-items:center;gap:6px}
+.mi-kplist ul{list-style:none;display:flex;flex-direction:column;gap:8px}
+.mi-kplist li{font-size:12.6px;line-height:1.5;display:flex;gap:9px;align-items:flex-start}
+.mi-kplist li svg{flex:none;margin-top:2px}
+.mi-kplist li.miss{color:var(--faint)}
+.mi-kplist li.hit{color:var(--ink)}
+.mi-aibtn{margin-top:14px;width:100%;padding:11px;border-radius:10px;border:1px dashed rgba(136,150,255,.5);background:var(--indigo-bg);color:var(--indigo);font-weight:600;font-size:12.8px;display:flex;align-items:center;justify-content:center;gap:8px;cursor:pointer;transition:.15s}
+.mi-aibtn:hover{background:rgba(136,150,255,.2)}
+.mi-aibtn:disabled{opacity:.6;cursor:default}
+.mi-aibox{margin-top:12px;background:var(--panel2);border:1px solid var(--line);border-radius:11px;padding:13px 15px}
+.mi-aibox .as{font-weight:800;font-size:15px}
+.mi-aibox .af{font-size:12.8px;color:var(--dim);line-height:1.65;margin-top:6px}
+.mi-rbtn.sugg{outline:2px solid currentColor;outline-offset:2px}
 :focus-visible{outline:2px solid var(--amber);outline-offset:2px;border-radius:6px}
 `;
 
@@ -4291,11 +4422,313 @@ function Workbench({ wb, setWb }) {
   );
 }
 
+const MI_AREAS = [
+  { id: "core", label: "Java Core", topics: ["oop", "strings", "exceptions", "java8", "modern", "jvm", "generics", "serialization", "coding"] },
+  { id: "collections", label: "Collections", topics: ["collections"] },
+  { id: "concurrency", label: "Concurrency", topics: ["concurrency"] },
+  { id: "springboot", label: "Spring Boot", topics: ["spring"] },
+  { id: "rest", label: "REST", topics: ["spring-web"] },
+  { id: "jpa", label: "JPA", topics: ["jpa", "hibernate"] },
+  { id: "database", label: "Database / SQL", topics: ["database"] },
+  { id: "microservices", label: "Microservices", topics: ["microservices"] },
+  { id: "experience", label: "My Experience", topics: ["experience"] },
+];
+const MI_DEFAULT = ["core", "collections", "springboot", "rest", "jpa", "experience"];
+const MI_PTS = { confident: 2, partial: 1, struggled: 0 };
+function miShuffle(a) { const x = [...a]; for (let i = x.length - 1; i > 0; i--) { const j = Math.floor(Math.random() * (i + 1)); [x[i], x[j]] = [x[j], x[i]]; } return x; }
+const miScoreColor = (p) => p >= 75 ? "var(--emerald)" : p >= 50 ? "var(--amber)" : "var(--rose)";
+
+function miSpeak(text) {
+  if (typeof window === "undefined" || !window.speechSynthesis) return;
+  window.speechSynthesis.cancel();
+  const u = new SpeechSynthesisUtterance(text);
+  u.lang = "en-US"; u.rate = 1;
+  const voices = window.speechSynthesis.getVoices();
+  const v = voices.find((x) => /en[-_]US/i.test(x.lang)) || voices.find((x) => /^en/i.test(x.lang));
+  if (v) u.voice = v;
+  window.speechSynthesis.speak(u);
+}
+function miStopSpeak() { if (typeof window !== "undefined" && window.speechSynthesis) window.speechSynthesis.cancel(); }
+
+const MI_STOP = new Set("the a an and or of to in on for with is are be as by it its that this you your we our they their them then than into onto from at can will would should could may might not no yes use used using via more most less only just also which what when where how why who via about across against per each any all such".split(" "));
+function miTokens(str) { return (String(str || "").toLowerCase().match(/[a-z0-9+#]+/g) || []).filter((w) => w.length >= 3 && !MI_STOP.has(w)); }
+function miEvaluate(transcript, keyPoints) {
+  const said = new Set(miTokens(transcript));
+  const kps = (keyPoints || []).map((kp) => {
+    const toks = [...new Set(miTokens(kp))];
+    const hit = toks.filter((t) => said.has(t)).length;
+    return { text: kp, covered: toks.length ? hit / toks.length >= 0.34 : false };
+  });
+  const total = kps.length, cov = kps.filter((k) => k.covered).length;
+  const pct = total ? Math.round((cov / total) * 100) : 0;
+  const suggested = pct >= 67 ? "confident" : pct >= 34 ? "partial" : "struggled";
+  return { kps, cov, total, pct, suggested };
+}
+async function miGradeAI({ question, answer, keyPoints }) {
+  const res = await fetch("https://api.anthropic.com/v1/messages", {
+    method: "POST", headers: { "Content-Type": "application/json" },
+    body: JSON.stringify({
+      model: "claude-sonnet-4-6", max_tokens: 400,
+      messages: [{ role: "user", content:
+        "You are a senior Java interviewer scoring a candidate's spoken answer.\n\nQUESTION:\n" + question +
+        "\n\nCANDIDATE ANSWER:\n" + (answer || "(no answer given)") +
+        "\n\nKEY POINTS EXPECTED:\n- " + (keyPoints || []).join("\n- ") +
+        "\n\nReturn ONLY JSON, no markdown: {\"score\": <integer 0-10>, \"feedback\": \"2-3 specific, encouraging sentences on what was good and what to improve\"}" }]
+    })
+  });
+  if (!res.ok) throw new Error("HTTP " + res.status);
+  const data = await res.json();
+  const text = (data.content || []).filter((b) => b.type === "text").map((b) => b.text).join("");
+  return JSON.parse(text.replace(/```json|```/g, "").trim());
+}
+
+function MockInterview({ mock, setMock }) {
+  const [phase, setPhase] = useState("setup");
+  const [selected, setSelected] = useState(MI_DEFAULT);
+  const [count, setCount] = useState(8);
+  const [weakMode, setWeakMode] = useState(false);
+  const [deck, setDeck] = useState([]);
+  const [idx, setIdx] = useState(0);
+  const [revealed, setRevealed] = useState(false);
+  const [ratings, setRatings] = useState({});
+  const [result, setResult] = useState(null);
+  const [elapsed, setElapsed] = useState(0);
+  const startRef = React.useRef(0);
+
+  const [voiceOn, setVoiceOn] = useState(true);
+  const [listening, setListening] = useState(false);
+  const [transcript, setTranscript] = useState("");
+  const [interim, setInterim] = useState("");
+  const [micSupported, setMicSupported] = useState(false);
+  const [micError, setMicError] = useState("");
+  const [ai, setAi] = useState({ loading: false, res: null, err: "" });
+  const recRef = React.useRef(null);
+  const wantRef = React.useRef(false);
+
+  useEffect(() => {
+    const SR = typeof window !== "undefined" && (window.SpeechRecognition || window.webkitSpeechRecognition);
+    if (!SR) { setMicSupported(false); return; }
+    setMicSupported(true);
+    const rec = new SR();
+    rec.continuous = true; rec.interimResults = true; rec.lang = "en-US";
+    rec.onresult = (e) => {
+      let fin = "", inter = "";
+      for (let i = e.resultIndex; i < e.results.length; i++) {
+        const seg = e.results[i][0].transcript;
+        if (e.results[i].isFinal) fin += seg + " "; else inter += seg;
+      }
+      if (fin) setTranscript((p) => p + fin);
+      setInterim(inter);
+    };
+    rec.onerror = (e) => {
+      if (e.error === "no-speech" || e.error === "aborted") return;
+      wantRef.current = false; setListening(false);
+      const map = { "not-allowed": "Microphone blocked. Allow mic access in your browser. (Note: the mic does not work in the embedded preview - run the app locally in Chrome/Edge.)", "service-not-allowed": "Microphone blocked by the browser/OS. Allow mic access and use Chrome or Edge.", "audio-capture": "No microphone found. Check your mic is connected." };
+      setMicError(map[e.error] || ("Speech error: " + e.error));
+    };
+    rec.onend = () => { if (wantRef.current) { try { rec.start(); } catch (x) { setListening(false); } } else setListening(false); };
+    recRef.current = rec;
+    return () => { wantRef.current = false; try { rec.abort(); } catch (x) {} };
+  }, []);
+
+  const startListen = () => { if (!recRef.current) return; setMicError(""); setInterim(""); wantRef.current = true; try { recRef.current.start(); setListening(true); } catch (x) {} };
+  const stopListen = () => { wantRef.current = false; if (recRef.current) { try { recRef.current.stop(); } catch (x) {} } setListening(false); setInterim(""); };
+
+  const history = (mock && mock.history) || [];
+  const seen = (mock && mock.seen) || {};
+  const savedRatings = (mock && mock.ratings) || {};
+
+  useEffect(() => {
+    if (phase !== "running") return;
+    const t = setInterval(() => setElapsed(Math.round((Date.now() - startRef.current) / 1000)), 1000);
+    return () => clearInterval(t);
+  }, [phase]);
+
+  useEffect(() => {
+    if (phase !== "running") { miStopSpeak(); return; }
+    const q = deck[idx];
+    if (q && voiceOn) { const id = setTimeout(() => miSpeak("Question " + (idx + 1) + ". " + q.q), 250); return () => { clearTimeout(id); miStopSpeak(); }; }
+    return () => miStopSpeak();
+    // eslint-disable-next-line
+  }, [idx, phase]);
+
+  const areasSel = MI_AREAS.filter((a) => selected.includes(a.id));
+  const poolCount = areasSel.reduce((s, a) => s + QUESTIONS.filter((q) => a.topics.includes(q.topic) && (q.a || (q.keyPoints && q.keyPoints.length))).length, 0);
+  const unseenCount = areasSel.reduce((s, a) => s + QUESTIONS.filter((q) => a.topics.includes(q.topic) && (q.a || (q.keyPoints && q.keyPoints.length)) && !seen[q.id]).length, 0);
+  const toggleArea = (id) => setSelected((s) => s.includes(id) ? s.filter((x) => x !== id) : [...s, id]);
+
+  const buildDeck = () => {
+    const perArea = areasSel.map((a) => {
+      let qs = QUESTIONS.filter((q) => a.topics.includes(q.topic) && (q.a || (q.keyPoints && q.keyPoints.length)));
+      if (weakMode) qs = qs.filter((q) => savedRatings[q.id] && savedRatings[q.id] !== "confident");
+      return miShuffle(qs.filter((q) => !seen[q.id])).concat(miShuffle(qs.filter((q) => seen[q.id])));
+    });
+    const out = []; let progress = true;
+    while (out.length < count && progress) { progress = false; for (const pool of perArea) { if (pool.length) { out.push(pool.shift()); progress = true; if (out.length >= count) break; } } }
+    return miShuffle(out);
+  };
+
+  const resetTurn = () => { setTranscript(""); setInterim(""); setAi({ loading: false, res: null, err: "" }); };
+  const start = () => { const d = buildDeck(); if (!d.length) return; setDeck(d); setIdx(0); setRevealed(false); setRatings({}); setResult(null); resetTurn(); startRef.current = Date.now(); setElapsed(0); setPhase("running"); };
+  const quit = () => { stopListen(); miStopSpeak(); setPhase("setup"); };
+
+  const finish = (finalRatings, finalDeck) => {
+    stopListen(); miStopSpeak();
+    const earned = finalDeck.reduce((s, q) => s + (MI_PTS[finalRatings[q.id]] || 0), 0);
+    const max = finalDeck.length * 2, score = max ? Math.round((earned / max) * 100) : 0;
+    const bd = {};
+    finalDeck.forEach((q) => { const a = MI_AREAS.find((x) => x.topics.includes(q.topic)); if (!a) return; bd[a.label] = bd[a.label] || { e: 0, m: 0 }; bd[a.label].e += MI_PTS[finalRatings[q.id]] || 0; bd[a.label].m += 2; });
+    const durationSec = Math.round((Date.now() - startRef.current) / 1000);
+    const struggled = finalDeck.filter((q) => finalRatings[q.id] !== "confident");
+    setResult({ score, earned, max, bd, struggled, durationSec, deck: finalDeck });
+    const session = { d: dateKey(new Date()), score, count: finalDeck.length, durationSec };
+    setMock((m) => ({ history: [session, ...(((m && m.history) || []))].slice(0, 60), seen: { ...(((m && m.seen) || {})), ...Object.fromEntries(finalDeck.map((q) => [q.id, true])) }, ratings: { ...(((m && m.ratings) || {})), ...finalRatings } }));
+    setPhase("result");
+  };
+
+  const rate = (rt) => { const cur = deck[idx]; const next = { ...ratings, [cur.id]: rt }; setRatings(next); stopListen(); miStopSpeak(); resetTurn(); if (idx + 1 < deck.length) { setIdx(idx + 1); setRevealed(false); } else finish(next, deck); };
+
+  const runAi = async () => {
+    const q = deck[idx]; setAi({ loading: true, res: null, err: "" });
+    try { const out = await miGradeAI({ question: q.q, answer: transcript.trim(), keyPoints: q.keyPoints }); setAi({ loading: false, res: out, err: "" }); }
+    catch (e) { setAi({ loading: false, res: null, err: "Detailed AI feedback needs the online Claude app - it can't run on a local/Netlify build. Your key-point coverage above is your offline score." }); }
+  };
+
+  const fmt = (n) => { const m = Math.floor(n / 60), s = n % 60; return (m < 10 ? "0" : "") + m + ":" + (s < 10 ? "0" : "") + s; };
+  const best = history.length ? Math.max(...history.map((h) => h.score)) : 0;
+
+  if (phase === "setup") {
+    return (
+      <div className="mi">
+        <div className="mi-hero">
+          <h1>Mock Interview</h1>
+          <p>A real spoken interview. The interviewer <b>reads each question aloud</b>, you <b>answer by speaking</b>, and it <b>auto-checks your answer</b> against the key points, suggests a score, and tracks your progress over time.</p>
+          <div className="mi-tips">
+            <div className="mi-tip"><Volume2 size={14} />The interviewer speaks each question - answer out loud, tap the mic to capture your reply.</div>
+            <div className="mi-tip"><Target size={14} />After you answer it auto-checks coverage of the key points and suggests your score - you confirm or adjust.</div>
+            <div className="mi-tip"><Shuffle size={14} />Every round pulls fresh questions you haven't seen - so each day is different.</div>
+            <div className="mi-tip"><Building2 size={14} />Your Barclays & Service Mesh questions include a "how to answer" script - rehearse those most.</div>
+          </div>
+        </div>
+        <div className="mi-sec">// pick your topics</div>
+        <div className="mi-areas">
+          {MI_AREAS.map((a) => { const n = QUESTIONS.filter((q) => a.topics.includes(q.topic) && (q.a || (q.keyPoints && q.keyPoints.length))).length; return <button key={a.id} className={`mi-area ${selected.includes(a.id) ? "on" : ""}`} onClick={() => toggleArea(a.id)}>{a.label} <span className="ct">{n}</span></button>; })}
+        </div>
+        <div className="mi-sec">// round length</div>
+        <div className="mi-row">
+          {[5, 8, 10, 15].map((c) => <button key={c} className={`chip sm ${count === c ? "on" : ""}`} onClick={() => setCount(c)}>{c} questions</button>)}
+          <button className={`chip sm ${weakMode ? "on" : ""}`} style={{ marginLeft: 8 }} onClick={() => setWeakMode((v) => !v)}><RotateCcw size={12} /> Focus on weak</button>
+          <button className={`chip sm ${voiceOn ? "on" : ""}`} onClick={() => { setVoiceOn((v) => { if (v) miStopSpeak(); return !v; }); }}>{voiceOn ? <Volume2 size={12} /> : <VolumeX size={12} />} Interviewer voice</button>
+        </div>
+        <div className="mi-micnote">{micSupported ? "Mic ready. Speaking works best in Chrome/Edge on your local build (allow the microphone when asked). It won't work in the embedded chat preview." : "Speech-to-text needs Chrome or Edge. The interviewer voice still works everywhere; you can type your answers."} · <b>{unseenCount}</b> fresh questions available.</div>
+        <button className="mi-start" onClick={start} disabled={!selected.length || poolCount === 0}><GraduationCap size={18} /> Start mock interview</button>
+        {history.length > 0 && (
+          <>
+            <div className="mi-stats3" style={{ marginTop: 26 }}>
+              <div className="mi-st"><div className="v">{history.length}</div><div className="l">Sessions</div></div>
+              <div className="mi-st"><div className="v" style={{ color: miScoreColor(best) }}>{best}%</div><div className="l">Best score</div></div>
+              <div className="mi-st"><div className="v">{Math.round(history.reduce((s, h) => s + h.score, 0) / history.length)}%</div><div className="l">Average</div></div>
+            </div>
+            <div className="mi-sec">// recent rounds</div>
+            <div className="mi-hist">{history.slice(0, 8).map((h, i) => <div className="mi-hrow" key={i}><span className="hd">{h.d} · {h.count} Qs · {fmt(h.durationSec || 0)}</span><span className="hbar"><i style={{ width: h.score + "%", background: miScoreColor(h.score) }} /></span><span className="hs" style={{ color: miScoreColor(h.score) }}>{h.score}%</span></div>)}</div>
+          </>
+        )}
+      </div>
+    );
+  }
+
+  if (phase === "running") {
+    const q = deck[idx];
+    const topic = topicById[q.topic];
+    const isExp = q.topic === "experience";
+    const ev = revealed && transcript.trim() && q.keyPoints ? miEvaluate(transcript, q.keyPoints) : null;
+    const sugLabel = ev ? (ev.suggested === "confident" ? "Confident" : ev.suggested === "partial" ? "Partial" : "Struggled") : "";
+    return (
+      <div className="mi">
+        <div className="mi-top"><span className="mi-qn">Question {idx + 1} of {deck.length}</span><span className="mi-clock">{fmt(elapsed)}</span></div>
+        <div className="mi-bar"><i style={{ width: (idx / deck.length) * 100 + "%" }} /></div>
+        <div className="mi-card">
+          <div className="mi-who"><div className="mi-av"><Brain size={20} /></div><div><b>Interviewer</b><span>{isExp ? "Let's talk about your experience." : "Let's dig into some fundamentals."}</span></div></div>
+          <div className="mi-badges"><span className="badge freq">{topic.name.split(" ")[0]}</span><span className={`badge ${q.difficulty}`}>{q.difficulty}</span><span className="badge freq">{q.freq}</span></div>
+          <div className="mi-q">{q.q}</div>
+          <div className="mi-voicebar">
+            <button className="mi-vbtn" onClick={() => miSpeak(q.q)}><Volume2 size={13} /> Repeat question</button>
+            <button className={`chip sm ${voiceOn ? "on" : ""}`} onClick={() => { setVoiceOn((v) => { if (v) miStopSpeak(); return !v; }); }}>{voiceOn ? <Volume2 size={12} /> : <VolumeX size={12} />} Voice</button>
+          </div>
+          {!revealed ? (
+            <>
+              {micSupported ? (
+                <>
+                  <button className={`mi-mic ${listening ? "live" : ""}`} onClick={listening ? stopListen : startListen}><Mic size={18} /> {listening ? "Listening… tap to stop" : "Speak your answer"}</button>
+                  <textarea className="mi-transcript" value={transcript + (interim ? " " + interim : "")} onChange={(e) => { setTranscript(e.target.value); setInterim(""); }} placeholder="Your spoken answer appears here as you talk… (you can also type/edit)" />
+                  {micError && <div className="mi-micerr"><AlertTriangle size={13} />{micError}</div>}
+                </>
+              ) : (
+                <>
+                  <div className="mi-prompt"><Lightbulb size={14} />Answer out loud as if I'm across from you. (Live speech capture needs Chrome/Edge; here you can type your answer.)</div>
+                  <textarea className="mi-transcript" value={transcript} onChange={(e) => setTranscript(e.target.value)} placeholder="Type your answer…" />
+                </>
+              )}
+              <button className="mi-revealbtn" onClick={() => { stopListen(); miStopSpeak(); setRevealed(true); }}><Eye size={17} /> Reveal & check my answer</button>
+            </>
+          ) : (
+            <>
+              {transcript.trim() && (<div className="mi-your"><div className="al" style={{ color: "var(--indigo)" }}><Mic size={12} /> Your answer</div><div className="atext">{transcript.trim()}</div></div>)}
+              {ev && (<div className="mi-eval"><span className="mi-evpct" style={{ color: miScoreColor(ev.pct) }}>{ev.pct}%</span><span className="mi-evtxt">Auto-check · you hit <b>{ev.cov}</b> of <b>{ev.total}</b> key points{ev.cov < ev.total ? " — see what to add below" : " — great coverage!"}</span></div>)}
+              <div className="mi-ans">
+                <div className="al"><Check size={12} strokeWidth={3} /> {isExp ? "How to answer" : "Model answer"}</div>
+                {q.a && <div className="atext">{q.a}</div>}
+                {q.keyPoints && (
+                  <div className="mi-kplist">
+                    <div className="kh"><Target size={12} /> {ev ? "Key points — what you covered" : "Key points to hit"}</div>
+                    <ul>{q.keyPoints.map((k, i) => { const hit = ev ? ev.kps[i].covered : null; return <li key={i} className={hit === false ? "miss" : "hit"}>{ev ? (hit ? <Check size={13} strokeWidth={3} color="var(--emerald)" /> : <CircleDot size={13} color="var(--faint)" />) : <Target size={12} color="var(--amber)" />} {k}</li>; })}</ul>
+                  </div>
+                )}
+                {q.code && <div className="code" style={{ marginTop: 12 }}><pre>{q.code}</pre></div>}
+              </div>
+              {transcript.trim() && (
+                <>
+                  <button className="mi-aibtn" onClick={runAi} disabled={ai.loading}>{ai.loading ? <><Loader2 size={14} className="spin" /> Grading…</> : <><Sparkles size={14} /> Get detailed AI feedback (online)</>}</button>
+                  {ai.res && <div className="mi-aibox"><div className="as" style={{ color: miScoreColor(ai.res.score * 10) }}>AI score: {ai.res.score}/10</div><div className="af">{ai.res.feedback}</div></div>}
+                  {ai.err && <div className="mi-aibox"><div className="af">{ai.err}</div></div>}
+                </>
+              )}
+              <div className="mi-rate">
+                <div className="rl">{ev ? <>Auto-suggested: <b style={{ color: miScoreColor(ev.pct) }}>{sugLabel}</b>. Confirm or adjust:</> : "How did your answer compare?"}</div>
+                <div className="mi-rbtns">
+                  <button className={`mi-rbtn bad ${ev && ev.suggested === "struggled" ? "sugg" : ""}`} onClick={() => rate("struggled")}><X size={16} />Struggled<small>couldn't answer</small></button>
+                  <button className={`mi-rbtn mid ${ev && ev.suggested === "partial" ? "sugg" : ""}`} onClick={() => rate("partial")}><CircleDot size={15} />Partial<small>missed some</small></button>
+                  <button className={`mi-rbtn good ${ev && ev.suggested === "confident" ? "sugg" : ""}`} onClick={() => rate("confident")}><Check size={16} strokeWidth={3} />Confident<small>nailed it</small></button>
+                </div>
+              </div>
+            </>
+          )}
+        </div>
+        <div className="mi-quit"><button onClick={quit}>End interview</button></div>
+      </div>
+    );
+  }
+
+  const r = result;
+  const msg = r.score >= 80 ? "Strong round — you're interview-ready on these. Keep the streak going." : r.score >= 60 ? "Solid work. Tighten the ones you marked partial and run it again tomorrow." : "Good on you for practising — this is exactly how the nerves fade. Review the tough ones and go again. Round by round, this gets easy.";
+  return (
+    <div className="mi">
+      <div className="mi-score"><div className="big" style={{ color: miScoreColor(r.score) }}>{r.score}%</div><div className="lbl">{r.earned} / {r.max} points · {r.deck.length} questions · {fmt(r.durationSec)}</div></div>
+      <div className="mi-msg">{msg}</div>
+      <div className="mi-sec" style={{ marginTop: 24 }}>// how you did by topic</div>
+      <div className="mi-break">{Object.entries(r.bd).map(([label, v]) => { const p = v.m ? Math.round((v.e / v.m) * 100) : 0; return <div className="mi-brow" key={label}><span className="bn">{label}</span><span className="bb"><i style={{ width: p + "%", background: miScoreColor(p) }} /></span><span className="bp">{p}%</span></div>; })}</div>
+      {r.struggled.length > 0 && (<><div className="mi-sec" style={{ marginTop: 22 }}>// review these ({r.struggled.length})</div><div className="mi-revq">{r.struggled.map((q) => <details key={q.id}><summary><ChevronRight size={14} style={{ marginTop: 2, flex: "none" }} />{q.q}</summary><div className="rc">{q.a || (q.keyPoints || []).join(" · ")}</div></details>)}</div></>)}
+      <div className="mi-actions"><button className="mi-again" onClick={start}><RotateCcw size={16} /> New round</button><button className="mi-review" onClick={() => setPhase("setup")}><ArrowLeft size={16} /> Back to setup</button></div>
+    </div>
+  );
+}
+
 export default function App() {
   const [progress, setProgress] = useProgress();
   const [attendance, setAttendance] = usePersisted("coreJavaPrep_attendance_v1", {});
   const [roadmapDone, setRoadmapDone] = usePersisted("coreJavaPrep_roadmap_v1", {});
   const [workbench, setWorkbench] = usePersisted("coreJavaPrep_workbench_v1", {});
+  const [mockData, setMockData] = usePersisted("coreJavaPrep_mock_v1", { history: [], seen: {}, ratings: {} });
   const [view, setView] = useState("dashboard");
   const [activeTopic, setActiveTopic] = useState("all");
   const [theme, setTheme] = useState("dark");
@@ -4336,6 +4769,7 @@ export default function App() {
     { id: "dashboard", label: "Dashboard", icon: <Activity size={17} /> },
     { id: "questions", label: "Question bank", icon: <ListChecks size={17} /> },
     { id: "practice", label: "Practice", icon: <Brain size={17} /> },
+    { id: "mock", label: "Mock Interview", icon: <GraduationCap size={17} /> },
     { id: "workbench", label: "Workbench", icon: <Code2 size={17} /> },
     { id: "console", label: "Java console", icon: <Terminal size={17} /> },
     { id: "tracker", label: "Daily tracker", icon: <Calendar size={17} /> },
@@ -4404,6 +4838,9 @@ export default function App() {
           )}
           {view === "workbench" && (
             <Workbench wb={workbench} setWb={setWorkbench} />
+          )}
+          {view === "mock" && (
+            <MockInterview mock={mockData} setMock={setMockData} />
           )}
           {view === "console" && <Console />}
           {view === "tracker" && (
