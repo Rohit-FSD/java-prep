@@ -5,7 +5,7 @@ import {
   Eye, EyeOff, BookOpen, Award, Cpu, Database, Layers, Boxes, Shield,
   Code2, Zap, Hash, Terminal, GraduationCap, ListChecks, Star, ArrowRight,
   ArrowLeft, Lightbulb, Activity, Coffee, Brain, Sun, Moon, Shuffle, CircleDot,
-  Play, Copy, Loader2, AlertTriangle, Calendar, ChevronLeft, Map, Leaf, Globe, Network, Server, Volume2, VolumeX, Mic
+  Play, Copy, Loader2, AlertTriangle, Calendar, ChevronLeft, Map, Leaf, Globe, Network, Server, Volume2, VolumeX, Mic, Users
 } from "lucide-react";
 
 
@@ -41,6 +41,7 @@ const TOPICS = [
   { id: "coding", name: "Coding & Output", icon: "Terminal", blurb: "Tricky output, snippets, write-on-the-spot." },
   { id: "string-coding", name: "String Problems", icon: "Hash", blurb: "Classic string coding interview problems." },
   { id: "array-coding", name: "Array Problems", icon: "Boxes", blurb: "Classic array & matrix coding problems." },
+  { id: "stream-objects", name: "Streams on Objects", icon: "Users", blurb: "Employee streams: grouping, flatMap, statistics." },
   { id: "jpa", name: "Spring Data JPA", icon: "Database", blurb: "Repositories, queries, transactions, fetching." },
   { id: "hibernate", name: "Hibernate", icon: "Layers", blurb: "ORM, sessions, caching, locking, N+1." },
   { id: "spring", name: "Spring & Spring Boot", icon: "Leaf", blurb: "IoC, DI, beans, annotations, auto-config." },
@@ -1290,6 +1291,7 @@ const QUESTIONS = [
     id: "code-1", topic: "coding", difficulty: "medium", freq: "Very common",
     companies: ["SERVICE", "BANK", "PRODUCT"],
     q: "What's the output? Integer caching: Integer a=127,b=127; a==b? And 128?",
+    input: "Integer a = 127, b = 127;\nInteger c = 128, d = 128;\nSystem.out.println(a == b);\nSystem.out.println(c == d);\n// what prints, and why?",
     a: "a==b is true for 127 but false for 128. Autoboxing uses Integer.valueOf, which caches Integer objects from -128 to 127 (the IntegerCache). So 127 returns the same cached object (==true), while 128 creates new objects (==false). Lesson: always compare wrapper objects with equals(), never ==.",
     keyPoints: [
       "Integer cache: -128..127 are shared instances.",
@@ -1307,12 +1309,14 @@ const QUESTIONS = [
       "Mention surrogate pairs/emoji edge case.",
       "Production: new StringBuilder(s).reverse().toString().",
     ],
+    input: "String s = \"interview\";\n// expected: \"weivretni\"",
     code: "char[] c = s.toCharArray();\nfor(int i=0,j=c.length-1;i<j;i++,j--){\n  char t=c[i]; c[i]=c[j]; c[j]=t;\n}\nreturn new String(c);",
   },
   {
     id: "code-3", topic: "coding", difficulty: "medium", freq: "Common",
     companies: ["SERVICE", "BANK", "PRODUCT"],
     q: "Find the first non-repeating character in a string.",
+    input: "String s = \"swiss\";\n// expected: 'w'",
     a: "Use a LinkedHashMap<Character,Integer> to count occurrences while preserving insertion order, then return the first key with count 1. O(n) time. LinkedHashMap keeps order so you don't need a second ordered pass; mention an int[256]/int[128] frequency array as a faster ASCII-only variant.",
     keyPoints: [
       "Count with LinkedHashMap (preserves order).",
@@ -1324,6 +1328,7 @@ const QUESTIONS = [
     id: "code-4", topic: "coding", difficulty: "medium", freq: "Common",
     companies: ["SERVICE", "BANK"],
     q: "Find duplicate / second-highest in an array using streams.",
+    input: "int[] a = {5, 2, 9, 9, 1, 7};\n// find the duplicate, and the second-highest distinct value",
     a: "Duplicates: stream the array, group by identity and keep entries with count>1, or use a HashSet add() returning false. Second-highest: ints.stream().distinct().sorted(reverseOrder()).skip(1).findFirst(), or a single pass tracking max and secondMax. The single-pass O(n) version is the better answer when asked for efficiency.",
     keyPoints: [
       "Duplicates: Set.add()==false, or groupingBy + counting.",
@@ -1335,6 +1340,7 @@ const QUESTIONS = [
     id: "code-5", topic: "coding", difficulty: "easy", freq: "Common",
     companies: ["SERVICE", "BANK"],
     q: "Output: what does \"1\"+2+3 print vs 1+2+\"3\"?",
+    input: "System.out.println(\"1\" + 2 + 3);\nSystem.out.println(1 + 2 + \"3\");\n// what prints for each?",
     a: "\"1\"+2+3 prints \"123\" (left-to-right: \"1\"+2 → \"12\", then +3 → \"123\"). 1+2+\"3\" prints \"33\" (1+2 evaluated as ints → 3, then +\"3\" → \"33\"). The + operator is left-associative; once a String appears, the rest is string concatenation. Classic associativity/precedence trap.",
     keyPoints: [
       "+ is left-associative; String triggers concatenation.",
@@ -1346,6 +1352,7 @@ const QUESTIONS = [
     id: "code-6", topic: "coding", difficulty: "medium", freq: "Common",
     companies: ["BANK", "PRODUCT"],
     q: "Check if two strings are anagrams.",
+    input: "String a = \"listen\", b = \"silent\";\n// expected: true",
     a: "Either sort both char arrays and compare (O(n log n)), or — better — count character frequencies in one pass and verify they match (O(n) with an int[26]/HashMap). Don't forget to compare lengths first and decide on case/whitespace handling. The frequency-count approach is the optimal answer.",
     keyPoints: [
       "Optimal: frequency count (int[26] or map), O(n).",
@@ -1363,12 +1370,14 @@ const QUESTIONS = [
       "Multiple metrics: teeing (Java 12) or custom collector.",
       "One pass, declarative aggregation.",
     ],
+    input: "record Emp(String name, String dept, double salary) {}\nList<Emp> emps = List.of(\n    new Emp(\"Mahima\", \"IT\", 95000),\n    new Emp(\"Riya\", \"IT\", 80000),\n    new Emp(\"Aman\", \"Sales\", 60000));\n// expected: {IT=175000.0, Sales=60000.0}",
     code: "Map<Dept,Double> totals = emps.stream()\n  .collect(groupingBy(Emp::dept, summingDouble(Emp::salary)));",
   },
   {
     id: "code-8", topic: "coding", difficulty: "medium", freq: "Common",
     companies: ["SERVICE", "BANK"],
     q: "What is the output of a loop modifying an Integer in a list with autoboxing? (boxing gotchas)",
+    input: "List<Integer> list = new ArrayList<>(List.of(1, 2, 3));\nfor (Integer i : list) { i++; }\nSystem.out.println(list);\n// what prints, and why?",
     a: "Common trap forms: incrementing a Long with a literal int, ==-comparing boxed values, or NullPointerException when unboxing a null Integer (e.g. map.get(missing) returned as int). The key lessons: unboxing a null wrapper throws NPE, mixing wrapper/primitive in conditionals can auto-unbox unexpectedly, and == on wrappers compares references. Always be explicit about boxing in hot or null-prone code.",
     keyPoints: [
       "Unboxing null → NullPointerException.",
@@ -1555,6 +1564,7 @@ const QUESTIONS = [
       "distinct() to drop duplicates, sort descending, skip the first, take next.",
       "Mention the O(n) single-pass alternative (track max + secondMax).",
     ],
+    input: "List<Integer> nums = Arrays.asList(5, 2, 9, 9, 1, 7);\n// expected: 7",
     code: "int second = nums.stream().distinct()\n    .sorted(Comparator.reverseOrder())\n    .skip(1).findFirst().orElseThrow();",
   },
   {
@@ -1565,6 +1575,7 @@ const QUESTIONS = [
       "groupingBy(identity) with a counting() downstream collector.",
       "Result is Map<String, Long>.",
     ],
+    input: "List<String> words = Arrays.asList(\"apple\", \"banana\", \"apple\", \"cherry\", \"banana\", \"apple\");\n// expected: {banana=2, apple=3, cherry=1}",
     code: "Map<String,Long> freq = words.stream()\n    .collect(Collectors.groupingBy(w -> w, Collectors.counting()));",
   },
   {
@@ -1575,6 +1586,7 @@ const QUESTIONS = [
       "Stream chars; group into a LinkedHashMap to preserve order; counting() downstream.",
       "Filter entries with count == 1, take the first key.",
     ],
+    input: "String s = \"swiss\";\n// expected: 'w'",
     code: "Character c = s.chars().mapToObj(i -> (char) i)\n    .collect(Collectors.groupingBy(x -> x, LinkedHashMap::new, Collectors.counting()))\n    .entrySet().stream().filter(e -> e.getValue() == 1)\n    .map(Map.Entry::getKey).findFirst().orElse(null);",
   },
   {
@@ -1585,6 +1597,7 @@ const QUESTIONS = [
       "Filter evens, map to square, reduce/sum.",
       "Use mapToInt for a primitive IntStream and .sum().",
     ],
+    input: "List<Integer> nums = Arrays.asList(1, 2, 3, 4, 5, 6);\n// expected: 56  (2^2 + 4^2 + 6^2)",
     code: "int total = nums.stream().filter(n -> n % 2 == 0)\n    .mapToInt(n -> n * n).sum();",
   },
   {
@@ -1595,6 +1608,7 @@ const QUESTIONS = [
       "partitioningBy(predicate) returns Map<Boolean, List<T>> with both true and false keys always present.",
       "Cleaner than groupingBy for a boolean split.",
     ],
+    input: "List<Integer> nums = Arrays.asList(1, 2, 3, 4, 5, 6);\n// expected: {false=[1, 3, 5], true=[2, 4, 6]}",
     code: "Map<Boolean,List<Integer>> parts = nums.stream()\n    .collect(Collectors.partitioningBy(n -> n % 2 == 0));",
   },
   {
@@ -1605,6 +1619,7 @@ const QUESTIONS = [
       "Collectors.joining(delimiter, prefix, suffix).",
       "No manual StringBuilder needed.",
     ],
+    input: "List<String> names = Arrays.asList(\"Mahima\", \"Riya\", \"Aman\");\n// expected: [Mahima, Riya, Aman]",
     code: "String out = names.stream()\n    .collect(Collectors.joining(\", \", \"[\", \"]\"));",
   },
   {
@@ -1615,6 +1630,7 @@ const QUESTIONS = [
       "max() with Comparator.comparing on the field; returns an Optional.",
       "Comparator.comparing(Emp::getSalary) reads cleanly.",
     ],
+    input: "record Emp(String name, String dept, double salary) {}\nList<Emp> emps = List.of(\n    new Emp(\"Mahima\", \"Payments\", 95000),\n    new Emp(\"Riya\", \"Payments\", 82000),\n    new Emp(\"Aman\", \"Lending\", 91000));\n// expected: Emp[name=Mahima, ...]",
     code: "Optional<Emp> top = emps.stream()\n    .max(Comparator.comparing(Emp::getSalary));",
   },
   {
@@ -1625,6 +1641,7 @@ const QUESTIONS = [
       "toMap(keyFn, valueFn, mergeFn) — the merge function resolves duplicate keys.",
       "Without a merge function, duplicates throw IllegalStateException.",
     ],
+    input: "record Emp(String name, String dept, double salary) {}\nList<Emp> emps = List.of(\n    new Emp(\"Mahima\", \"Payments\", 95000),\n    new Emp(\"Mahima\", \"Lending\", 70000),   // duplicate name\n    new Emp(\"Aman\", \"Lending\", 91000));\n// expected: keeps the FIRST Mahima",
     code: "Map<String,Emp> byName = emps.stream()\n    .collect(Collectors.toMap(Emp::getName, e -> e, (a, b) -> a));",
   },
   {
@@ -1635,6 +1652,7 @@ const QUESTIONS = [
       "flatMap to un-nest, then distinct().",
       "flatMap(List::stream) turns Stream<List<T>> into Stream<T>.",
     ],
+    input: "List<List<Integer>> listOfLists = List.of(\n    List.of(1, 2, 3),\n    List.of(3, 4),\n    List.of(4, 5));\n// expected: [1, 2, 3, 4, 5]",
     code: "List<T> flat = listOfLists.stream()\n    .flatMap(List::stream).distinct()\n    .collect(Collectors.toList());",
   },
   {
@@ -1645,6 +1663,7 @@ const QUESTIONS = [
       "Comparator.comparing(...).thenComparing(...reversed()).",
       "Chain comparators rather than writing a manual compare.",
     ],
+    input: "record Emp(String name, String dept, double salary) {}\nList<Emp> emps = List.of(\n    new Emp(\"Mahima\", \"Payments\", 95000),\n    new Emp(\"Riya\", \"Payments\", 99000),\n    new Emp(\"Aman\", \"Lending\", 91000));\n// expected: Lending first, then Payments by salary desc",
     code: "emps.stream().sorted(\n    Comparator.comparing(Emp::getDept)\n        .thenComparing(Comparator.comparing(Emp::getSalary).reversed()))\n    .collect(Collectors.toList());",
   },
   {
@@ -1655,6 +1674,7 @@ const QUESTIONS = [
       "A Set.add() returning false flags a duplicate (stateful but concise).",
       "Alternative: groupingBy + counting, filter count > 1.",
     ],
+    input: "List<Integer> list = Arrays.asList(1, 2, 3, 2, 4, 1, 5);\n// expected: [1, 2]",
     code: "Set<T> seen = new HashSet<>();\nList<T> dups = list.stream()\n    .filter(x -> !seen.add(x)).distinct()\n    .collect(Collectors.toList());",
   },
   {
@@ -1665,6 +1685,7 @@ const QUESTIONS = [
       "groupingBy(dept) with averagingDouble downstream.",
       "Returns Map<Dept, Double>.",
     ],
+    input: "record Emp(String name, String dept, double salary) {}\nList<Emp> emps = List.of(\n    new Emp(\"Mahima\", \"Payments\", 90000),\n    new Emp(\"Riya\", \"Payments\", 70000),\n    new Emp(\"Aman\", \"Lending\", 80000));\n// expected: {Payments=80000.0, Lending=80000.0}",
     code: "Map<String,Double> avg = emps.stream()\n    .collect(Collectors.groupingBy(Emp::getDept,\n             Collectors.averagingDouble(Emp::getSalary)));",
   },
   {
@@ -1675,6 +1696,7 @@ const QUESTIONS = [
       "groupingBy(dept) with a mapping(name, toList()) downstream collector.",
       "mapping transforms each element before collecting per group.",
     ],
+    input: "record Emp(String name, String dept, double salary) {}\nList<Emp> emps = List.of(\n    new Emp(\"Mahima\", \"Payments\", 95000),\n    new Emp(\"Riya\", \"Payments\", 82000),\n    new Emp(\"Aman\", \"Lending\", 91000));\n// expected: {Payments=[Mahima, Riya], Lending=[Aman]}",
     code: "Map<String,List<String>> byDept = emps.stream()\n    .collect(Collectors.groupingBy(Emp::getDept,\n             Collectors.mapping(Emp::getName, Collectors.toList())));",
   },
   {
@@ -1685,6 +1707,7 @@ const QUESTIONS = [
       "Sort by salary descending, then limit(3).",
       "limit short-circuits — the pipeline stops early.",
     ],
+    input: "record Emp(String name, String dept, double salary) {}\nList<Emp> emps = List.of(\n    new Emp(\"Mahima\", \"Payments\", 95000),\n    new Emp(\"Riya\", \"Payments\", 82000),\n    new Emp(\"Aman\", \"Lending\", 91000),\n    new Emp(\"Sara\", \"Ops\", 60000));\n// expected: Mahima, Aman, Riya",
     code: "List<Emp> top3 = emps.stream()\n    .sorted(Comparator.comparing(Emp::getSalary).reversed())\n    .limit(3).collect(Collectors.toList());",
   },
 
@@ -1697,6 +1720,7 @@ const QUESTIONS = [
       "Two pointers from both ends, swap inward — O(n) time, O(1) extra.",
       "Mention surrogate-pair/emoji edge case for full Unicode correctness.",
     ],
+    input: "String s = \"interview\";\n// expected: \"weivretni\"",
     code: `char[] c = s.toCharArray();
 for (int i = 0, j = c.length - 1; i < j; i++, j--) {
     char t = c[i]; c[i] = c[j]; c[j] = t;
@@ -1711,6 +1735,7 @@ return new String(c);`,
       "Two pointers; compare chars moving inward.",
       "Clarify case / non-alphanumeric handling up front.",
     ],
+    input: "String s = \"racecar\";\n// expected: true",
     code: `int i = 0, j = s.length() - 1;
 while (i < j) if (s.charAt(i++) != s.charAt(j--)) return false;
 return true;`,
@@ -1723,6 +1748,7 @@ return true;`,
       "Lengths must match first.",
       "Optimal: a single int[26] frequency count, O(n) — beats sorting O(n log n).",
     ],
+    input: "String a = \"listen\", b = \"silent\";\n// expected: true   (assume lowercase a-z)",
     code: `if (a.length() != b.length()) return false;
 int[] f = new int[26];
 for (char c : a.toCharArray()) f[c - 'a']++;
@@ -1737,6 +1763,7 @@ return true;`,
       "Two passes: count frequencies, then return the first char with count 1.",
       "int[256] for ASCII; LinkedHashMap if you must preserve order with a map.",
     ],
+    input: "String s = \"swiss\";\n// expected: 'w'",
     code: `int[] f = new int[256];
 for (char c : s.toCharArray()) f[c]++;
 for (char c : s.toCharArray()) if (f[c] == 1) return c;
@@ -1750,6 +1777,7 @@ return '_';`,
       "A LinkedHashSet tracks seen chars and keeps insertion order.",
       "add() returns false for a duplicate — use that to filter.",
     ],
+    input: "String s = \"programming\";\n// expected: \"progamin\"",
     code: `StringBuilder sb = new StringBuilder();
 Set<Character> seen = new LinkedHashSet<>();
 for (char c : s.toCharArray()) if (seen.add(c)) sb.append(c);
@@ -1763,6 +1791,7 @@ return sb.toString();`,
       "Trim, split on one-or-more spaces, reverse, re-join.",
       "Watch leading/trailing/multiple spaces — that's the trap they test.",
     ],
+    input: "String s = \"  the sky  is blue \";\n// expected: \"blue is sky the\"",
     code: `String[] w = s.trim().split(" +");
 Collections.reverse(Arrays.asList(w));
 return String.join(" ", w);`,
@@ -1775,6 +1804,7 @@ return String.join(" ", w);`,
       "Equal length is required.",
       "Trick: b is a rotation of a iff (a + a) contains b.",
     ],
+    input: "String a = \"abcde\", b = \"cdeab\";\n// expected: true",
     code: `return a.length() == b.length() && (a + a).contains(b);`,
   },
   {
@@ -1785,6 +1815,7 @@ return String.join(" ", w);`,
       "Lowercase, iterate; check membership in 'aeiou'.",
       "Only count letters — ignore digits/spaces/punctuation.",
     ],
+    input: "String s = \"Hello World 123\";\n// expected: vowels=3, consonants=7",
     code: `int v = 0, c = 0;
 for (char ch : s.toLowerCase().toCharArray()) {
     if (!Character.isLetter(ch)) continue;
@@ -1799,6 +1830,7 @@ for (char ch : s.toLowerCase().toCharArray()) {
       "Walk runs of equal chars, append char + run length.",
       "Return the original if compression didn't actually shorten it.",
     ],
+    input: "String s = \"aaabb\";\n// expected: \"a3b2\"   (returns s if compression isn't shorter)",
     code: `StringBuilder sb = new StringBuilder();
 for (int i = 0; i < s.length(); ) {
     char c = s.charAt(i); int j = i;
@@ -1816,6 +1848,7 @@ return sb.length() < s.length() ? sb.toString() : s;`,
       "Stack: push openers, on a closer pop and match the pair.",
       "Valid only if every closer matches and the stack ends empty.",
     ],
+    input: "String s = \"{[()]}\";\n// expected: true",
     code: `Deque<Character> st = new ArrayDeque<>();
 Map<Character,Character> pair = Map.of(')','(', ']','[', '}','{');
 for (char c : s.toCharArray()) {
@@ -1833,6 +1866,7 @@ return st.isEmpty();`,
       "Sliding window + last-seen index per char.",
       "When you see a repeat inside the window, jump start to lastSeen+1. O(n).",
     ],
+    input: "String s = \"abcabcbb\";\n// expected: 3   (\"abc\")",
     code: `int[] last = new int[256]; Arrays.fill(last, -1);
 int start = 0, max = 0;
 for (int i = 0; i < s.length(); i++) {
@@ -1851,6 +1885,7 @@ return max;`,
       "Expand-around-center: try every center (odd + even), track the longest.",
       "O(n²) time, O(1) space — the standard interview answer.",
     ],
+    input: "String s = \"babad\";\n// expected: \"bab\" (or \"aba\")",
     code: `int start = 0, len = 0;
 for (int i = 0; i < s.length(); i++) {
     int a = expand(s, i, i), b = expand(s, i, i + 1);
@@ -1868,6 +1903,7 @@ return s.substring(start, start + len);
       "Start with the first string as the prefix, shrink it against each next string.",
       "Bail out early if the prefix becomes empty.",
     ],
+    input: "String[] arr = {\"flower\", \"flow\", \"flight\"};\n// expected: \"fl\"",
     code: `if (arr.length == 0) return "";
 String p = arr[0];
 for (String s : arr) {
@@ -1884,6 +1920,7 @@ return p;`,
       "Trim, read optional +/-, accumulate digits until a non-digit.",
       "Discuss overflow handling (clamp to Integer.MIN/MAX) as the follow-up.",
     ],
+    input: "String s = \"  -42abc\";\n// expected: -42",
     code: `s = s.trim(); int i = 0, sign = 1; long r = 0;
 if (i < s.length() && (s.charAt(i) == '+' || s.charAt(i) == '-'))
     sign = s.charAt(i++) == '-' ? -1 : 1;
@@ -1899,6 +1936,7 @@ return (int) (sign * r);`,
       "Backtracking: fix each char at position i, recurse on the rest, swap back.",
       "n! results — mention de-duping for repeated characters if asked.",
     ],
+    input: "char[] a = \"abc\".toCharArray();\nList<String> out = new ArrayList<>();\n// expected: [abc, acb, bac, bca, cba, cab]",
     code: `void permute(char[] a, int i, List<String> out) {
     if (i == a.length) { out.add(new String(a)); return; }
     for (int j = i; j < a.length; j++) {
@@ -1918,6 +1956,7 @@ return (int) (sign * r);`,
       "Track max and min together, single scan — O(n).",
       "Handle empty array as an edge case.",
     ],
+    input: "int[] a = {3, 7, 1, 9, 4};\n// expected: max=9, min=1",
     code: `int max = a[0], min = a[0];
 for (int x : a) { if (x > max) max = x; if (x < min) min = x; }`,
   },
@@ -1929,6 +1968,7 @@ for (int x : a) { if (x > max) max = x; if (x < min) min = x; }`,
       "Track largest and second-largest in one pass.",
       "Guard against duplicates of the max (x < max condition).",
     ],
+    input: "int[] a = {3, 7, 1, 9, 4};\n// expected: 7",
     code: `int max = Integer.MIN_VALUE, sec = Integer.MIN_VALUE;
 for (int x : a) {
     if (x > max) { sec = max; max = x; }
@@ -1944,6 +1984,7 @@ return sec;`,
       "Hash map of value → index; for each x check if (target - x) was seen.",
       "O(n) single pass; beats the O(n²) brute force.",
     ],
+    input: "int[] a = {2, 7, 11, 15};\nint target = 9;\n// expected: [0, 1]",
     code: `Map<Integer,Integer> idx = new HashMap<>();
 for (int i = 0; i < a.length; i++) {
     int need = target - a[i];
@@ -1960,6 +2001,7 @@ return new int[]{-1, -1};`,
       "Track current running sum; restart it when it goes negative.",
       "Keep a global best. O(n), O(1) — the canonical answer.",
     ],
+    input: "int[] a = {-2, 1, -3, 4, -1, 2, 1, -5, 4};\n// expected: 6   ([4, -1, 2, 1])",
     code: `int best = a[0], cur = a[0];
 for (int i = 1; i < a.length; i++) {
     cur = Math.max(a[i], cur + a[i]);
@@ -1975,6 +2017,7 @@ return best;`,
       "Expected sum n(n+1)/2 minus actual sum = the missing value.",
       "XOR approach avoids overflow risk; mention both.",
     ],
+    input: "int[] a = {1, 2, 4, 5};   // n = 5\n// expected: 3",
     code: `int n = a.length + 1;
 long sum = (long) n * (n + 1) / 2;
 for (int x : a) sum -= x;
@@ -1988,6 +2031,7 @@ return (int) sum;`,
       "General: a HashSet — first value whose add() returns false.",
       "If values are 1..n: O(1) space via Floyd's cycle or index marking.",
     ],
+    input: "int[] a = {1, 3, 4, 2, 3};\n// expected: 3",
     code: `Set<Integer> seen = new HashSet<>();
 for (int x : a) if (!seen.add(x)) return x;
 return -1;`,
@@ -2000,6 +2044,7 @@ return -1;`,
       "Stable partition: write index j for non-zeros, then fill the rest with zeros.",
       "In place, O(n), order preserved.",
     ],
+    input: "int[] a = {0, 1, 0, 3, 12};\n// expected: [1, 3, 12, 0, 0]",
     code: `int j = 0;
 for (int i = 0; i < a.length; i++) if (a[i] != 0) a[j++] = a[i];
 while (j < a.length) a[j++] = 0;`,
@@ -2012,6 +2057,7 @@ while (j < a.length) a[j++] = 0;`,
       "Reversal trick: reverse all, reverse first k, reverse the rest — O(n), O(1).",
       "Normalise k with k %= n first.",
     ],
+    input: "int[] a = {1, 2, 3, 4, 5, 6, 7};\nint k = 3;\n// expected: [5, 6, 7, 1, 2, 3, 4]",
     code: `k %= a.length;
 reverse(a, 0, a.length - 1);
 reverse(a, 0, k - 1);
@@ -2026,6 +2072,7 @@ reverse(a, k, a.length - 1);
       "Two pointers, pick the smaller front each step.",
       "Drain whichever array still has elements left.",
     ],
+    input: "int[] a = {1, 3, 5};\nint[] b = {2, 4, 6};\n// expected: [1, 2, 3, 4, 5, 6]",
     code: `int[] r = new int[a.length + b.length];
 int i = 0, j = 0, k = 0;
 while (i < a.length && j < b.length) r[k++] = a[i] <= b[j] ? a[i++] : b[j++];
@@ -2041,6 +2088,7 @@ return r;`,
       "Boyer–Moore voting: keep a candidate + count, ±1 each step.",
       "O(n) time, O(1) space; verify with a second pass if it's not guaranteed to exist.",
     ],
+    input: "int[] a = {2, 2, 1, 1, 1, 2, 2};\n// expected: 2",
     code: `int count = 0, cand = 0;
 for (int x : a) {
     if (count == 0) cand = x;
@@ -2056,6 +2104,7 @@ return cand;`,
       "Slow/fast pointers: write a new element only when it differs from the last kept.",
       "O(n), O(1) — classic in-place pattern.",
     ],
+    input: "int[] a = {1, 1, 2, 2, 3};\n// expected: 3   (array becomes [1, 2, 3, ...])",
     code: `if (a.length == 0) return 0;
 int j = 0;
 for (int i = 1; i < a.length; i++)
@@ -2070,6 +2119,7 @@ return j + 1;`,
       "Three pointers low/mid/high; swap 0s to front, 2s to back, leave 1s.",
       "Single pass, O(n), O(1).",
     ],
+    input: "int[] a = {2, 0, 2, 1, 1, 0};\n// expected: [0, 0, 1, 1, 2, 2]",
     code: `int low = 0, mid = 0, high = a.length - 1;
 while (mid <= high) {
     if (a[mid] == 0) swap(a, low++, mid++);
@@ -2085,6 +2135,7 @@ while (mid <= high) {
       "Track the minimum price so far and the best profit at each step.",
       "O(n), O(1) — buy low, sell at the highest later peak.",
     ],
+    input: "int[] a = {7, 1, 5, 3, 6, 4};   // prices\n// expected: 5   (buy at 1, sell at 6)",
     code: `int min = Integer.MAX_VALUE, profit = 0;
 for (int p : a) {
     min = Math.min(min, p);
@@ -2100,6 +2151,7 @@ return profit;`,
       "Put one array in a HashSet, scan the other.",
       "Use a LinkedHashSet for distinct, order-preserving results.",
     ],
+    input: "int[] a = {1, 2, 2, 1};\nint[] b = {2, 2, 3};\n// expected: [2]",
     code: `Set<Integer> s = new HashSet<>();
 for (int x : a) s.add(x);
 Set<Integer> res = new LinkedHashSet<>();
@@ -2114,6 +2166,7 @@ return res;`,
       "Sliding window: grow the window while sum is small, shrink while too big.",
       "O(n) for non-negative numbers; prefix-sum + map handles negatives.",
     ],
+    input: "int[] a = {1, 4, 20, 3, 10, 5};\nint target = 33;\n// expected: [2, 4]   (20 + 3 + 10)",
     code: `int start = 0; long sum = 0;
 for (int end = 0; end < a.length; end++) {
     sum += a[end];
@@ -2130,6 +2183,7 @@ return new int[]{-1, -1};`,
       "Transpose the matrix, then reverse each row.",
       "In place, O(n²); for anticlockwise, reverse columns instead.",
     ],
+    input: "int[][] m = {\n    {1, 2, 3},\n    {4, 5, 6},\n    {7, 8, 9}};\n// expected: {{7,4,1},{8,5,2},{9,6,3}}",
     code: `int n = m.length;
 for (int i = 0; i < n; i++)
     for (int j = i + 1; j < n; j++) {
@@ -2142,37 +2196,37 @@ for (int[] row : m)
   },
 
   // --- merged from Stream API Workbench ---
-  { id: "swb-q1", topic: "streams", difficulty: "easy", freq: "Very common", companies: ["SERVICE","BANK","PRODUCT"], q: "Given a list of integers, return a list containing only the even numbers.", keyPoints: ["filter() keeps elements matching the predicate; collect() gathers them into a new list."], code: "List<Integer> nums = Arrays.asList(1, 2, 3, 4, 5, 6);\n\nList<Integer> even = nums.stream()\n    .filter(n -> n % 2 == 0)\n    .collect(Collectors.toList());" },
-  { id: "swb-q2", topic: "streams", difficulty: "easy", freq: "Very common", companies: ["SERVICE","BANK","PRODUCT"], q: "Find the maximum value in a list of integers.", keyPoints: ["max() takes a comparator and returns an Optional; .get() unwraps it (orElse is safer if empty)."], code: "List<Integer> nums = Arrays.asList(10, 15, 8, 49, 25, 98, 32);\n\nint max = nums.stream()\n    .max(Integer::compare)\n    .get();" },
-  { id: "swb-q3", topic: "streams", difficulty: "easy", freq: "Very common", companies: ["SERVICE","BANK","PRODUCT"], q: "Find the minimum value in a list of integers.", keyPoints: ["min() mirrors max() — returns the smallest element wrapped in an Optional."], code: "List<Integer> nums = Arrays.asList(10, 15, 8, 49, 25, 98, 32);\n\nint min = nums.stream()\n    .min(Integer::compare)\n    .get();" },
-  { id: "swb-q4", topic: "streams", difficulty: "easy", freq: "Very common", companies: ["SERVICE","BANK","PRODUCT"], q: "Calculate the sum of all elements in a list of integers.", keyPoints: ["mapToInt() produces an IntStream which exposes sum() directly. reduce(0, Integer::sum) also works."], code: "List<Integer> nums = Arrays.asList(1, 2, 3, 4, 5);\n\nint sum = nums.stream()\n    .mapToInt(Integer::intValue)\n    .sum();" },
-  { id: "swb-q5", topic: "streams", difficulty: "easy", freq: "Very common", companies: ["SERVICE","BANK","PRODUCT"], q: "Convert every string in a list to uppercase.", keyPoints: ["map() transforms each element by applying the method reference String::toUpperCase."], code: "List<String> names = Arrays.asList(\"alice\", \"bob\", \"charlie\");\n\nList<String> upper = names.stream()\n    .map(String::toUpperCase)\n    .collect(Collectors.toList());" },
-  { id: "swb-q6", topic: "streams", difficulty: "easy", freq: "Very common", companies: ["SERVICE","BANK","PRODUCT"], q: "Sort a list of integers in ascending (natural) order.", keyPoints: ["sorted() with no argument sorts by natural ordering."], code: "List<Integer> nums = Arrays.asList(10, 15, 8, 49, 25, 98, 32);\n\nList<Integer> sorted = nums.stream()\n    .sorted()\n    .collect(Collectors.toList());" },
-  { id: "swb-q7", topic: "streams", difficulty: "easy", freq: "Very common", companies: ["SERVICE","BANK","PRODUCT"], q: "Sort a list of integers in descending order.", keyPoints: ["Pass a reversed comparator. Comparator.reverseOrder() or Collections.reverseOrder() both work."], code: "List<Integer> nums = Arrays.asList(10, 15, 8, 49, 25, 98, 32);\n\nList<Integer> desc = nums.stream()\n    .sorted(Comparator.reverseOrder())\n    .collect(Collectors.toList());" },
-  { id: "swb-q8", topic: "streams", difficulty: "easy", freq: "Very common", companies: ["SERVICE","BANK","PRODUCT"], q: "Count how many numbers in a list are greater than 5.", keyPoints: ["filter() narrows the stream; count() returns the number of remaining elements as a long."], code: "List<Integer> nums = Arrays.asList(1, 4, 6, 8, 3, 9, 5);\n\nlong count = nums.stream()\n    .filter(n -> n > 5)\n    .count();" },
-  { id: "swb-q9", topic: "streams", difficulty: "easy", freq: "Very common", companies: ["SERVICE","BANK","PRODUCT"], q: "Return only the distinct (unique) elements from a list.", keyPoints: ["distinct() removes duplicates using equals()."], code: "List<Integer> nums = Arrays.asList(1, 1, 2, 3, 3, 4, 5, 5);\n\nList<Integer> distinct = nums.stream()\n    .distinct()\n    .collect(Collectors.toList());" },
-  { id: "swb-q10", topic: "streams", difficulty: "easy", freq: "Very common", companies: ["SERVICE","BANK","PRODUCT"], q: "Reduce a list of integers to a single sum value using reduce().", keyPoints: ["reduce() takes an identity (0) and an accumulator (Integer::sum) to fold the stream into one value."], code: "List<Integer> nums = Arrays.asList(1, 2, 3, 4, 5);\n\nint total = nums.stream()\n    .reduce(0, Integer::sum);" },
-  { id: "swb-q11", topic: "streams", difficulty: "easy", freq: "Very common", companies: ["SERVICE","BANK","PRODUCT"], q: "Find the first element of a list using streams.", keyPoints: ["findFirst() returns the first element as an Optional; ifPresent() runs only if a value exists."], code: "List<Integer> nums = Arrays.asList(10, 15, 8, 49);\n\nnums.stream()\n    .findFirst()\n    .ifPresent(System.out::println);" },
-  { id: "swb-q12", topic: "streams", difficulty: "easy", freq: "Very common", companies: ["SERVICE","BANK","PRODUCT"], q: "Return any element from a list (useful with parallel streams).", keyPoints: ["findAny() may return any element — faster than findFirst() on parallel streams."], code: "List<Integer> nums = Arrays.asList(10, 15, 8, 49);\n\nOptional<Integer> any = nums.stream()\n    .findAny();" },
-  { id: "swb-q13", topic: "streams", difficulty: "easy", freq: "Very common", companies: ["SERVICE","BANK","PRODUCT"], q: "Extract only the first name from a list of full names.", keyPoints: ["map() splits each name on space and selects index 0."], code: "List<String> full = Arrays.asList(\"Alice Johnson\", \"Bob Harris\", \"Charlie Lou\");\n\nList<String> firstNames = full.stream()\n    .map(name -> name.split(\" \")[0])\n    .collect(Collectors.toList());" },
-  { id: "swb-q14", topic: "streams", difficulty: "easy", freq: "Very common", companies: ["SERVICE","BANK","PRODUCT"], q: "Check whether all numbers in a list are positive.", keyPoints: ["allMatch() returns true only if every element satisfies the predicate."], code: "List<Integer> nums = Arrays.asList(3, 7, 1, 9, 4);\n\nboolean allPos = nums.stream()\n    .allMatch(n -> n > 0);" },
-  { id: "swb-q15", topic: "streams", difficulty: "easy", freq: "Very common", companies: ["SERVICE","BANK","PRODUCT"], q: "Check that a list contains no negative numbers.", keyPoints: ["noneMatch() returns true if zero elements match the predicate."], code: "List<Integer> nums = Arrays.asList(3, 7, 1, 9, 4);\n\nboolean noneNeg = nums.stream()\n    .noneMatch(n -> n < 0);" },
-  { id: "swb-q16", topic: "streams", difficulty: "easy", freq: "Very common", companies: ["SERVICE","BANK","PRODUCT"], q: "Check whether at least one even number exists in the list.", keyPoints: ["anyMatch() short-circuits and returns true as soon as one element matches."], code: "List<Integer> nums = Arrays.asList(1, 3, 5, 8, 9);\n\nboolean hasEven = nums.stream()\n    .anyMatch(n -> n % 2 == 0);" },
-  { id: "swb-q18", topic: "streams", difficulty: "medium", freq: "Common", companies: ["SERVICE","BANK","PRODUCT"], q: "Group a list of users by their age into a Map<Integer, List<User>>.", keyPoints: ["groupingBy() builds a map keyed by the classifier; each value is the list of items sharing that key."], code: "List<User> users = ...; // each User has getAge()\n\nMap<Integer, List<User>> byAge = users.stream()\n    .collect(Collectors.groupingBy(User::getAge));" },
-  { id: "swb-q19", topic: "streams", difficulty: "easy", freq: "Very common", companies: ["SERVICE","BANK","PRODUCT"], q: "Return only the first 3 elements of a list.", keyPoints: ["limit(n) truncates the stream to at most n elements."], code: "List<Integer> nums = Arrays.asList(5, 6, 7, 8, 9, 10);\n\nList<Integer> first3 = nums.stream()\n    .limit(3)\n    .collect(Collectors.toList());" },
-  { id: "swb-q20", topic: "streams", difficulty: "easy", freq: "Very common", companies: ["SERVICE","BANK","PRODUCT"], q: "Skip the first 2 elements and return the rest.", keyPoints: ["skip(n) discards the first n elements."], code: "List<Integer> nums = Arrays.asList(5, 6, 7, 8, 9, 10);\n\nList<Integer> rest = nums.stream()\n    .skip(2)\n    .collect(Collectors.toList());" },
-  { id: "swb-q21", topic: "streams", difficulty: "easy", freq: "Very common", companies: ["SERVICE","BANK","PRODUCT"], q: "Convert a list of integers into a Set to drop duplicates.", keyPoints: ["Collecting into a Set removes duplicates automatically."], code: "List<Integer> nums = Arrays.asList(1, 2, 2, 3, 3, 3);\n\nSet<Integer> set = nums.stream()\n    .collect(Collectors.toSet());" },
-  { id: "swb-q22", topic: "streams", difficulty: "medium", freq: "Common", companies: ["SERVICE","BANK","PRODUCT"], q: "Get count, sum, min, max and average for a list of integers in one pass.", keyPoints: ["summaryStatistics() computes all aggregate values in a single traversal."], code: "List<Integer> nums = Arrays.asList(4, 8, 15, 16, 23, 42);\n\nIntSummaryStatistics stats = nums.stream()\n    .mapToInt(Integer::intValue)\n    .summaryStatistics();\n// stats.getMax(), getMin(), getAverage(), getSum(), getCount()" },
-  { id: "swb-q23", topic: "streams", difficulty: "easy", freq: "Very common", companies: ["SERVICE","BANK","PRODUCT"], q: "Find the average of all elements in a list.", keyPoints: ["average() on an IntStream returns an OptionalDouble; orElse handles the empty case."], code: "List<Integer> nums = Arrays.asList(10, 20, 30, 40, 50);\n\ndouble avg = nums.stream()\n    .mapToInt(Integer::intValue)\n    .average()\n    .orElse(0.0);" },
-  { id: "swb-q24", topic: "streams", difficulty: "medium", freq: "Common", companies: ["SERVICE","BANK","PRODUCT"], q: "Find all numbers whose decimal representation starts with the digit 1.", keyPoints: ["Convert each number to a String and test startsWith(\"1\")."], code: "List<Integer> nums = Arrays.asList(10, 15, 8, 49, 25, 98, 32);\n\nList<Integer> startsWith1 = nums.stream()\n    .filter(n -> String.valueOf(n).startsWith(\"1\"))\n    .collect(Collectors.toList());" },
-  { id: "swb-q27", topic: "streams", difficulty: "hard", freq: "Occasional", companies: ["BANK","PRODUCT"], q: "Find the first character in a string that repeats (case-insensitive).", keyPoints: ["As you stream chars, the first one that Set.add() rejects is the first repeat."], code: "String input = \"Java Articles are Awesome\";\n\nSet<Character> seen = new HashSet<>();\nCharacter result = input.toLowerCase().chars()\n    .mapToObj(c -> (char) c)\n    .filter(c -> !seen.add(c))\n    .findFirst()\n    .orElse(null);" },
-  { id: "swb-q28", topic: "streams", difficulty: "medium", freq: "Common", companies: ["SERVICE","BANK","PRODUCT"], q: "Return true if any value appears at least twice in an array, false if all are distinct.", keyPoints: ["anyMatch short-circuits the moment Set.add() fails on a repeated value."], code: "int[] nums = {1, 2, 3, 1};  // -> true\n\nSet<Integer> seen = new HashSet<>();\nboolean hasDup = Arrays.stream(nums)\n    .anyMatch(n -> !seen.add(n));" },
-  { id: "swb-q29", topic: "streams", difficulty: "medium", freq: "Common", companies: ["SERVICE","BANK","PRODUCT"], q: "Concatenate two lists into a single stream and print the joined result.", keyPoints: ["Stream.concat() merges two streams; joining() with a delimiter builds the output string."], code: "List<String> a = Arrays.asList(\"Java\", \"8\");\nList<String> b = Arrays.asList(\"is\", \"fun\");\n\nStream<String> joined = Stream.concat(a.stream(), b.stream());\nString result = joined.collect(Collectors.joining(\" \"));" },
-  { id: "swb-q30", topic: "streams", difficulty: "medium", freq: "Common", companies: ["SERVICE","BANK","PRODUCT"], q: "Cube each element of a list, then keep only the results greater than 50.", keyPoints: ["map() transforms (cube), then filter() narrows — order of operations matters."], code: "List<Integer> nums = Arrays.asList(4, 5, 6, 7, 1, 2, 3);\n\nList<Integer> result = nums.stream()\n    .map(i -> i * i * i)\n    .filter(i -> i > 50)\n    .collect(Collectors.toList());" },
-  { id: "swb-q32", topic: "streams", difficulty: "hard", freq: "Occasional", companies: ["BANK","PRODUCT"], q: "From a list of strings, return only the elements that appear more than once, with their counts.", keyPoints: ["Build the frequency map first, then stream its entries and keep counts > 1. Result: {AA=2}."], code: "List<String> names = Arrays.asList(\"AA\", \"BB\", \"AA\", \"CC\");\n\nMap<String, Long> dups = names.stream()\n    .collect(Collectors.groupingBy(Function.identity(), Collectors.counting()))\n    .entrySet().stream()\n    .filter(e -> e.getValue() > 1)\n    .collect(Collectors.toMap(Map.Entry::getKey, Map.Entry::getValue));" },
-  { id: "swb-q33", topic: "streams", difficulty: "medium", freq: "Common", companies: ["SERVICE","BANK","PRODUCT"], q: "Count the frequency of each character in a string (lowercased).", keyPoints: ["split(\"\") gives single-char strings; LinkedHashMap keeps first-seen order."], code: "String s = \"stream data\";\n\nMap<String, Long> charCount = Arrays.stream(s.split(\"\"))\n    .map(String::toLowerCase)\n    .collect(Collectors.groupingBy(\n        Function.identity(),\n        LinkedHashMap::new,\n        Collectors.counting()));" },
-  { id: "swb-q34", topic: "streams", difficulty: "hard", freq: "Occasional", companies: ["BANK","PRODUCT"], q: "Convert a list of objects into a Map, keeping the first value on key collisions and preserving order.", keyPoints: ["The merge function (oldV, newV) -> oldV resolves duplicate keys; LinkedHashMap preserves order."], code: "List<Notes> notes = ...; // getTagName(), getTagId()\n\nMap<String, Long> map = notes.stream()\n    .sorted(Comparator.comparingLong(Notes::getTagId).reversed())\n    .collect(Collectors.toMap(\n        Notes::getTagName,\n        Notes::getTagId,\n        (oldV, newV) -> oldV,        // keep first on duplicate key\n        LinkedHashMap::new));" },
-  { id: "swb-q39", topic: "streams", difficulty: "easy", freq: "Very common", companies: ["SERVICE","BANK","PRODUCT"], q: "Print the current date, time, and date-time using the Java 8 Date/Time API.", keyPoints: ["LocalDate, LocalTime and LocalDateTime are the immutable Java 8 replacements for the old Date class."], code: "System.out.println(LocalDate.now());\nSystem.out.println(LocalTime.now());\nSystem.out.println(LocalDateTime.now());" },
+  { id: "swb-q1", topic: "streams", difficulty: "easy", freq: "Very common", companies: ["SERVICE","BANK","PRODUCT"], q: "Given a list of integers, return a list containing only the even numbers.", keyPoints: ["filter() keeps elements matching the predicate; collect() gathers them into a new list."], input: "List<Integer> nums = Arrays.asList(1, 2, 3, 4, 5, 6);", code: "List<Integer> even = nums.stream()\n    .filter(n -> n % 2 == 0)\n    .collect(Collectors.toList());" },
+  { id: "swb-q2", topic: "streams", difficulty: "easy", freq: "Very common", companies: ["SERVICE","BANK","PRODUCT"], q: "Find the maximum value in a list of integers.", keyPoints: ["max() takes a comparator and returns an Optional; .get() unwraps it (orElse is safer if empty)."], input: "List<Integer> nums = Arrays.asList(10, 15, 8, 49, 25, 98, 32);", code: "int max = nums.stream()\n    .max(Integer::compare)\n    .get();" },
+  { id: "swb-q3", topic: "streams", difficulty: "easy", freq: "Very common", companies: ["SERVICE","BANK","PRODUCT"], q: "Find the minimum value in a list of integers.", keyPoints: ["min() mirrors max() — returns the smallest element wrapped in an Optional."], input: "List<Integer> nums = Arrays.asList(10, 15, 8, 49, 25, 98, 32);", code: "int min = nums.stream()\n    .min(Integer::compare)\n    .get();" },
+  { id: "swb-q4", topic: "streams", difficulty: "easy", freq: "Very common", companies: ["SERVICE","BANK","PRODUCT"], q: "Calculate the sum of all elements in a list of integers.", keyPoints: ["mapToInt() produces an IntStream which exposes sum() directly. reduce(0, Integer::sum) also works."], input: "List<Integer> nums = Arrays.asList(1, 2, 3, 4, 5);", code: "int sum = nums.stream()\n    .mapToInt(Integer::intValue)\n    .sum();" },
+  { id: "swb-q5", topic: "streams", difficulty: "easy", freq: "Very common", companies: ["SERVICE","BANK","PRODUCT"], q: "Convert every string in a list to uppercase.", keyPoints: ["map() transforms each element by applying the method reference String::toUpperCase."], input: "List<String> names = Arrays.asList(\"alice\", \"bob\", \"charlie\");", code: "List<String> upper = names.stream()\n    .map(String::toUpperCase)\n    .collect(Collectors.toList());" },
+  { id: "swb-q6", topic: "streams", difficulty: "easy", freq: "Very common", companies: ["SERVICE","BANK","PRODUCT"], q: "Sort a list of integers in ascending (natural) order.", keyPoints: ["sorted() with no argument sorts by natural ordering."], input: "List<Integer> nums = Arrays.asList(10, 15, 8, 49, 25, 98, 32);", code: "List<Integer> sorted = nums.stream()\n    .sorted()\n    .collect(Collectors.toList());" },
+  { id: "swb-q7", topic: "streams", difficulty: "easy", freq: "Very common", companies: ["SERVICE","BANK","PRODUCT"], q: "Sort a list of integers in descending order.", keyPoints: ["Pass a reversed comparator. Comparator.reverseOrder() or Collections.reverseOrder() both work."], input: "List<Integer> nums = Arrays.asList(10, 15, 8, 49, 25, 98, 32);", code: "List<Integer> desc = nums.stream()\n    .sorted(Comparator.reverseOrder())\n    .collect(Collectors.toList());" },
+  { id: "swb-q8", topic: "streams", difficulty: "easy", freq: "Very common", companies: ["SERVICE","BANK","PRODUCT"], q: "Count how many numbers in a list are greater than 5.", keyPoints: ["filter() narrows the stream; count() returns the number of remaining elements as a long."], input: "List<Integer> nums = Arrays.asList(1, 4, 6, 8, 3, 9, 5);", code: "long count = nums.stream()\n    .filter(n -> n > 5)\n    .count();" },
+  { id: "swb-q9", topic: "streams", difficulty: "easy", freq: "Very common", companies: ["SERVICE","BANK","PRODUCT"], q: "Return only the distinct (unique) elements from a list.", keyPoints: ["distinct() removes duplicates using equals()."], input: "List<Integer> nums = Arrays.asList(1, 1, 2, 3, 3, 4, 5, 5);", code: "List<Integer> distinct = nums.stream()\n    .distinct()\n    .collect(Collectors.toList());" },
+  { id: "swb-q10", topic: "streams", difficulty: "easy", freq: "Very common", companies: ["SERVICE","BANK","PRODUCT"], q: "Reduce a list of integers to a single sum value using reduce().", keyPoints: ["reduce() takes an identity (0) and an accumulator (Integer::sum) to fold the stream into one value."], input: "List<Integer> nums = Arrays.asList(1, 2, 3, 4, 5);", code: "int total = nums.stream()\n    .reduce(0, Integer::sum);" },
+  { id: "swb-q11", topic: "streams", difficulty: "easy", freq: "Very common", companies: ["SERVICE","BANK","PRODUCT"], q: "Find the first element of a list using streams.", keyPoints: ["findFirst() returns the first element as an Optional; ifPresent() runs only if a value exists."], input: "List<Integer> nums = Arrays.asList(10, 15, 8, 49);", code: "nums.stream()\n    .findFirst()\n    .ifPresent(System.out::println);" },
+  { id: "swb-q12", topic: "streams", difficulty: "easy", freq: "Very common", companies: ["SERVICE","BANK","PRODUCT"], q: "Return any element from a list (useful with parallel streams).", keyPoints: ["findAny() may return any element — faster than findFirst() on parallel streams."], input: "List<Integer> nums = Arrays.asList(10, 15, 8, 49);", code: "Optional<Integer> any = nums.stream()\n    .findAny();" },
+  { id: "swb-q13", topic: "streams", difficulty: "easy", freq: "Very common", companies: ["SERVICE","BANK","PRODUCT"], q: "Extract only the first name from a list of full names.", keyPoints: ["map() splits each name on space and selects index 0."], input: "List<String> full = Arrays.asList(\"Alice Johnson\", \"Bob Harris\", \"Charlie Lou\");", code: "List<String> firstNames = full.stream()\n    .map(name -> name.split(\" \")[0])\n    .collect(Collectors.toList());" },
+  { id: "swb-q14", topic: "streams", difficulty: "easy", freq: "Very common", companies: ["SERVICE","BANK","PRODUCT"], q: "Check whether all numbers in a list are positive.", keyPoints: ["allMatch() returns true only if every element satisfies the predicate."], input: "List<Integer> nums = Arrays.asList(3, 7, 1, 9, 4);", code: "boolean allPos = nums.stream()\n    .allMatch(n -> n > 0);" },
+  { id: "swb-q15", topic: "streams", difficulty: "easy", freq: "Very common", companies: ["SERVICE","BANK","PRODUCT"], q: "Check that a list contains no negative numbers.", keyPoints: ["noneMatch() returns true if zero elements match the predicate."], input: "List<Integer> nums = Arrays.asList(3, 7, 1, 9, 4);", code: "boolean noneNeg = nums.stream()\n    .noneMatch(n -> n < 0);" },
+  { id: "swb-q16", topic: "streams", difficulty: "easy", freq: "Very common", companies: ["SERVICE","BANK","PRODUCT"], q: "Check whether at least one even number exists in the list.", keyPoints: ["anyMatch() short-circuits and returns true as soon as one element matches."], input: "List<Integer> nums = Arrays.asList(1, 3, 5, 8, 9);", code: "boolean hasEven = nums.stream()\n    .anyMatch(n -> n % 2 == 0);" },
+  { id: "swb-q18", topic: "streams", difficulty: "medium", freq: "Common", companies: ["SERVICE","BANK","PRODUCT"], q: "Group a list of users by their age into a Map<Integer, List<User>>.", keyPoints: ["groupingBy() builds a map keyed by the classifier; each value is the list of items sharing that key."], input: "List<User> users = ...; // each User has getAge()", code: "Map<Integer, List<User>> byAge = users.stream()\n    .collect(Collectors.groupingBy(User::getAge));" },
+  { id: "swb-q19", topic: "streams", difficulty: "easy", freq: "Very common", companies: ["SERVICE","BANK","PRODUCT"], q: "Return only the first 3 elements of a list.", keyPoints: ["limit(n) truncates the stream to at most n elements."], input: "List<Integer> nums = Arrays.asList(5, 6, 7, 8, 9, 10);", code: "List<Integer> first3 = nums.stream()\n    .limit(3)\n    .collect(Collectors.toList());" },
+  { id: "swb-q20", topic: "streams", difficulty: "easy", freq: "Very common", companies: ["SERVICE","BANK","PRODUCT"], q: "Skip the first 2 elements and return the rest.", keyPoints: ["skip(n) discards the first n elements."], input: "List<Integer> nums = Arrays.asList(5, 6, 7, 8, 9, 10);", code: "List<Integer> rest = nums.stream()\n    .skip(2)\n    .collect(Collectors.toList());" },
+  { id: "swb-q21", topic: "streams", difficulty: "easy", freq: "Very common", companies: ["SERVICE","BANK","PRODUCT"], q: "Convert a list of integers into a Set to drop duplicates.", keyPoints: ["Collecting into a Set removes duplicates automatically."], input: "List<Integer> nums = Arrays.asList(1, 2, 2, 3, 3, 3);", code: "Set<Integer> set = nums.stream()\n    .collect(Collectors.toSet());" },
+  { id: "swb-q22", topic: "streams", difficulty: "medium", freq: "Common", companies: ["SERVICE","BANK","PRODUCT"], q: "Get count, sum, min, max and average for a list of integers in one pass.", keyPoints: ["summaryStatistics() computes all aggregate values in a single traversal."], input: "List<Integer> nums = Arrays.asList(4, 8, 15, 16, 23, 42);", code: "IntSummaryStatistics stats = nums.stream()\n    .mapToInt(Integer::intValue)\n    .summaryStatistics();\n// stats.getMax(), getMin(), getAverage(), getSum(), getCount()" },
+  { id: "swb-q23", topic: "streams", difficulty: "easy", freq: "Very common", companies: ["SERVICE","BANK","PRODUCT"], q: "Find the average of all elements in a list.", keyPoints: ["average() on an IntStream returns an OptionalDouble; orElse handles the empty case."], input: "List<Integer> nums = Arrays.asList(10, 20, 30, 40, 50);", code: "double avg = nums.stream()\n    .mapToInt(Integer::intValue)\n    .average()\n    .orElse(0.0);" },
+  { id: "swb-q24", topic: "streams", difficulty: "medium", freq: "Common", companies: ["SERVICE","BANK","PRODUCT"], q: "Find all numbers whose decimal representation starts with the digit 1.", keyPoints: ["Convert each number to a String and test startsWith(\"1\")."], input: "List<Integer> nums = Arrays.asList(10, 15, 8, 49, 25, 98, 32);", code: "List<Integer> startsWith1 = nums.stream()\n    .filter(n -> String.valueOf(n).startsWith(\"1\"))\n    .collect(Collectors.toList());" },
+  { id: "swb-q27", topic: "streams", difficulty: "hard", freq: "Occasional", companies: ["BANK","PRODUCT"], q: "Find the first character in a string that repeats (case-insensitive).", keyPoints: ["As you stream chars, the first one that Set.add() rejects is the first repeat."], input: "String input = \"Java Articles are Awesome\";", code: "Set<Character> seen = new HashSet<>();\nCharacter result = input.toLowerCase().chars()\n    .mapToObj(c -> (char) c)\n    .filter(c -> !seen.add(c))\n    .findFirst()\n    .orElse(null);" },
+  { id: "swb-q28", topic: "streams", difficulty: "medium", freq: "Common", companies: ["SERVICE","BANK","PRODUCT"], q: "Return true if any value appears at least twice in an array, false if all are distinct.", keyPoints: ["anyMatch short-circuits the moment Set.add() fails on a repeated value."], input: "int[] nums = {1, 2, 3, 1};  // -> true", code: "Set<Integer> seen = new HashSet<>();\nboolean hasDup = Arrays.stream(nums)\n    .anyMatch(n -> !seen.add(n));" },
+  { id: "swb-q29", topic: "streams", difficulty: "medium", freq: "Common", companies: ["SERVICE","BANK","PRODUCT"], q: "Concatenate two lists into a single stream and print the joined result.", keyPoints: ["Stream.concat() merges two streams; joining() with a delimiter builds the output string."], input: "List<String> a = Arrays.asList(\"Java\", \"8\");\nList<String> b = Arrays.asList(\"is\", \"fun\");", code: "Stream<String> joined = Stream.concat(a.stream(), b.stream());\nString result = joined.collect(Collectors.joining(\" \"));" },
+  { id: "swb-q30", topic: "streams", difficulty: "medium", freq: "Common", companies: ["SERVICE","BANK","PRODUCT"], q: "Cube each element of a list, then keep only the results greater than 50.", keyPoints: ["map() transforms (cube), then filter() narrows — order of operations matters."], input: "List<Integer> nums = Arrays.asList(4, 5, 6, 7, 1, 2, 3);", code: "List<Integer> result = nums.stream()\n    .map(i -> i * i * i)\n    .filter(i -> i > 50)\n    .collect(Collectors.toList());" },
+  { id: "swb-q32", topic: "streams", difficulty: "hard", freq: "Occasional", companies: ["BANK","PRODUCT"], q: "From a list of strings, return only the elements that appear more than once, with their counts.", keyPoints: ["Build the frequency map first, then stream its entries and keep counts > 1. Result: {AA=2}."], input: "List<String> names = Arrays.asList(\"AA\", \"BB\", \"AA\", \"CC\");", code: "Map<String, Long> dups = names.stream()\n    .collect(Collectors.groupingBy(Function.identity(), Collectors.counting()))\n    .entrySet().stream()\n    .filter(e -> e.getValue() > 1)\n    .collect(Collectors.toMap(Map.Entry::getKey, Map.Entry::getValue));" },
+  { id: "swb-q33", topic: "streams", difficulty: "medium", freq: "Common", companies: ["SERVICE","BANK","PRODUCT"], q: "Count the frequency of each character in a string (lowercased).", keyPoints: ["split(\"\") gives single-char strings; LinkedHashMap keeps first-seen order."], input: "String s = \"stream data\";", code: "Map<String, Long> charCount = Arrays.stream(s.split(\"\"))\n    .map(String::toLowerCase)\n    .collect(Collectors.groupingBy(\n        Function.identity(),\n        LinkedHashMap::new,\n        Collectors.counting()));" },
+  { id: "swb-q34", topic: "streams", difficulty: "hard", freq: "Occasional", companies: ["BANK","PRODUCT"], q: "Convert a list of objects into a Map, keeping the first value on key collisions and preserving order.", keyPoints: ["The merge function (oldV, newV) -> oldV resolves duplicate keys; LinkedHashMap preserves order."], input: "List<Notes> notes = ...; // getTagName(), getTagId()", code: "Map<String, Long> map = notes.stream()\n    .sorted(Comparator.comparingLong(Notes::getTagId).reversed())\n    .collect(Collectors.toMap(\n        Notes::getTagName,\n        Notes::getTagId,\n        (oldV, newV) -> oldV,        // keep first on duplicate key\n        LinkedHashMap::new));" },
+  { id: "swb-q39", topic: "streams", difficulty: "easy", freq: "Very common", companies: ["SERVICE","BANK","PRODUCT"], q: "Print the current date, time, and date-time using the Java 8 Date/Time API.", keyPoints: ["LocalDate, LocalTime and LocalDateTime are the immutable Java 8 replacements for the old Date class."], input: "// no input — uses the system clock\n// expected: today's date, current time, and date-time", code: "System.out.println(LocalDate.now());\nSystem.out.println(LocalTime.now());\nSystem.out.println(LocalDateTime.now());" },
 
   // --- Spring Data JPA & Hibernate ---
   { id: "jpa-1", topic: "jpa", difficulty: "easy", freq: "Very common", companies: ["SERVICE","BANK","PRODUCT"], q: "What is Spring Data JPA?", a: "Spring Data JPA is part of the Spring Data project. It sits on top of JPA/Hibernate and removes boilerplate DAO code: you declare repository interfaces and Spring generates the implementation, so you focus on business logic instead of persistence plumbing.", keyPoints: ["Abstraction over JPA/Hibernate","Declare interfaces, implementation is generated","Removes boilerplate DAO/JDBC code"] },
@@ -2269,8 +2323,8 @@ for (int[] row : m)
   { id: "db-6", topic: "database", difficulty: "medium", freq: "Common", companies: ["SERVICE","BANK","PRODUCT"], q: "Views vs materialized views?", a: "A view is a stored query - virtual, always current, no storage. A materialized view stores the result physically for fast reads but must be refreshed and can be stale. Views also simplify and secure access.", keyPoints: ["View: virtual, always fresh","Materialized: stored, fast, needs refresh","Views simplify + restrict access"] },
   { id: "db-7", topic: "database", difficulty: "medium", freq: "Very common", companies: ["SERVICE","BANK","PRODUCT"], q: "What is the logical execution order of a SQL query?", a: "FROM -> JOIN -> WHERE -> GROUP BY -> HAVING -> SELECT -> ORDER BY -> LIMIT/OFFSET. Because SELECT runs late, you cannot use a SELECT alias in WHERE.", keyPoints: ["FROM/JOIN -> WHERE -> GROUP BY -> HAVING -> SELECT -> ORDER BY -> LIMIT","SELECT is evaluated late","Aliases unavailable in WHERE"] },
   { id: "db-8", topic: "database", difficulty: "medium", freq: "Common", companies: ["SERVICE","BANK","PRODUCT"], q: "What is a self join and why use it?", a: "A self join joins a table to itself using aliases, used for related rows within one table - for example matching each employee to their manager stored in the same table.", keyPoints: ["Table joined to itself via aliases","Hierarchies (employee -> manager)","Compare rows within one table"] },
-  { id: "db-9", topic: "database", difficulty: "medium", freq: "Very common", companies: ["SERVICE","BANK","PRODUCT"], q: "Find the Nth highest salary.", a: "Use DENSE_RANK() OVER (ORDER BY salary DESC) and filter rank = N, or a correlated subquery counting distinct higher salaries. Window functions are the clean modern answer.", keyPoints: ["DENSE_RANK() OVER (ORDER BY salary DESC)","Filter rank = N","Or correlated subquery with COUNT(DISTINCT)"], code: "SELECT DISTINCT salary FROM (\n  SELECT salary, DENSE_RANK() OVER (ORDER BY salary DESC) AS rnk\n  FROM employee\n) t WHERE rnk = :n;" },
-  { id: "db-10", topic: "database", difficulty: "medium", freq: "Very common", companies: ["SERVICE","BANK","PRODUCT"], q: "Find the top 3 highest-paid employees per department.", a: "Partition with a window function: ROW_NUMBER() or DENSE_RANK() OVER (PARTITION BY dept ORDER BY salary DESC), then keep rank <= 3.", keyPoints: ["PARTITION BY dept ORDER BY salary DESC","ROW_NUMBER / DENSE_RANK","Filter rank <= N"], code: "SELECT * FROM (\n  SELECT e.*, DENSE_RANK() OVER (PARTITION BY dept_id ORDER BY salary DESC) AS rnk\n  FROM employee e\n) t WHERE rnk <= 3;" },
+  { id: "db-9", topic: "database", difficulty: "medium", freq: "Very common", companies: ["SERVICE","BANK","PRODUCT"], q: "Find the Nth highest salary.", a: "Use DENSE_RANK() OVER (ORDER BY salary DESC) and filter rank = N, or a correlated subquery counting distinct higher salaries. Window functions are the clean modern answer.", keyPoints: ["DENSE_RANK() OVER (ORDER BY salary DESC)","Filter rank = N","Or correlated subquery with COUNT(DISTINCT)"], input: "-- table: employee(id, name, salary, dept_id)\n-- salaries: 100k, 90k, 90k, 80k, 70k\n-- find the 3rd highest DISTINCT salary  → expected: 80000", code: "SELECT DISTINCT salary FROM (\n  SELECT salary, DENSE_RANK() OVER (ORDER BY salary DESC) AS rnk\n  FROM employee\n) t WHERE rnk = :n;" },
+  { id: "db-10", topic: "database", difficulty: "medium", freq: "Very common", companies: ["SERVICE","BANK","PRODUCT"], q: "Find the top 3 highest-paid employees per department.", a: "Partition with a window function: ROW_NUMBER() or DENSE_RANK() OVER (PARTITION BY dept ORDER BY salary DESC), then keep rank <= 3.", keyPoints: ["PARTITION BY dept ORDER BY salary DESC","ROW_NUMBER / DENSE_RANK","Filter rank <= N"], input: "-- table: employee(id, name, salary, dept_id)\n-- expected: top 3 earners within EACH department", code: "SELECT * FROM (\n  SELECT e.*, DENSE_RANK() OVER (PARTITION BY dept_id ORDER BY salary DESC) AS rnk\n  FROM employee e\n) t WHERE rnk <= 3;" },
   { id: "db-11", topic: "database", difficulty: "medium", freq: "Common", companies: ["SERVICE","BANK","PRODUCT"], q: "Find employees earning more than their department average.", a: "Use a correlated subquery: WHERE salary > (SELECT AVG(salary) FROM emp e2 WHERE e2.dept = e1.dept), or compare against AVG(salary) OVER (PARTITION BY dept).", keyPoints: ["Correlated subquery on dept AVG","Or AVG() OVER (PARTITION BY dept)","Compare row salary to group average"] },
   { id: "db-12", topic: "database", difficulty: "medium", freq: "Common", companies: ["SERVICE","BANK","PRODUCT"], q: "Explain primary, candidate, composite and surrogate keys.", a: "Candidate keys can each uniquely identify a row; one is chosen as the primary key. A composite key spans multiple columns; a surrogate key is an artificial id with no business meaning. A table can lack a PK, but then rows are not uniquely identifiable and integrity/performance suffer.", keyPoints: ["Candidate -> chosen primary key","Composite (multi-col) vs surrogate (auto id)","No PK -> weak identity/integrity"] },
   { id: "db-13", topic: "database", difficulty: "hard", freq: "Occasional", companies: ["BANK","PRODUCT"], q: "What are the types of table partitioning?", a: "Partitioning splits a large table into physical pieces: RANGE (value ranges, e.g. dates), LIST (discrete values), and HASH (even spread). It improves query pruning and maintenance on huge tables.", keyPoints: ["RANGE / LIST / HASH partitioning","Query pruning + easier maintenance","For very large tables"] },
@@ -2330,17 +2384,17 @@ for (int[] row : m)
   { id: "jpa-52", topic: "jpa", difficulty: "medium", freq: "Common", companies: ["SERVICE","BANK","PRODUCT"], q: "In a bidirectional relationship, what is the owning side and mappedBy?", a: "The OWNING side holds the foreign key and is where JPA reads/writes the association (usually the @ManyToOne side with @JoinColumn); the inverse side uses mappedBy to point at it. You must set the owning side to persist the link - updating only the inverse collection is a common bug.", keyPoints: ["Owning side holds the FK (@JoinColumn)","Inverse side uses mappedBy","Set the owning side to persist the relationship"] },
   { id: "jpa-53", topic: "jpa", difficulty: "medium", freq: "Occasional", companies: ["SERVICE","BANK","PRODUCT"], q: "orphanRemoval vs CascadeType.REMOVE?", a: "CascadeType.REMOVE deletes children when the parent is deleted. orphanRemoval=true additionally deletes a child when it is removed from the parent's collection (disassociated), not only when the parent is deleted. Use orphanRemoval for true parent-owned child lifecycles.", keyPoints: ["CascadeType.REMOVE: delete children with the parent","orphanRemoval: delete child when removed from collection","orphanRemoval for parent-owned lifecycles"] },
   { id: "hib-26", topic: "hibernate", difficulty: "medium", freq: "Common", companies: ["SERVICE","BANK","PRODUCT"], q: "Difference between merge() and update() in Hibernate?", a: "update() reattaches a detached object to the session and throws if another instance with the same id is already managed - it only works on detached entities. merge() copies state onto a managed instance and returns it, working whether the entity is transient, detached, or already managed. merge is JPA-standard and safer; update is Hibernate-specific.", keyPoints: ["update: reattach detached (fails if id already managed)","merge: copy state -> managed copy (returned)","merge is JPA-standard and safer"] },
-  { id: "db-19", topic: "database", difficulty: "medium", freq: "Very common", companies: ["SERVICE","BANK","PRODUCT"], q: "ROW_NUMBER vs RANK vs DENSE_RANK?", a: "All number rows within an ordered window. ROW_NUMBER gives a unique sequential number even for ties. RANK gives ties the same number but then skips values (1,1,3). DENSE_RANK gives ties the same number with no gaps (1,1,2). Use ROW_NUMBER to pick one row per group, DENSE_RANK for top-N distinct values.", keyPoints: ["ROW_NUMBER: unique, breaks ties","RANK: ties equal, gaps after (1,1,3)","DENSE_RANK: ties equal, no gaps (1,1,2)"], code: "SELECT name, salary,\n  ROW_NUMBER() OVER (ORDER BY salary DESC) AS rn,\n  RANK()       OVER (ORDER BY salary DESC) AS rnk,\n  DENSE_RANK() OVER (ORDER BY salary DESC) AS drnk\nFROM employee;" },
+  { id: "db-19", topic: "database", difficulty: "medium", freq: "Very common", companies: ["SERVICE","BANK","PRODUCT"], q: "ROW_NUMBER vs RANK vs DENSE_RANK?", a: "All number rows within an ordered window. ROW_NUMBER gives a unique sequential number even for ties. RANK gives ties the same number but then skips values (1,1,3). DENSE_RANK gives ties the same number with no gaps (1,1,2). Use ROW_NUMBER to pick one row per group, DENSE_RANK for top-N distinct values.", keyPoints: ["ROW_NUMBER: unique, breaks ties","RANK: ties equal, gaps after (1,1,3)","DENSE_RANK: ties equal, no gaps (1,1,2)"], input: "-- table: employee(name, salary)\n-- salaries: 100, 90, 90, 80\n-- expected: ROW_NUMBER 1,2,3,4 | RANK 1,2,2,4 | DENSE_RANK 1,2,2,3", code: "SELECT name, salary,\n  ROW_NUMBER() OVER (ORDER BY salary DESC) AS rn,\n  RANK()       OVER (ORDER BY salary DESC) AS rnk,\n  DENSE_RANK() OVER (ORDER BY salary DESC) AS drnk\nFROM employee;" },
   { id: "db-20", topic: "database", difficulty: "medium", freq: "Very common", companies: ["SERVICE","BANK","PRODUCT"], q: "What is a window function, and why can't you filter it in WHERE?", a: "A window function computes across a set of related rows (the OVER window) without collapsing rows like GROUP BY. Because it is evaluated after WHERE/GROUP BY (at SELECT time), you cannot reference it in WHERE - wrap it in a CTE or subquery and filter on the alias. Writing WHERE RANK() OVER(...) is a classic interview trap.", keyPoints: ["OVER(PARTITION BY ... ORDER BY ...), keeps all rows","Runs at SELECT time -> not allowed in WHERE","Wrap in a CTE/subquery, filter the alias"] },
-  { id: "db-21", topic: "database", difficulty: "medium", freq: "Common", companies: ["SERVICE","BANK","PRODUCT"], q: "What is a CTE and a recursive CTE?", a: "A CTE (WITH clause) is a named temporary result set for a single statement that makes complex queries readable and enables recursion. A recursive CTE has an anchor query plus a recursive member that references the CTE, used for hierarchies (employee-to-manager chains) or generating sequences.", keyPoints: ["WITH name AS (...): readable, single-statement scope","Recursive CTE: anchor + recursive member","For hierarchies / generated sequences"], code: "WITH RECURSIVE org AS (\n  SELECT id, name, manager_id, 1 AS lvl\n  FROM employee WHERE manager_id IS NULL\n  UNION ALL\n  SELECT e.id, e.name, e.manager_id, o.lvl + 1\n  FROM employee e JOIN org o ON e.manager_id = o.id\n)\nSELECT * FROM org;" },
-  { id: "db-22", topic: "database", difficulty: "medium", freq: "Very common", companies: ["SERVICE","BANK","PRODUCT"], q: "Find employees who earn more than their manager.", a: "The classic self-join: join the employee table to itself, matching each employee row to their manager row via manager_id, then compare salaries. It tests whether you can join a table to itself with aliases.", keyPoints: ["Self-join emp to emp on e.manager_id = m.id","Compare e.salary > m.salary","The #1 self-join interview query"], code: "SELECT e.name\nFROM employee e\nJOIN employee m ON e.manager_id = m.id\nWHERE e.salary > m.salary;" },
-  { id: "db-23", topic: "database", difficulty: "medium", freq: "Very common", companies: ["SERVICE","BANK","PRODUCT"], q: "How do you find duplicate rows in a table?", a: "Group by the columns that define a duplicate and keep groups with COUNT(*) > 1. To also identify which rows, use ROW_NUMBER() OVER (PARTITION BY those_columns) and keep rows where the number > 1.", keyPoints: ["GROUP BY cols HAVING COUNT(*) > 1","Or ROW_NUMBER() PARTITION BY the cols","rn > 1 marks duplicates"], code: "SELECT email, COUNT(*)\nFROM users\nGROUP BY email\nHAVING COUNT(*) > 1;" },
-  { id: "db-24", topic: "database", difficulty: "hard", freq: "Common", companies: ["BANK","PRODUCT"], q: "How do you delete duplicate rows keeping one?", a: "Number the duplicates with ROW_NUMBER() OVER (PARTITION BY the_duplicate_columns ORDER BY id) inside a CTE, then delete the rows where the number > 1 - this keeps exactly one row per group.", keyPoints: ["ROW_NUMBER() PARTITION BY dup cols in a CTE","DELETE the rows where rn > 1","Keeps one row per group"], code: "WITH d AS (\n  SELECT id, ROW_NUMBER() OVER (PARTITION BY email ORDER BY id) AS rn\n  FROM users\n)\nDELETE FROM users\nWHERE id IN (SELECT id FROM d WHERE rn > 1);" },
+  { id: "db-21", topic: "database", difficulty: "medium", freq: "Common", companies: ["SERVICE","BANK","PRODUCT"], q: "What is a CTE and a recursive CTE?", a: "A CTE (WITH clause) is a named temporary result set for a single statement that makes complex queries readable and enables recursion. A recursive CTE has an anchor query plus a recursive member that references the CTE, used for hierarchies (employee-to-manager chains) or generating sequences.", keyPoints: ["WITH name AS (...): readable, single-statement scope","Recursive CTE: anchor + recursive member","For hierarchies / generated sequences"], input: "-- table: employee(id, name, manager_id)\n-- expected: each employee with their level in the org hierarchy", code: "WITH RECURSIVE org AS (\n  SELECT id, name, manager_id, 1 AS lvl\n  FROM employee WHERE manager_id IS NULL\n  UNION ALL\n  SELECT e.id, e.name, e.manager_id, o.lvl + 1\n  FROM employee e JOIN org o ON e.manager_id = o.id\n)\nSELECT * FROM org;" },
+  { id: "db-22", topic: "database", difficulty: "medium", freq: "Very common", companies: ["SERVICE","BANK","PRODUCT"], q: "Find employees who earn more than their manager.", a: "The classic self-join: join the employee table to itself, matching each employee row to their manager row via manager_id, then compare salaries. It tests whether you can join a table to itself with aliases.", keyPoints: ["Self-join emp to emp on e.manager_id = m.id","Compare e.salary > m.salary","The #1 self-join interview query"], input: "-- table: employee(id, name, salary, manager_id)\n-- expected: names of employees whose salary > their manager's salary", code: "SELECT e.name\nFROM employee e\nJOIN employee m ON e.manager_id = m.id\nWHERE e.salary > m.salary;" },
+  { id: "db-23", topic: "database", difficulty: "medium", freq: "Very common", companies: ["SERVICE","BANK","PRODUCT"], q: "How do you find duplicate rows in a table?", a: "Group by the columns that define a duplicate and keep groups with COUNT(*) > 1. To also identify which rows, use ROW_NUMBER() OVER (PARTITION BY those_columns) and keep rows where the number > 1.", keyPoints: ["GROUP BY cols HAVING COUNT(*) > 1","Or ROW_NUMBER() PARTITION BY the cols","rn > 1 marks duplicates"], input: "-- table: users(id, email)\n-- expected: each email appearing more than once, with its count", code: "SELECT email, COUNT(*)\nFROM users\nGROUP BY email\nHAVING COUNT(*) > 1;" },
+  { id: "db-24", topic: "database", difficulty: "hard", freq: "Common", companies: ["BANK","PRODUCT"], q: "How do you delete duplicate rows keeping one?", a: "Number the duplicates with ROW_NUMBER() OVER (PARTITION BY the_duplicate_columns ORDER BY id) inside a CTE, then delete the rows where the number > 1 - this keeps exactly one row per group.", keyPoints: ["ROW_NUMBER() PARTITION BY dup cols in a CTE","DELETE the rows where rn > 1","Keeps one row per group"], input: "-- table: users(id, email)   -- duplicates share the same email\n-- expected: keep the lowest id per email, delete the rest", code: "WITH d AS (\n  SELECT id, ROW_NUMBER() OVER (PARTITION BY email ORDER BY id) AS rn\n  FROM users\n)\nDELETE FROM users\nWHERE id IN (SELECT id FROM d WHERE rn > 1);" },
   { id: "db-25", topic: "database", difficulty: "easy", freq: "Common", companies: ["SERVICE","BANK","PRODUCT"], q: "UNION vs UNION ALL?", a: "UNION combines two result sets and removes duplicates (an extra sort/dedup pass, slower). UNION ALL keeps all rows including duplicates and is faster. Prefer UNION ALL unless you specifically need distinct results.", keyPoints: ["UNION: removes duplicates (slower)","UNION ALL: keeps everything (faster)","Prefer UNION ALL unless dedup needed"] },
   { id: "db-26", topic: "database", difficulty: "medium", freq: "Common", companies: ["SERVICE","BANK","PRODUCT"], q: "EXISTS vs IN vs JOIN - and the NOT IN NULL trap?", a: "IN checks membership against a value list/subquery; EXISTS checks whether a correlated subquery returns any row (often faster and short-circuits at the first match). Key trap: NOT IN with a subquery that returns any NULL yields no rows - use NOT EXISTS or filter out NULLs.", keyPoints: ["IN: value membership; EXISTS: correlated row-exists","EXISTS short-circuits; good for large subqueries","NOT IN + NULL -> empty result; use NOT EXISTS"] },
-  { id: "db-27", topic: "database", difficulty: "medium", freq: "Common", companies: ["SERVICE","BANK","PRODUCT"], q: "Find customers who never placed an order (anti-join).", a: "Find rows in one table with no match in another using a LEFT JOIN ... WHERE right.id IS NULL, or NOT EXISTS. NOT EXISTS is usually clearest and is NULL-safe compared with NOT IN.", keyPoints: ["LEFT JOIN ... WHERE other.id IS NULL","Or NOT EXISTS (correlated)","Avoid NOT IN on nullable columns"], code: "SELECT c.*\nFROM customer c\nLEFT JOIN orders o ON o.customer_id = c.id\nWHERE o.id IS NULL;" },
+  { id: "db-27", topic: "database", difficulty: "medium", freq: "Common", companies: ["SERVICE","BANK","PRODUCT"], q: "Find customers who never placed an order (anti-join).", a: "Find rows in one table with no match in another using a LEFT JOIN ... WHERE right.id IS NULL, or NOT EXISTS. NOT EXISTS is usually clearest and is NULL-safe compared with NOT IN.", keyPoints: ["LEFT JOIN ... WHERE other.id IS NULL","Or NOT EXISTS (correlated)","Avoid NOT IN on nullable columns"], input: "-- tables: customer(id, name)  |  orders(id, customer_id)\n-- expected: customers with no matching row in orders", code: "SELECT c.*\nFROM customer c\nLEFT JOIN orders o ON o.customer_id = c.id\nWHERE o.id IS NULL;" },
   { id: "db-28", topic: "database", difficulty: "medium", freq: "Common", companies: ["SERVICE","BANK","PRODUCT"], q: "How do you handle NULLs in SQL (COALESCE, NULLIF, IS NULL)?", a: "NULL means unknown, so NULL = NULL is not true - test with IS NULL / IS NOT NULL. COALESCE returns the first non-null argument (defaults); NULLIF returns NULL when two values are equal (e.g. to avoid divide-by-zero). Aggregates like COUNT(col) skip NULLs, while COUNT(*) does not.", keyPoints: ["Test with IS NULL, not = NULL","COALESCE for defaults; NULLIF to null-out","COUNT(col) ignores NULLs; COUNT(*) doesn't"] },
-  { id: "db-29", topic: "database", difficulty: "medium", freq: "Common", companies: ["SERVICE","BANK","PRODUCT"], q: "How do you compute a running/cumulative total?", a: "Use SUM(x) OVER (ORDER BY d ROWS UNBOUNDED PRECEDING) for a running total, or add PARTITION BY group for per-group totals. The frame clause (ROWS vs RANGE) controls exactly which rows are summed.", keyPoints: ["SUM(x) OVER (ORDER BY ...) = running total","PARTITION BY for per-group running totals","ROWS vs RANGE controls the frame"], code: "SELECT day, amount,\n  SUM(amount) OVER (ORDER BY day ROWS UNBOUNDED PRECEDING) AS running_total\nFROM sales;" },
+  { id: "db-29", topic: "database", difficulty: "medium", freq: "Common", companies: ["SERVICE","BANK","PRODUCT"], q: "How do you compute a running/cumulative total?", a: "Use SUM(x) OVER (ORDER BY d ROWS UNBOUNDED PRECEDING) for a running total, or add PARTITION BY group for per-group totals. The frame clause (ROWS vs RANGE) controls exactly which rows are summed.", keyPoints: ["SUM(x) OVER (ORDER BY ...) = running total","PARTITION BY for per-group running totals","ROWS vs RANGE controls the frame"], input: "-- table: sales(day, amount)\n-- expected: each row plus the cumulative sum of amount ordered by day", code: "SELECT day, amount,\n  SUM(amount) OVER (ORDER BY day ROWS UNBOUNDED PRECEDING) AS running_total\nFROM sales;" },
   { id: "db-30", topic: "database", difficulty: "medium", freq: "Common", companies: ["SERVICE","BANK","PRODUCT"], q: "Clustered vs non-clustered index?", a: "A clustered index defines the physical order of the table's rows - one per table (often the primary key), so range scans are fast. A non-clustered index is a separate structure of key values plus row pointers - many are allowed, but a lookup may need an extra step to fetch the row unless it's a covering index.", keyPoints: ["Clustered: physical row order, one per table","Non-clustered: separate structure + pointers, many","Covering index avoids the extra row lookup"] },
   { id: "db-31", topic: "database", difficulty: "medium", freq: "Common", companies: ["SERVICE","BANK","PRODUCT"], q: "How does a composite index and the leftmost-prefix rule work?", a: "A composite index covers multiple columns and the column ORDER matters: the DB can use it for queries filtering on a leftmost prefix (col1, or col1+col2) but not for col2 alone. Put the most selective / most-filtered column first, matching your WHERE and ORDER BY.", keyPoints: ["Index (a,b,c): column order matters","Usable for a, a+b, a+b+c (leftmost prefix)","Not usable for b alone; selective column first"] },
   { id: "db-32", topic: "database", difficulty: "medium", freq: "Common", companies: ["SERVICE","BANK","PRODUCT"], q: "How do you debug and optimize a slow SQL query?", a: "Read the EXPLAIN plan to spot full scans, missing indexes, and bad join orders. Add indexes on WHERE/JOIN/ORDER BY columns, avoid SELECT *, keep predicates SARGable (don't wrap an indexed column in a function - WHERE YEAR(d)=2025 blocks the index), and filter rows early.", keyPoints: ["EXPLAIN to find scans / missing indexes","Index WHERE/JOIN/ORDER BY; avoid SELECT *","Keep predicates SARGable (no function on indexed col)"] },
@@ -2361,6 +2415,36 @@ for (int[] row : m)
   { id: "exp-12", topic: "experience", difficulty: "medium", freq: "Very common", companies: ["SERVICE","BANK","PRODUCT"], q: "Tell me about a challenging production issue you solved.", a: "HOW TO ANSWER: Use STAR. Situation: a specific payment-processing issue in production. Task: restore service and find the cause. Action: how you triaged, mitigated, and did RCA (logs/Kibana, isolating the recent change, applying the fix). Result: restored uptime, prevented recurrence, and the quantified impact. Pick one real, specific example and keep it to two minutes. This is where nerves show most - rehearse it out loud until it is automatic.", keyPoints: ["STAR: Situation -> Task -> Action -> Result","One specific real incident; quantify the result","Rehearse out loud until automatic"] },
   { id: "exp-13", topic: "experience", difficulty: "easy", freq: "Very common", companies: ["SERVICE","BANK","PRODUCT"], q: "Why are you looking to switch?", a: "HOW TO ANSWER: Keep it positive and forward-looking. Good framing: you have grown a lot at Barclays - migrations, production ownership, mentoring - and you want bigger technical challenges, broader ownership, and exposure to newer tech (cloud, microservices at scale) that the next role offers. Never bad-mouth your current employer. Tie your reason to what this specific role offers.", keyPoints: ["Positive, forward-looking (growth, bigger challenges)","Never bad-mouth your current employer","Tie it to what the new role offers"] },
   { id: "exp-14", topic: "experience", difficulty: "medium", freq: "Common", companies: ["SERVICE","BANK","PRODUCT"], q: "How do you mentor juniors and approach code reviews?", a: "HOW TO ANSWER: Show leadership without arrogance. Mentoring: pair programming, knowledge-sharing sessions, and reviewing with explanations (the why, not just the what). Code reviews: you look for correctness, readability, tests, security, and adherence to standards, and you give constructive, kind feedback. Mention that mentoring also sharpens your own understanding. A concrete example of helping a junior grow lands well.", keyPoints: ["Pairing, knowledge-sharing, review with the 'why'","Reviews: correctness, tests, security, readability, standards","Constructive/kind feedback; one concrete example"] },
+
+  // --- Stream problems: arrays, strings, and Employee objects ---
+  { id: "sc-15", topic: "streams", difficulty: "medium", freq: "Very common", companies: ["SERVICE","BANK","PRODUCT"], q: "Find the Nth highest distinct number in a list.", keyPoints: ["distinct() then sort descending","skip(n-1) then findFirst()","Guard with orElseThrow / Optional for small lists"], input: "List<Integer> nums = Arrays.asList(5, 2, 9, 9, 1, 7);\nint n = 3;\n// expected: 5  (distinct desc: 9, 7, 5)", code: "int nth = nums.stream().distinct()\n    .sorted(Comparator.reverseOrder())\n    .skip(n - 1).findFirst().orElseThrow();" },
+  { id: "sc-16", topic: "streams", difficulty: "medium", freq: "Common", companies: ["SERVICE","BANK","PRODUCT"], q: "Find the first non-repeating element in a list.", keyPoints: ["groupingBy with LinkedHashMap preserves encounter order","counting() downstream, then filter count == 1","findFirst() gives the first unique element"], input: "List<Integer> nums = Arrays.asList(4, 5, 1, 2, 1, 4, 5);\n// expected: 2", code: "Integer first = nums.stream()\n    .collect(Collectors.groupingBy(x -> x, LinkedHashMap::new, Collectors.counting()))\n    .entrySet().stream()\n    .filter(e -> e.getValue() == 1)\n    .map(Map.Entry::getKey)\n    .findFirst().orElse(null);" },
+  { id: "sc-17", topic: "streams", difficulty: "easy", freq: "Common", companies: ["SERVICE","BANK","PRODUCT"], q: "Find max and min without using built-in max()/min().", keyPoints: ["reduce with an identity + accumulator","Integer::max / Integer::min as method refs","summaryStatistics() gets both in one pass"], input: "List<Integer> nums = Arrays.asList(5, 2, 9, 1, 7);\n// expected: max=9, min=1", code: "int max = nums.stream().reduce(Integer.MIN_VALUE, Integer::max);\nint min = nums.stream().reduce(Integer.MAX_VALUE, Integer::min);\n\n// or in one pass:\nIntSummaryStatistics st = nums.stream().mapToInt(Integer::intValue).summaryStatistics();" },
+  { id: "sc-18", topic: "streams", difficulty: "medium", freq: "Common", companies: ["SERVICE","BANK","PRODUCT"], q: "Find the missing number in an array containing 1..N (using streams).", keyPoints: ["Sum formula n(n+1)/2 minus the actual sum","Arrays.stream(a).sum() for the actual","O(n) time, O(1) space; beware overflow for large n"], input: "int[] a = {1, 2, 4, 5};   // N = 5\n// expected: 3", code: "int n = a.length + 1;\nint expected = n * (n + 1) / 2;\nint actual = Arrays.stream(a).sum();\nint missing = expected - actual;" },
+  { id: "strc-16", topic: "string-coding", difficulty: "easy", freq: "Common", companies: ["SERVICE","BANK","PRODUCT"], q: "Find the longest string in a list using streams.", keyPoints: ["max() with Comparator.comparingInt(String::length)","Returns Optional - handle the empty case","For ties, max() keeps the first encountered"], input: "List<String> words = Arrays.asList(\"java\", \"microservices\", \"spring\", \"jpa\");\n// expected: \"microservices\"", code: "String longest = words.stream()\n    .max(Comparator.comparingInt(String::length))\n    .orElse(\"\");" },
+  { id: "strc-17", topic: "string-coding", difficulty: "easy", freq: "Very common", companies: ["SERVICE","BANK","PRODUCT"], q: "Filter strings by multiple conditions (length > 3 and starts with 'b').", keyPoints: ["Chain filters, or combine with &&","Predicates compose: p1.and(p2)","Filters are lazy - only run on terminal op"], input: "List<String> words = Arrays.asList(\"bat\", \"ball\", \"cat\", \"bench\", \"bus\");\n// expected: [ball, bench]", code: "List<String> out = words.stream()\n    .filter(w -> w.length() > 3)\n    .filter(w -> w.startsWith(\"b\"))\n    .collect(Collectors.toList());\n\n// or combine: .filter(w -> w.length() > 3 && w.startsWith(\"b\"))" },
+  { id: "strc-18", topic: "string-coding", difficulty: "medium", freq: "Very common", companies: ["SERVICE","BANK","PRODUCT"], q: "Group anagrams together using streams.", keyPoints: ["Key = the sorted characters of the word","groupingBy that key collects anagrams together","O(n·k log k); a char-count key avoids the sort"], input: "List<String> words = Arrays.asList(\"eat\", \"tea\", \"tan\", \"ate\", \"nat\", \"bat\");\n// expected: [[eat, tea, ate], [tan, nat], [bat]]", code: "Map<String, List<String>> groups = words.stream()\n    .collect(Collectors.groupingBy(w -> {\n        char[] c = w.toCharArray();\n        Arrays.sort(c);\n        return new String(c);\n    }));\n\nCollection<List<String>> result = groups.values();" },
+  { id: "strc-19", topic: "string-coding", difficulty: "medium", freq: "Common", companies: ["SERVICE","BANK","PRODUCT"], q: "Reverse each word in a sentence (keeping word order) using streams.", keyPoints: ["split into words, map each reversed","StringBuilder.reverse() per word","joining(\" \") rebuilds the sentence"], input: "String s = \"Java Streams are powerful\";\n// expected: \"avaJ smaertS era lufrewop\"", code: "String out = Arrays.stream(s.split(\" \"))\n    .map(w -> new StringBuilder(w).reverse().toString())\n    .collect(Collectors.joining(\" \"));" },
+  { id: "emp-1", topic: "stream-objects", difficulty: "medium", freq: "Very common", companies: ["SERVICE","BANK","PRODUCT"], q: "Find the average salary of male and female employees separately.", keyPoints: ["groupingBy the classifier (gender)","averagingDouble as the downstream collector","Returns Map<String, Double>"], input: "record Emp(int id, String name, String gender, String dept,\n           int age, int year, double salary, List<String> projects) {}\n\nList<Emp> emps = List.of(\n  new Emp(1, \"Mahima\", \"Female\", \"IT\",      28, 2018,  95000, List.of(\"Payments\", \"Mesh\")),\n  new Emp(2, \"Aman\",   \"Male\",   \"IT\",      35, 2014, 120000, List.of(\"Payments\", \"Auth\")),\n  new Emp(3, \"Riya\",   \"Female\", \"IT\",      31, 2016,  80000, List.of(\"Mesh\")),\n  new Emp(4, \"Vikram\", \"Male\",   \"Sales\",   45, 2012,  60000, List.of(\"CRM\")),\n  new Emp(5, \"Neha\",   \"Female\", \"HR\",      26, 2020,  45000, List.of(\"Onboarding\")),\n  new Emp(6, \"Rohit\",  \"Male\",   \"Sales\",   38, 2015, 110000, List.of(\"CRM\", \"Payments\")),\n  new Emp(7, \"Karan\",  \"Male\",   \"Finance\", 42, 2013,  99000, List.of(\"Ledger\")));", code: "Map<String, Double> avgByGender = emps.stream()\n    .collect(Collectors.groupingBy(Emp::gender,\n             Collectors.averagingDouble(Emp::salary)));\n// {Male=95000.0, Female=87500.0}" },
+  { id: "emp-2", topic: "stream-objects", difficulty: "easy", freq: "Common", companies: ["SERVICE","BANK","PRODUCT"], q: "List the names of all employees who joined after 2015.", keyPoints: ["filter on the predicate, then map to the field","map before collect keeps it a List<String>","Chain filter -> map -> collect"], input: "record Emp(int id, String name, String gender, String dept,\n           int age, int year, double salary, List<String> projects) {}\n\nList<Emp> emps = List.of(\n  new Emp(1, \"Mahima\", \"Female\", \"IT\",      28, 2018,  95000, List.of(\"Payments\", \"Mesh\")),\n  new Emp(2, \"Aman\",   \"Male\",   \"IT\",      35, 2014, 120000, List.of(\"Payments\", \"Auth\")),\n  new Emp(3, \"Riya\",   \"Female\", \"IT\",      31, 2016,  80000, List.of(\"Mesh\")),\n  new Emp(4, \"Vikram\", \"Male\",   \"Sales\",   45, 2012,  60000, List.of(\"CRM\")),\n  new Emp(5, \"Neha\",   \"Female\", \"HR\",      26, 2020,  45000, List.of(\"Onboarding\")),\n  new Emp(6, \"Rohit\",  \"Male\",   \"Sales\",   38, 2015, 110000, List.of(\"CRM\", \"Payments\")),\n  new Emp(7, \"Karan\",  \"Male\",   \"Finance\", 42, 2013,  99000, List.of(\"Ledger\")));", code: "List<String> names = emps.stream()\n    .filter(e -> e.year() > 2015)\n    .map(Emp::name)\n    .collect(Collectors.toList());" },
+  { id: "emp-3", topic: "stream-objects", difficulty: "easy", freq: "Common", companies: ["SERVICE","BANK","PRODUCT"], q: "Fetch all distinct department names.", keyPoints: ["map to the field then toSet() (dedupes)","Or .distinct() for a List","toCollection(TreeSet::new) for sorted output"], input: "record Emp(int id, String name, String gender, String dept,\n           int age, int year, double salary, List<String> projects) {}\n\nList<Emp> emps = List.of(\n  new Emp(1, \"Mahima\", \"Female\", \"IT\",      28, 2018,  95000, List.of(\"Payments\", \"Mesh\")),\n  new Emp(2, \"Aman\",   \"Male\",   \"IT\",      35, 2014, 120000, List.of(\"Payments\", \"Auth\")),\n  new Emp(3, \"Riya\",   \"Female\", \"IT\",      31, 2016,  80000, List.of(\"Mesh\")),\n  new Emp(4, \"Vikram\", \"Male\",   \"Sales\",   45, 2012,  60000, List.of(\"CRM\")),\n  new Emp(5, \"Neha\",   \"Female\", \"HR\",      26, 2020,  45000, List.of(\"Onboarding\")),\n  new Emp(6, \"Rohit\",  \"Male\",   \"Sales\",   38, 2015, 110000, List.of(\"CRM\", \"Payments\")),\n  new Emp(7, \"Karan\",  \"Male\",   \"Finance\", 42, 2013,  99000, List.of(\"Ledger\")));", code: "Set<String> depts = emps.stream()\n    .map(Emp::dept)\n    .collect(Collectors.toSet());\n\n// or ordered: .distinct().collect(Collectors.toList())" },
+  { id: "emp-4", topic: "stream-objects", difficulty: "easy", freq: "Common", companies: ["SERVICE","BANK","PRODUCT"], q: "Find the details of the oldest employee.", keyPoints: ["max() with a comparator on age","Returns Optional - handle empty","min() for the youngest"], input: "record Emp(int id, String name, String gender, String dept,\n           int age, int year, double salary, List<String> projects) {}\n\nList<Emp> emps = List.of(\n  new Emp(1, \"Mahima\", \"Female\", \"IT\",      28, 2018,  95000, List.of(\"Payments\", \"Mesh\")),\n  new Emp(2, \"Aman\",   \"Male\",   \"IT\",      35, 2014, 120000, List.of(\"Payments\", \"Auth\")),\n  new Emp(3, \"Riya\",   \"Female\", \"IT\",      31, 2016,  80000, List.of(\"Mesh\")),\n  new Emp(4, \"Vikram\", \"Male\",   \"Sales\",   45, 2012,  60000, List.of(\"CRM\")),\n  new Emp(5, \"Neha\",   \"Female\", \"HR\",      26, 2020,  45000, List.of(\"Onboarding\")),\n  new Emp(6, \"Rohit\",  \"Male\",   \"Sales\",   38, 2015, 110000, List.of(\"CRM\", \"Payments\")),\n  new Emp(7, \"Karan\",  \"Male\",   \"Finance\", 42, 2013,  99000, List.of(\"Ledger\")));", code: "Optional<Emp> oldest = emps.stream()\n    .max(Comparator.comparingInt(Emp::age));" },
+  { id: "emp-5", topic: "stream-objects", difficulty: "easy", freq: "Very common", companies: ["SERVICE","BANK","PRODUCT"], q: "Count the number of employees in each department.", keyPoints: ["groupingBy(dept) + counting()","counting() returns Long","Use TreeMap::new as mapFactory for sorted keys"], input: "record Emp(int id, String name, String gender, String dept,\n           int age, int year, double salary, List<String> projects) {}\n\nList<Emp> emps = List.of(\n  new Emp(1, \"Mahima\", \"Female\", \"IT\",      28, 2018,  95000, List.of(\"Payments\", \"Mesh\")),\n  new Emp(2, \"Aman\",   \"Male\",   \"IT\",      35, 2014, 120000, List.of(\"Payments\", \"Auth\")),\n  new Emp(3, \"Riya\",   \"Female\", \"IT\",      31, 2016,  80000, List.of(\"Mesh\")),\n  new Emp(4, \"Vikram\", \"Male\",   \"Sales\",   45, 2012,  60000, List.of(\"CRM\")),\n  new Emp(5, \"Neha\",   \"Female\", \"HR\",      26, 2020,  45000, List.of(\"Onboarding\")),\n  new Emp(6, \"Rohit\",  \"Male\",   \"Sales\",   38, 2015, 110000, List.of(\"CRM\", \"Payments\")),\n  new Emp(7, \"Karan\",  \"Male\",   \"Finance\", 42, 2013,  99000, List.of(\"Ledger\")));", code: "Map<String, Long> countByDept = emps.stream()\n    .collect(Collectors.groupingBy(Emp::dept, Collectors.counting()));" },
+  { id: "emp-6", topic: "stream-objects", difficulty: "medium", freq: "Very common", companies: ["SERVICE","BANK","PRODUCT"], q: "Find the second-highest salary in the organization (handle duplicates).", keyPoints: ["distinct() BEFORE sorting handles duplicates","sorted desc, skip(1), findFirst()","Returns Optional if fewer than 2 distinct salaries"], input: "record Emp(int id, String name, String gender, String dept,\n           int age, int year, double salary, List<String> projects) {}\n\nList<Emp> emps = List.of(\n  new Emp(1, \"Mahima\", \"Female\", \"IT\",      28, 2018,  95000, List.of(\"Payments\", \"Mesh\")),\n  new Emp(2, \"Aman\",   \"Male\",   \"IT\",      35, 2014, 120000, List.of(\"Payments\", \"Auth\")),\n  new Emp(3, \"Riya\",   \"Female\", \"IT\",      31, 2016,  80000, List.of(\"Mesh\")),\n  new Emp(4, \"Vikram\", \"Male\",   \"Sales\",   45, 2012,  60000, List.of(\"CRM\")),\n  new Emp(5, \"Neha\",   \"Female\", \"HR\",      26, 2020,  45000, List.of(\"Onboarding\")),\n  new Emp(6, \"Rohit\",  \"Male\",   \"Sales\",   38, 2015, 110000, List.of(\"CRM\", \"Payments\")),\n  new Emp(7, \"Karan\",  \"Male\",   \"Finance\", 42, 2013,  99000, List.of(\"Ledger\")));", code: "Optional<Double> second = emps.stream()\n    .map(Emp::salary)\n    .distinct()                       // critical: drop duplicate salaries\n    .sorted(Comparator.reverseOrder())\n    .skip(1)\n    .findFirst();" },
+  { id: "emp-7", topic: "stream-objects", difficulty: "hard", freq: "Common", companies: ["BANK","PRODUCT"], q: "Each employee has a list of projects. Find the most common project across the company (flatMap).", keyPoints: ["flatMap flattens nested lists into one stream","groupingBy + counting() builds the frequency map","max(Map.Entry.comparingByValue()) picks the top"], input: "record Emp(int id, String name, String gender, String dept,\n           int age, int year, double salary, List<String> projects) {}\n\nList<Emp> emps = List.of(\n  new Emp(1, \"Mahima\", \"Female\", \"IT\",      28, 2018,  95000, List.of(\"Payments\", \"Mesh\")),\n  new Emp(2, \"Aman\",   \"Male\",   \"IT\",      35, 2014, 120000, List.of(\"Payments\", \"Auth\")),\n  new Emp(3, \"Riya\",   \"Female\", \"IT\",      31, 2016,  80000, List.of(\"Mesh\")),\n  new Emp(4, \"Vikram\", \"Male\",   \"Sales\",   45, 2012,  60000, List.of(\"CRM\")),\n  new Emp(5, \"Neha\",   \"Female\", \"HR\",      26, 2020,  45000, List.of(\"Onboarding\")),\n  new Emp(6, \"Rohit\",  \"Male\",   \"Sales\",   38, 2015, 110000, List.of(\"CRM\", \"Payments\")),\n  new Emp(7, \"Karan\",  \"Male\",   \"Finance\", 42, 2013,  99000, List.of(\"Ledger\")));", code: "Optional<String> top = emps.stream()\n    .flatMap(e -> e.projects().stream())        // flatten List<List<String>>\n    .collect(Collectors.groupingBy(p -> p, Collectors.counting()))\n    .entrySet().stream()\n    .max(Map.Entry.comparingByValue())\n    .map(Map.Entry::getKey);" },
+  { id: "emp-8", topic: "stream-objects", difficulty: "hard", freq: "Very common", companies: ["BANK","PRODUCT"], q: "Find the 2nd highest salary within each department.", keyPoints: ["groupingBy + mapping to salaries per group","collectingAndThen post-processes each group","distinct -> sorted desc -> skip(1) -> findFirst"], input: "record Emp(int id, String name, String gender, String dept,\n           int age, int year, double salary, List<String> projects) {}\n\nList<Emp> emps = List.of(\n  new Emp(1, \"Mahima\", \"Female\", \"IT\",      28, 2018,  95000, List.of(\"Payments\", \"Mesh\")),\n  new Emp(2, \"Aman\",   \"Male\",   \"IT\",      35, 2014, 120000, List.of(\"Payments\", \"Auth\")),\n  new Emp(3, \"Riya\",   \"Female\", \"IT\",      31, 2016,  80000, List.of(\"Mesh\")),\n  new Emp(4, \"Vikram\", \"Male\",   \"Sales\",   45, 2012,  60000, List.of(\"CRM\")),\n  new Emp(5, \"Neha\",   \"Female\", \"HR\",      26, 2020,  45000, List.of(\"Onboarding\")),\n  new Emp(6, \"Rohit\",  \"Male\",   \"Sales\",   38, 2015, 110000, List.of(\"CRM\", \"Payments\")),\n  new Emp(7, \"Karan\",  \"Male\",   \"Finance\", 42, 2013,  99000, List.of(\"Ledger\")));", code: "Map<String, Optional<Double>> secondByDept = emps.stream()\n    .collect(Collectors.groupingBy(Emp::dept,\n        Collectors.collectingAndThen(\n            Collectors.mapping(Emp::salary, Collectors.toList()),\n            list -> list.stream().distinct()\n                        .sorted(Comparator.reverseOrder())\n                        .skip(1).findFirst())));" },
+  { id: "emp-9", topic: "stream-objects", difficulty: "medium", freq: "Common", companies: ["SERVICE","BANK","PRODUCT"], q: "Get count, min, max, average and sum of salaries for the IT department in one operation.", keyPoints: ["mapToDouble then summaryStatistics()","One pass gives count/min/max/avg/sum","Collectors.summarizingDouble() as a collector variant"], input: "record Emp(int id, String name, String gender, String dept,\n           int age, int year, double salary, List<String> projects) {}\n\nList<Emp> emps = List.of(\n  new Emp(1, \"Mahima\", \"Female\", \"IT\",      28, 2018,  95000, List.of(\"Payments\", \"Mesh\")),\n  new Emp(2, \"Aman\",   \"Male\",   \"IT\",      35, 2014, 120000, List.of(\"Payments\", \"Auth\")),\n  new Emp(3, \"Riya\",   \"Female\", \"IT\",      31, 2016,  80000, List.of(\"Mesh\")),\n  new Emp(4, \"Vikram\", \"Male\",   \"Sales\",   45, 2012,  60000, List.of(\"CRM\")),\n  new Emp(5, \"Neha\",   \"Female\", \"HR\",      26, 2020,  45000, List.of(\"Onboarding\")),\n  new Emp(6, \"Rohit\",  \"Male\",   \"Sales\",   38, 2015, 110000, List.of(\"CRM\", \"Payments\")),\n  new Emp(7, \"Karan\",  \"Male\",   \"Finance\", 42, 2013,  99000, List.of(\"Ledger\")));", code: "DoubleSummaryStatistics stats = emps.stream()\n    .filter(e -> e.dept().equals(\"IT\"))\n    .mapToDouble(Emp::salary)\n    .summaryStatistics();\n\nstats.getCount(); stats.getMin(); stats.getMax();\nstats.getAverage(); stats.getSum();" },
+  { id: "emp-10", topic: "stream-objects", difficulty: "hard", freq: "Common", companies: ["BANK","PRODUCT"], q: "Group employees by age range (20-30, 31-40, 41-50) and find the average salary per group.", keyPoints: ["Classifier function returns the bucket label","groupingBy(classifier, averagingDouble(...))","Use TreeMap::new to keep buckets ordered"], input: "record Emp(int id, String name, String gender, String dept,\n           int age, int year, double salary, List<String> projects) {}\n\nList<Emp> emps = List.of(\n  new Emp(1, \"Mahima\", \"Female\", \"IT\",      28, 2018,  95000, List.of(\"Payments\", \"Mesh\")),\n  new Emp(2, \"Aman\",   \"Male\",   \"IT\",      35, 2014, 120000, List.of(\"Payments\", \"Auth\")),\n  new Emp(3, \"Riya\",   \"Female\", \"IT\",      31, 2016,  80000, List.of(\"Mesh\")),\n  new Emp(4, \"Vikram\", \"Male\",   \"Sales\",   45, 2012,  60000, List.of(\"CRM\")),\n  new Emp(5, \"Neha\",   \"Female\", \"HR\",      26, 2020,  45000, List.of(\"Onboarding\")),\n  new Emp(6, \"Rohit\",  \"Male\",   \"Sales\",   38, 2015, 110000, List.of(\"CRM\", \"Payments\")),\n  new Emp(7, \"Karan\",  \"Male\",   \"Finance\", 42, 2013,  99000, List.of(\"Ledger\")));", code: "Map<String, Double> byRange = emps.stream()\n    .collect(Collectors.groupingBy(e -> {\n        int a = e.age();\n        if (a <= 30) return \"20-30\";\n        if (a <= 40) return \"31-40\";\n        return \"41-50\";\n    }, Collectors.averagingDouble(Emp::salary)));" },
+  { id: "emp-11", topic: "stream-objects", difficulty: "hard", freq: "Common", companies: ["BANK","PRODUCT"], q: "Find the longest-serving employee (minimum yearOfJoining) in each department.", keyPoints: ["groupingBy + minBy gives Map<K, Optional<V>>","collectingAndThen or toMap+BinaryOperator unwraps it","maxBy for the newest joiner"], input: "record Emp(int id, String name, String gender, String dept,\n           int age, int year, double salary, List<String> projects) {}\n\nList<Emp> emps = List.of(\n  new Emp(1, \"Mahima\", \"Female\", \"IT\",      28, 2018,  95000, List.of(\"Payments\", \"Mesh\")),\n  new Emp(2, \"Aman\",   \"Male\",   \"IT\",      35, 2014, 120000, List.of(\"Payments\", \"Auth\")),\n  new Emp(3, \"Riya\",   \"Female\", \"IT\",      31, 2016,  80000, List.of(\"Mesh\")),\n  new Emp(4, \"Vikram\", \"Male\",   \"Sales\",   45, 2012,  60000, List.of(\"CRM\")),\n  new Emp(5, \"Neha\",   \"Female\", \"HR\",      26, 2020,  45000, List.of(\"Onboarding\")),\n  new Emp(6, \"Rohit\",  \"Male\",   \"Sales\",   38, 2015, 110000, List.of(\"CRM\", \"Payments\")),\n  new Emp(7, \"Karan\",  \"Male\",   \"Finance\", 42, 2013,  99000, List.of(\"Ledger\")));", code: "Map<String, Optional<Emp>> longest = emps.stream()\n    .collect(Collectors.groupingBy(Emp::dept,\n             Collectors.minBy(Comparator.comparingInt(Emp::year))));\n\n// unwrap the Optional:\nMap<String, Emp> clean = emps.stream()\n    .collect(Collectors.toMap(Emp::dept, e -> e,\n             BinaryOperator.minBy(Comparator.comparingInt(Emp::year))));" },
+  { id: "emp-12", topic: "stream-objects", difficulty: "hard", freq: "Common", companies: ["BANK","PRODUCT"], q: "Find the oldest male and the oldest female employee in a single stream.", keyPoints: ["One pass: groupingBy(gender) + maxBy(age)","Avoids two separate filter+max streams","Values are Optional<Emp>"], input: "record Emp(int id, String name, String gender, String dept,\n           int age, int year, double salary, List<String> projects) {}\n\nList<Emp> emps = List.of(\n  new Emp(1, \"Mahima\", \"Female\", \"IT\",      28, 2018,  95000, List.of(\"Payments\", \"Mesh\")),\n  new Emp(2, \"Aman\",   \"Male\",   \"IT\",      35, 2014, 120000, List.of(\"Payments\", \"Auth\")),\n  new Emp(3, \"Riya\",   \"Female\", \"IT\",      31, 2016,  80000, List.of(\"Mesh\")),\n  new Emp(4, \"Vikram\", \"Male\",   \"Sales\",   45, 2012,  60000, List.of(\"CRM\")),\n  new Emp(5, \"Neha\",   \"Female\", \"HR\",      26, 2020,  45000, List.of(\"Onboarding\")),\n  new Emp(6, \"Rohit\",  \"Male\",   \"Sales\",   38, 2015, 110000, List.of(\"CRM\", \"Payments\")),\n  new Emp(7, \"Karan\",  \"Male\",   \"Finance\", 42, 2013,  99000, List.of(\"Ledger\")));", code: "Map<String, Optional<Emp>> oldestByGender = emps.stream()\n    .collect(Collectors.groupingBy(Emp::gender,\n             Collectors.maxBy(Comparator.comparingInt(Emp::age))));" },
+  { id: "emp-13", topic: "stream-objects", difficulty: "medium", freq: "Common", companies: ["SERVICE","BANK","PRODUCT"], q: "Group employees into High (>100k), Medium (50k-100k), Low (<50k) and count each.", keyPoints: ["Classifier returns the category label","counting() as the downstream collector","partitioningBy only works for two buckets"], input: "record Emp(int id, String name, String gender, String dept,\n           int age, int year, double salary, List<String> projects) {}\n\nList<Emp> emps = List.of(\n  new Emp(1, \"Mahima\", \"Female\", \"IT\",      28, 2018,  95000, List.of(\"Payments\", \"Mesh\")),\n  new Emp(2, \"Aman\",   \"Male\",   \"IT\",      35, 2014, 120000, List.of(\"Payments\", \"Auth\")),\n  new Emp(3, \"Riya\",   \"Female\", \"IT\",      31, 2016,  80000, List.of(\"Mesh\")),\n  new Emp(4, \"Vikram\", \"Male\",   \"Sales\",   45, 2012,  60000, List.of(\"CRM\")),\n  new Emp(5, \"Neha\",   \"Female\", \"HR\",      26, 2020,  45000, List.of(\"Onboarding\")),\n  new Emp(6, \"Rohit\",  \"Male\",   \"Sales\",   38, 2015, 110000, List.of(\"CRM\", \"Payments\")),\n  new Emp(7, \"Karan\",  \"Male\",   \"Finance\", 42, 2013,  99000, List.of(\"Ledger\")));", code: "Map<String, Long> dist = emps.stream()\n    .collect(Collectors.groupingBy(e ->\n        e.salary() > 100000 ? \"High\"\n      : e.salary() >= 50000 ? \"Medium\" : \"Low\",\n        Collectors.counting()));" },
+  { id: "emp-14", topic: "stream-objects", difficulty: "hard", freq: "Very common", companies: ["BANK","PRODUCT"], q: "Build Map<Dept, Map<Gender, Double>> of total salary paid per gender within each department.", keyPoints: ["Nested groupingBy = two-level grouping","Inner downstream is summingDouble","This nesting pattern is a classic senior question"], input: "record Emp(int id, String name, String gender, String dept,\n           int age, int year, double salary, List<String> projects) {}\n\nList<Emp> emps = List.of(\n  new Emp(1, \"Mahima\", \"Female\", \"IT\",      28, 2018,  95000, List.of(\"Payments\", \"Mesh\")),\n  new Emp(2, \"Aman\",   \"Male\",   \"IT\",      35, 2014, 120000, List.of(\"Payments\", \"Auth\")),\n  new Emp(3, \"Riya\",   \"Female\", \"IT\",      31, 2016,  80000, List.of(\"Mesh\")),\n  new Emp(4, \"Vikram\", \"Male\",   \"Sales\",   45, 2012,  60000, List.of(\"CRM\")),\n  new Emp(5, \"Neha\",   \"Female\", \"HR\",      26, 2020,  45000, List.of(\"Onboarding\")),\n  new Emp(6, \"Rohit\",  \"Male\",   \"Sales\",   38, 2015, 110000, List.of(\"CRM\", \"Payments\")),\n  new Emp(7, \"Karan\",  \"Male\",   \"Finance\", 42, 2013,  99000, List.of(\"Ledger\")));", code: "Map<String, Map<String, Double>> report = emps.stream()\n    .collect(Collectors.groupingBy(Emp::dept,\n             Collectors.groupingBy(Emp::gender,\n                      Collectors.summingDouble(Emp::salary))));" },
+  { id: "emp-15", topic: "stream-objects", difficulty: "medium", freq: "Common", companies: ["SERVICE","BANK","PRODUCT"], q: "Find which joining year had the most joiners.", keyPoints: ["Frequency map by year, then max by value","Map.Entry.comparingByValue() comparator","map(Entry::getKey) to return just the year"], input: "record Emp(int id, String name, String gender, String dept,\n           int age, int year, double salary, List<String> projects) {}\n\nList<Emp> emps = List.of(\n  new Emp(1, \"Mahima\", \"Female\", \"IT\",      28, 2018,  95000, List.of(\"Payments\", \"Mesh\")),\n  new Emp(2, \"Aman\",   \"Male\",   \"IT\",      35, 2014, 120000, List.of(\"Payments\", \"Auth\")),\n  new Emp(3, \"Riya\",   \"Female\", \"IT\",      31, 2016,  80000, List.of(\"Mesh\")),\n  new Emp(4, \"Vikram\", \"Male\",   \"Sales\",   45, 2012,  60000, List.of(\"CRM\")),\n  new Emp(5, \"Neha\",   \"Female\", \"HR\",      26, 2020,  45000, List.of(\"Onboarding\")),\n  new Emp(6, \"Rohit\",  \"Male\",   \"Sales\",   38, 2015, 110000, List.of(\"CRM\", \"Payments\")),\n  new Emp(7, \"Karan\",  \"Male\",   \"Finance\", 42, 2013,  99000, List.of(\"Ledger\")));", code: "Optional<Integer> topYear = emps.stream()\n    .collect(Collectors.groupingBy(Emp::year, Collectors.counting()))\n    .entrySet().stream()\n    .max(Map.Entry.comparingByValue())\n    .map(Map.Entry::getKey);" },
+  { id: "emp-16", topic: "stream-objects", difficulty: "hard", freq: "Common", companies: ["BANK","PRODUCT"], q: "Identify the department with the highest average salary.", keyPoints: ["First build Map<dept, avgSalary>","Stream the entrySet and max by value","map to the key for the department name"], input: "record Emp(int id, String name, String gender, String dept,\n           int age, int year, double salary, List<String> projects) {}\n\nList<Emp> emps = List.of(\n  new Emp(1, \"Mahima\", \"Female\", \"IT\",      28, 2018,  95000, List.of(\"Payments\", \"Mesh\")),\n  new Emp(2, \"Aman\",   \"Male\",   \"IT\",      35, 2014, 120000, List.of(\"Payments\", \"Auth\")),\n  new Emp(3, \"Riya\",   \"Female\", \"IT\",      31, 2016,  80000, List.of(\"Mesh\")),\n  new Emp(4, \"Vikram\", \"Male\",   \"Sales\",   45, 2012,  60000, List.of(\"CRM\")),\n  new Emp(5, \"Neha\",   \"Female\", \"HR\",      26, 2020,  45000, List.of(\"Onboarding\")),\n  new Emp(6, \"Rohit\",  \"Male\",   \"Sales\",   38, 2015, 110000, List.of(\"CRM\", \"Payments\")),\n  new Emp(7, \"Karan\",  \"Male\",   \"Finance\", 42, 2013,  99000, List.of(\"Ledger\")));", code: "Optional<String> dept = emps.stream()\n    .collect(Collectors.groupingBy(Emp::dept,\n             Collectors.averagingDouble(Emp::salary)))\n    .entrySet().stream()\n    .max(Map.Entry.comparingByValue())\n    .map(Map.Entry::getKey);" },
+  { id: "emp-17", topic: "stream-objects", difficulty: "hard", freq: "Common", companies: ["BANK","PRODUCT"], q: "List IT employees earning more than the company-wide average salary.", keyPoints: ["Compute the global average FIRST (separate pass)","A stream can't be reused - two traversals needed","Then filter dept + salary > avg"], input: "record Emp(int id, String name, String gender, String dept,\n           int age, int year, double salary, List<String> projects) {}\n\nList<Emp> emps = List.of(\n  new Emp(1, \"Mahima\", \"Female\", \"IT\",      28, 2018,  95000, List.of(\"Payments\", \"Mesh\")),\n  new Emp(2, \"Aman\",   \"Male\",   \"IT\",      35, 2014, 120000, List.of(\"Payments\", \"Auth\")),\n  new Emp(3, \"Riya\",   \"Female\", \"IT\",      31, 2016,  80000, List.of(\"Mesh\")),\n  new Emp(4, \"Vikram\", \"Male\",   \"Sales\",   45, 2012,  60000, List.of(\"CRM\")),\n  new Emp(5, \"Neha\",   \"Female\", \"HR\",      26, 2020,  45000, List.of(\"Onboarding\")),\n  new Emp(6, \"Rohit\",  \"Male\",   \"Sales\",   38, 2015, 110000, List.of(\"CRM\", \"Payments\")),\n  new Emp(7, \"Karan\",  \"Male\",   \"Finance\", 42, 2013,  99000, List.of(\"Ledger\")));", code: "double globalAvg = emps.stream()\n    .mapToDouble(Emp::salary).average().orElse(0);\n\nList<String> names = emps.stream()\n    .filter(e -> e.dept().equals(\"IT\"))\n    .filter(e -> e.salary() > globalAvg)\n    .map(Emp::name)\n    .collect(Collectors.toList());" },
+  { id: "emp-18", topic: "stream-objects", difficulty: "hard", freq: "Common", companies: ["BANK","PRODUCT"], q: "For each department, find the unique set of all projects being worked on.", keyPoints: ["Collectors.flatMapping (Java 9+) flattens per group","toSet() downstream removes duplicates","Pre-Java 9: mapping + collectingAndThen to flatten"], input: "record Emp(int id, String name, String gender, String dept,\n           int age, int year, double salary, List<String> projects) {}\n\nList<Emp> emps = List.of(\n  new Emp(1, \"Mahima\", \"Female\", \"IT\",      28, 2018,  95000, List.of(\"Payments\", \"Mesh\")),\n  new Emp(2, \"Aman\",   \"Male\",   \"IT\",      35, 2014, 120000, List.of(\"Payments\", \"Auth\")),\n  new Emp(3, \"Riya\",   \"Female\", \"IT\",      31, 2016,  80000, List.of(\"Mesh\")),\n  new Emp(4, \"Vikram\", \"Male\",   \"Sales\",   45, 2012,  60000, List.of(\"CRM\")),\n  new Emp(5, \"Neha\",   \"Female\", \"HR\",      26, 2020,  45000, List.of(\"Onboarding\")),\n  new Emp(6, \"Rohit\",  \"Male\",   \"Sales\",   38, 2015, 110000, List.of(\"CRM\", \"Payments\")),\n  new Emp(7, \"Karan\",  \"Male\",   \"Finance\", 42, 2013,  99000, List.of(\"Ledger\")));", code: "Map<String, Set<String>> projectsByDept = emps.stream()\n    .collect(Collectors.groupingBy(Emp::dept,\n             Collectors.flatMapping(e -> e.projects().stream(),\n                                    Collectors.toSet())));" },
+  { id: "emp-19", topic: "stream-objects", difficulty: "easy", freq: "Common", companies: ["SERVICE","BANK","PRODUCT"], q: "Find the employee who joined the company earliest.", keyPoints: ["min() with comparingInt(year)","thenComparing to break ties deterministically","Returns Optional - handle empty list"], input: "record Emp(int id, String name, String gender, String dept,\n           int age, int year, double salary, List<String> projects) {}\n\nList<Emp> emps = List.of(\n  new Emp(1, \"Mahima\", \"Female\", \"IT\",      28, 2018,  95000, List.of(\"Payments\", \"Mesh\")),\n  new Emp(2, \"Aman\",   \"Male\",   \"IT\",      35, 2014, 120000, List.of(\"Payments\", \"Auth\")),\n  new Emp(3, \"Riya\",   \"Female\", \"IT\",      31, 2016,  80000, List.of(\"Mesh\")),\n  new Emp(4, \"Vikram\", \"Male\",   \"Sales\",   45, 2012,  60000, List.of(\"CRM\")),\n  new Emp(5, \"Neha\",   \"Female\", \"HR\",      26, 2020,  45000, List.of(\"Onboarding\")),\n  new Emp(6, \"Rohit\",  \"Male\",   \"Sales\",   38, 2015, 110000, List.of(\"CRM\", \"Payments\")),\n  new Emp(7, \"Karan\",  \"Male\",   \"Finance\", 42, 2013,  99000, List.of(\"Ledger\")));", code: "Optional<Emp> first = emps.stream()\n    .min(Comparator.comparingInt(Emp::year)\n         .thenComparingInt(Emp::id));   // tie-break on id" },
+  { id: "emp-20", topic: "stream-objects", difficulty: "hard", freq: "Occasional", companies: ["BANK","PRODUCT"], q: "Identify departments that have zero female employees.", keyPoints: ["groupingBy dept, then noneMatch on each group","noneMatch short-circuits on the first match","Careful: departments absent from the data won't appear"], input: "record Emp(int id, String name, String gender, String dept,\n           int age, int year, double salary, List<String> projects) {}\n\nList<Emp> emps = List.of(\n  new Emp(1, \"Mahima\", \"Female\", \"IT\",      28, 2018,  95000, List.of(\"Payments\", \"Mesh\")),\n  new Emp(2, \"Aman\",   \"Male\",   \"IT\",      35, 2014, 120000, List.of(\"Payments\", \"Auth\")),\n  new Emp(3, \"Riya\",   \"Female\", \"IT\",      31, 2016,  80000, List.of(\"Mesh\")),\n  new Emp(4, \"Vikram\", \"Male\",   \"Sales\",   45, 2012,  60000, List.of(\"CRM\")),\n  new Emp(5, \"Neha\",   \"Female\", \"HR\",      26, 2020,  45000, List.of(\"Onboarding\")),\n  new Emp(6, \"Rohit\",  \"Male\",   \"Sales\",   38, 2015, 110000, List.of(\"CRM\", \"Payments\")),\n  new Emp(7, \"Karan\",  \"Male\",   \"Finance\", 42, 2013,  99000, List.of(\"Ledger\")));", code: "Map<String, List<Emp>> byDept = emps.stream()\n    .collect(Collectors.groupingBy(Emp::dept));\n\nList<String> noFemale = byDept.entrySet().stream()\n    .filter(e -> e.getValue().stream()\n                  .noneMatch(x -> x.gender().equals(\"Female\")))\n    .map(Map.Entry::getKey)\n    .collect(Collectors.toList());" },
 ];
 
 // ---- Market insights from research (2025–2026 trend snapshot) ----
@@ -2668,7 +2752,7 @@ const ROADMAP = [
 //  Core Java Prep — single-file dashboard
 // ============================================================
 
-const ICONS = { Boxes, Hash, Layers, Cpu, Shield, Zap, Sparkles, Code2, Database, Terminal, Leaf, Globe, Network, Server, Building2 };
+const ICONS = { Boxes, Hash, Layers, Cpu, Shield, Zap, Sparkles, Code2, Database, Terminal, Leaf, Globe, Network, Server, Building2, Users };
 const COMPANY_LABELS = { SERVICE: "Service-based", BANK: "Banking", PRODUCT: "Product" };
 const COMPANY_SHORT = { SERVICE: "Service", BANK: "Bank", PRODUCT: "Product" };
 const STORE_KEY = "coreJavaPrep_v1";
@@ -3236,6 +3320,7 @@ const CSS = `
 .mi-aibox .as{font-weight:800;font-size:15px}
 .mi-aibox .af{font-size:12.8px;color:var(--dim);line-height:1.65;margin-top:6px}
 .mi-rbtn.sugg{outline:2px solid currentColor;outline-offset:2px}
+.wb-input{margin-bottom:4px}
 :focus-visible{outline:2px solid var(--amber);outline-offset:2px;border-radius:6px}
 `;
 
@@ -3389,6 +3474,9 @@ function QuestionCard({ q, st, onStatus, onBookmark, onNote }) {
               <div className="kh"><Target size={12} /> Talking points</div>
               <ul>{q.keyPoints.map((k, i) => <li key={i}>{k}</li>)}</ul>
             </div>
+          )}
+          {q.input && (
+            <div className="code" style={{ marginBottom: 8, opacity: .8 }}><pre>{q.input}</pre></div>
           )}
           {q.code && (
             <div className="code"><pre>{q.code}</pre></div>
@@ -4252,13 +4340,12 @@ function Roadmap({ done, setDone }) {
   );
 }
 
-const WB_TOPICS = { streams: "Streams", "string-coding": "Strings", "array-coding": "Arrays" };
+const WB_TOPICS = { streams: "Streams", "string-coding": "Strings", "array-coding": "Arrays", "stream-objects": "Objects", coding: "Java", database: "SQL" };
+// a question belongs in the workbench if it has code to write, or is a Java output-puzzle
+const wbEligible = (q) => !!WB_TOPICS[q.topic] && (!!q.code || q.topic === "coding");
 
 function Workbench({ wb, setWb }) {
-  const POOL = useMemo(
-    () => QUESTIONS.filter((q) => WB_TOPICS[q.topic] && q.code),
-    []
-  );
+  const POOL = useMemo(() => QUESTIONS.filter(wbEligible), []);
   const [topicF, setTopicF] = useState("all");
   const [statusF, setStatusF] = useState("all");
   const [activeId, setActiveId] = useState(POOL[0] ? POOL[0].id : null);
@@ -4377,12 +4464,19 @@ function Workbench({ wb, setWb }) {
 
               <div className="wb-title">{active.q}</div>
 
+              {active.input && (
+                <>
+                  <div className="wb-lbl"><span>Input</span></div>
+                  <div className="code wb-input"><pre>{active.input}</pre></div>
+                </>
+              )}
+
               <div className="wb-lbl">
                 <span>Your solution</span>
                 <span className={`saved-tag ${saved ? "show" : ""}`}>Saved</span>
               </div>
               <textarea className="wb-editor" spellCheck={false} value={e.code} onChange={(ev) => setCode(ev.target.value)} onKeyDown={onKeyDown}
-                placeholder="// write your solution here — it saves as you type" />
+                placeholder={active.topic === "database" ? "-- write your SQL here — it saves as you type" : "// write your solution here — it saves as you type"} />
 
               <div className="wb-actions">
                 <button className="wb-btn primary" onClick={onSave}>Save</button>
@@ -4400,7 +4494,10 @@ function Workbench({ wb, setWb }) {
                 </span>
                 {showSol && (
                   <>
-                    <div className="code" style={{ marginTop: 12 }}><pre>{active.code}</pre></div>
+                    {active.input && <div className="code" style={{ marginTop: 12, opacity: .75 }}><pre>{active.input}</pre></div>}
+                    {active.code
+                      ? <div className="code" style={{ marginTop: 12 }}><pre>{active.code}</pre></div>
+                      : active.a && <div className="atext" style={{ marginTop: 12, fontSize: 13.4, lineHeight: 1.7 }}>{active.a}</div>}
                     {active.keyPoints && (
                       <div className="kp" style={{ marginTop: 10 }}>
                         <div className="kh"><Target size={12} /> Why it works</div>
@@ -4424,6 +4521,7 @@ function Workbench({ wb, setWb }) {
 
 const MI_AREAS = [
   { id: "core", label: "Java Core", topics: ["oop", "strings", "exceptions", "java8", "modern", "jvm", "generics", "serialization", "coding"] },
+  { id: "streamobj", label: "Streams on Objects", topics: ["stream-objects"] },
   { id: "collections", label: "Collections", topics: ["collections"] },
   { id: "concurrency", label: "Concurrency", topics: ["concurrency"] },
   { id: "springboot", label: "Spring Boot", topics: ["spring"] },
@@ -4684,6 +4782,7 @@ function MockInterview({ mock, setMock }) {
                     <ul>{q.keyPoints.map((k, i) => { const hit = ev ? ev.kps[i].covered : null; return <li key={i} className={hit === false ? "miss" : "hit"}>{ev ? (hit ? <Check size={13} strokeWidth={3} color="var(--emerald)" /> : <CircleDot size={13} color="var(--faint)" />) : <Target size={12} color="var(--amber)" />} {k}</li>; })}</ul>
                   </div>
                 )}
+                {q.input && <div className="code" style={{ marginTop: 12, opacity: .75 }}><pre>{q.input}</pre></div>}
                 {q.code && <div className="code" style={{ marginTop: 12 }}><pre>{q.code}</pre></div>}
               </div>
               {transcript.trim() && (
