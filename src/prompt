@@ -1,0 +1,675 @@
+# Build a Live Automation Monitoring Dashboard Using Java Spring Boot
+
+## 1. Objective
+
+Build a lightweight, standalone, real-time HTML dashboard to visualize test-generation and automation progress across individual skills and tasks.
+
+The dashboard will provide testing teams with visibility into:
+- Which skills are currently executing.
+- Which skills have completed.
+- Which skills are pending.
+- Which skills have failed.
+- Real-time progress of individual skills.
+- Number of test cases generated.
+- Execution activity and logs.
+- Overall execution progress.
+
+The solution must be generic, configurable, modular and reusable across multiple projects and testing teams.
+
+IMPORTANT SCOPE:
+
+For this iteration, implement ONLY the monitoring dashboard and its backend infrastructure.
+
+Do not implement:
+- Test-generation logic.
+- AI/LLM integration.
+- Spec-Driven Quality Engine.
+- Testing Constitution.
+- Quality gates.
+- Actual test execution engines.
+- Application-specific business logic.
+
+The architecture should allow these capabilities to be integrated in future iterations without redesigning the dashboard.
+
+---
+
+## 2. Technology Stack
+
+### Backend
+- Java 21
+- Spring Boot 3.x
+- Spring Web MVC
+- Spring MVC SseEmitter for real-time updates
+- Maven
+- Jackson for JSON processing
+- Spring Boot Actuator for health monitoring (if justified)
+
+### Frontend
+- HTML5
+- CSS3
+- Vanilla JavaScript
+- Browser EventSource API for Server-Sent Events
+
+### Persistence
+- JSON-based file persistence for the initial implementation.
+- Design a storage abstraction so H2, PostgreSQL or another database can be introduced later.
+
+### Testing
+- JUnit 5
+- Mockito
+- Spring Boot Test
+- MockMvc
+
+Avoid introducing unnecessary dependencies.
+
+Do not use Node.js, Express, React, Angular, Socket.IO or frontend frameworks.
+
+---
+
+## 3. Application Architecture
+
+Create a standalone Spring Boot application.
+
+Use a layered, maintainable architecture.
+
+Suggested structure:
+
+live-automation-dashboard/
+│
+├── pom.xml
+│
+├── src/main/java/com/dashboard/
+│   │
+│   ├── DashboardApplication.java
+│   │
+│   ├── controller/
+│   │   ├── DashboardController.java
+│   │   ├── EventController.java
+│   │   └── HealthController.java
+│   │
+│   ├── service/
+│   │   ├── DashboardService.java
+│   │   ├── SkillStatusService.java
+│   │   ├── EventProcessingService.java
+│   │   └── ExecutionService.java
+│   │
+│   ├── event/
+│   │   ├── ExecutionEvent.java
+│   │   ├── EventType.java
+│   │   └── EventBroadcaster.java
+│   │
+│   ├── model/
+│   │   ├── Project.java
+│   │   ├── ExecutionRun.java
+│   │   ├── Skill.java
+│   │   ├── SkillStatus.java
+│   │   └── DashboardMetrics.java
+│   │
+│   ├── repository/
+│   │   ├── DashboardRepository.java
+│   │   └── JsonDashboardRepository.java
+│   │
+│   ├── config/
+│   │   ├── DashboardConfig.java
+│   │   ├── SkillConfig.java
+│   │   └── WebConfig.java
+│   │
+│   └── exception/
+│       ├── GlobalExceptionHandler.java
+│       └── InvalidEventException.java
+│
+├── src/main/resources/
+│   │
+│   ├── application.yml
+│   ├── config/
+│   │   └── skills.json
+│   │
+│   └── static/
+│       ├── index.html
+│       ├── css/
+│       │   └── styles.css
+│       └── js/
+│           └── dashboard.js
+│
+├── src/test/
+│
+├── data/
+│   ├── current-status.json
+│   └── events.jsonl
+│
+└── README.md
+
+The structure can be improved if necessary, but maintain clear separation of controllers, business services, event processing, persistence and frontend assets.
+
+---
+
+## 4. Dynamic Port Allocation
+
+The application must support dynamic port allocation.
+
+Requirements:
+- Configure server.port=0 by default.
+- Allow an optional configured port through application configuration or environment variable.
+- If the configured port is occupied, provide a clear startup error rather than silently failing.
+- When using dynamic allocation, retrieve the actual assigned port after startup.
+- Print the complete dashboard URL in the console.
+- Default to localhost for local development.
+- Support graceful application shutdown.
+
+Example console output:
+
+Live Automation Dashboard Started Successfully
+
+Application: Live Automation Monitor
+Port: 54321
+Dashboard URL: http://localhost:54321
+
+Do not hardcode the assigned port.
+
+---
+
+## 5. REST API Design
+
+Implement versioned REST endpoints.
+
+### Dashboard APIs
+
+GET /api/v1/dashboard
+
+Returns the complete current dashboard state.
+
+GET /api/v1/projects
+
+Returns registered projects.
+
+GET /api/v1/runs
+
+Returns execution runs.
+
+GET /api/v1/runs/{runId}
+
+Returns details of a particular execution.
+
+GET /api/v1/skills
+
+Returns registered skills.
+
+GET /api/v1/health
+
+Returns application health.
+
+### Event APIs
+
+POST /api/v1/events
+
+Receives execution events.
+
+GET /api/v1/runs/{runId}/events
+
+Returns event history for an execution.
+
+### Real-time API
+
+GET /api/v1/stream
+
+Establishes an SSE connection using Spring MVC SseEmitter.
+
+The SSE implementation must:
+- Support multiple concurrent browser clients.
+- Broadcast updates to all relevant connected clients.
+- Handle client disconnections.
+- Remove completed or failed emitters.
+- Send initial dashboard state when a client connects.
+- Support heartbeat events.
+- Handle reconnection through browser EventSource.
+- Avoid unnecessary thread creation.
+- Use a bounded event buffer where appropriate.
+
+Use Last-Event-ID for event replay where practical.
+
+---
+
+## 6. Event-Driven Monitoring
+
+The backend must receive execution events from external systems.
+
+The dashboard must not execute testing logic itself.
+
+Design a generic event contract.
+
+Example event:
+
+{
+  "schemaVersion": "1.0",
+  "eventId": "EVT-001",
+  "eventType": "SKILL_PROGRESS",
+  "projectId": "PROJECT-001",
+  "runId": "RUN-001",
+  "skillId": "positive-generator",
+  "skillName": "Positive Scenario Generator",
+  "status": "RUNNING",
+  "progress": 45,
+  "completedTasks": 45,
+  "totalTasks": 100,
+  "generatedCount": 45,
+  "message": "Generating positive test scenarios",
+  "timestamp": "2026-11-20T10:30:00Z"
+}
+
+The event model should be extensible.
+
+Supported event types:
+
+- SKILL_STARTED
+- SKILL_PROGRESS
+- SKILL_COMPLETED
+- SKILL_FAILED
+- SKILL_BLOCKED
+- SKILL_SKIPPED
+- LOG_MESSAGE
+
+Supported statuses:
+
+- PENDING
+- RUNNING
+- COMPLETED
+- FAILED
+- BLOCKED
+- SKIPPED
+
+Implement:
+- Request validation.
+- Event ID-based duplicate protection.
+- Timestamp validation.
+- Progress validation between 0 and 100.
+- Consistent error responses.
+- Event ordering.
+- Project and run isolation.
+- Protection against malformed payloads.
+- Request size limits.
+
+Events should update the corresponding skill status and dashboard metrics.
+
+---
+
+## 7. Skill Configuration
+
+Skills must be configurable externally.
+
+Create:
+
+src/main/resources/config/skills.json
+
+Example:
+
+{
+  "projectName": "Sample Application",
+  "environment": "QA",
+  "skills": [
+    {
+      "id": "spec-reader",
+      "name": "Specification Reader",
+      "description": "Reads and analyzes specifications"
+    },
+    {
+      "id": "test-plan",
+      "name": "Test Plan Generator",
+      "description": "Generates test execution plans"
+    },
+    {
+      "id": "positive-generator",
+      "name": "Positive Scenario Generator",
+      "description": "Generates positive test scenarios"
+    },
+    {
+      "id": "negative-generator",
+      "name": "Negative Scenario Generator",
+      "description": "Generates negative test scenarios"
+    }
+  ]
+}
+
+Requirements:
+- Load skills dynamically from configuration.
+- Do not hardcode skill names in Java services or frontend code.
+- Allow new skills to be registered without modifying existing frontend components.
+- Support multiple projects and execution runs.
+- Allow skills to be added or updated through configuration or an appropriate API.
+- Validate configuration during application startup.
+
+---
+
+## 8. Dashboard UI Requirements
+
+Build a professional engineering dashboard using HTML, CSS and vanilla JavaScript.
+
+The dashboard should be visually clean, responsive and suitable for daily testing-team usage.
+
+### A. Header
+
+Display:
+- Dashboard title: Live Automation Monitor.
+- Project name.
+- Application/service name.
+- Execution run ID.
+- Environment.
+- Current server connection status.
+- Last update timestamp.
+
+### B. Overall Execution Summary
+
+Display metric cards for:
+
+- Total skills.
+- Completed skills.
+- Running skills.
+- Failed skills.
+- Pending skills.
+- Overall progress percentage.
+- Total generated test cases.
+- Total execution duration.
+
+All metrics must be calculated from actual backend state.
+
+### C. Skill Execution Dashboard
+
+Display each skill as an independent card.
+
+Each card should contain:
+- Skill ID.
+- Skill name.
+- Description.
+- Execution status.
+- Progress percentage.
+- Progress bar.
+- Start timestamp.
+- End timestamp.
+- Duration.
+- Completed tasks.
+- Total tasks.
+- Generated test case count.
+- Current activity message.
+- Last updated timestamp.
+- Error details if applicable.
+
+Support:
+- Expandable skill details.
+- Filtering by status.
+- Searching by skill name.
+- Sorting by status and latest activity.
+
+New skills must automatically appear when registered.
+
+### D. Live Activity Stream
+
+Create a chronological activity panel.
+
+Examples:
+
+- Specification analysis started.
+- Specification analysis completed.
+- Test plan generation started.
+- 25 positive test cases generated.
+- Negative scenario generation completed.
+- Automation script generation failed.
+- Execution retry initiated.
+
+Each log entry should display:
+- Timestamp.
+- Skill name.
+- Event type.
+- Message.
+- Severity.
+
+Newest events should appear first.
+
+Provide filters for:
+- Skill.
+- Status.
+- Event type.
+- Severity.
+
+### E. Execution Details
+
+Allow users to inspect:
+- Current run details.
+- Individual skill execution history.
+- Generated artifact references.
+- Error messages.
+- Retry information.
+- Execution start and completion times.
+
+Do not expose sensitive execution data.
+
+---
+
+## 9. Real-Time Frontend Updates
+
+Use the browser's native EventSource API.
+
+The frontend must:
+- Establish an SSE connection on dashboard startup.
+- Receive initial dashboard state.
+- Update skill cards without refreshing the page.
+- Update progress metrics immediately.
+- Append new activity logs.
+- Show connection and disconnection indicators.
+- Automatically reconnect after temporary failures.
+- Recover the latest dashboard state after reconnecting.
+- Avoid unnecessary full-page rerendering.
+
+Do not use polling as the primary update mechanism.
+
+---
+
+## 10. Persistence
+
+For the initial implementation, use JSON-based persistence.
+
+Persist:
+- Registered projects.
+- Current execution runs.
+- Skill statuses.
+- Progress metrics.
+- Event history.
+
+Requirements:
+- Restore dashboard state after server restart.
+- Avoid data loss during normal shutdown.
+- Use safe file-writing practices.
+- Keep event history bounded through configurable retention.
+- Avoid concurrent write corruption.
+- Separate persistence logic behind a repository interface.
+
+Design the repository layer so it can later be replaced by H2, PostgreSQL or another storage technology.
+
+---
+
+## 11. UI Design Guidelines
+
+Design a modern monitoring dashboard with:
+
+- Professional enterprise-style appearance.
+- Responsive desktop and tablet layout.
+- Light and dark themes.
+- Clear status colors and labels.
+- Readable typography.
+- Compact metric cards.
+- Consistent spacing.
+- Accessible color contrast.
+- Expandable details.
+- Search and filtering.
+- Clean activity feed.
+- Loading and empty states.
+- Error and disconnected states.
+
+Avoid:
+- Excessive animations.
+- Unnecessary charts.
+- Hardcoded dashboard metrics.
+- Fake production execution progress.
+- Overcomplicated UI components.
+
+Include a clearly labelled DEMO MODE with sample events for preview purposes only.
+
+Production mode must show only actual backend-received events.
+
+---
+
+## 12. Error Handling and Security
+
+Implement:
+- Centralized exception handling.
+- Standardized API error responses.
+- Input validation.
+- Request size limits.
+- Safe JSON parsing.
+- Safe file access.
+- CORS restrictions.
+- Configurable authentication for future shared deployments.
+- No exposure of credentials or sensitive test payloads.
+- No arbitrary filesystem access through API parameters.
+
+For local development, allow an explicitly configured development mode.
+
+Do not expose the application remotely without appropriate security configuration.
+
+---
+
+## 13. Testing Requirements
+
+Write automated tests covering:
+
+1. Application startup.
+2. Dynamic port allocation.
+3. REST endpoint responses.
+4. Event ingestion.
+5. Invalid event rejection.
+6. Duplicate event handling.
+7. Skill status updates.
+8. Progress calculation.
+9. Multiple concurrent runs.
+10. Project isolation.
+11. Multiple SSE connections.
+12. SSE broadcasting.
+13. Client disconnection cleanup.
+14. Persistence after restart.
+15. Configuration loading and validation.
+16. Graceful shutdown.
+
+Use JUnit 5, Mockito and MockMvc.
+
+---
+
+## 14. Demo Mode
+
+Provide a demo mode to demonstrate the dashboard without connecting an external testing engine.
+
+Requirements:
+- Use configurable sample skills.
+- Generate sample events for demonstration.
+- Display a visible DEMO MODE indicator.
+- Allow demo execution to be started and stopped.
+- Keep demo data separate from production execution data.
+- Do not let demo events overwrite real execution records.
+
+Demo mode is for visual testing only.
+
+---
+
+## 15. Documentation
+
+Provide a complete README containing:
+
+- Project overview.
+- Architecture.
+- Prerequisites.
+- Java and Maven versions.
+- Build instructions.
+- Startup instructions.
+- Dynamic port configuration.
+- Dashboard access URL.
+- REST API documentation.
+- SSE connection details.
+- Example curl commands.
+- Event payload examples.
+- Skill configuration instructions.
+- Persistence details.
+- Demo mode instructions.
+- Troubleshooting.
+- Future integration guidance.
+
+---
+
+## 16. Implementation Approach
+
+Before implementation:
+
+1. Inspect the existing repository.
+2. Identify existing Java and Spring Boot conventions.
+3. Avoid overwriting existing functionality.
+4. Propose the package structure.
+5. Explain the event-processing architecture.
+6. Identify any existing reusable components.
+
+Then implement incrementally:
+
+Phase 1: Spring Boot application and dynamic port allocation.
+
+Phase 2: REST APIs and event ingestion.
+
+Phase 3: Skill management and status tracking.
+
+Phase 4: SSE-based live updates.
+
+Phase 5: HTML/CSS/JavaScript dashboard.
+
+Phase 6: JSON persistence and restart recovery.
+
+Phase 7: Demo mode and automated tests.
+
+Phase 8: Documentation and end-to-end verification.
+
+After implementation:
+- Build the application.
+- Start the server.
+- Verify the assigned port.
+- Open the dashboard in a browser.
+- Publish sample events through the REST API.
+- Verify live updates.
+- Verify multiple browser connections.
+- Refresh the browser and verify state recovery.
+- Restart the application and verify persisted data.
+- Execute the automated test suite.
+
+Do not stop after generating source files. Deliver a working, tested application.
+
+---
+
+## 17. Final Acceptance Criteria
+
+The implementation is complete when:
+
+- The Java Spring Boot application starts successfully.
+- No Node.js runtime is required.
+- No third-party frontend framework is required.
+- Dashboard URL is displayed with the actual assigned port.
+- Skills are dynamically configurable.
+- Multiple runs can be tracked independently.
+- Real incoming events update the dashboard immediately.
+- SSE works with multiple connected browsers.
+- Browser reconnection works.
+- Latest execution state survives browser refresh.
+- Execution state is restored after application restart.
+- Activity logs display actual incoming events.
+- Demo mode works separately.
+- Automated tests pass.
+- README documents the complete implementation.
+
+IMPORTANT:
+
+Keep this implementation focused exclusively on the Live HTML Automation Monitoring Dashboard.
+
+Do not implement the future Quality Engineering Engine or any test-generation functionality.
+
+Prioritize clean Java architecture, maintainability, modularity, reliability and future extensibility.
