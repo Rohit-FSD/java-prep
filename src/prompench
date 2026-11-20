@@ -1,0 +1,316 @@
+# Update Existing Utility: Generic Multi-Team Automation Monitoring & Onboarding
+
+Update the existing Live Automation Monitoring Utility with the following additional capabilities.
+
+**Important:** Do not rebuild the application from scratch. Inspect the existing codebase, reuse existing classes and functionality, and make only the changes required to support the enhancements below.
+
+Preserve the existing Java 21, Spring Boot 3, Maven, HTML, CSS and Vanilla JavaScript architecture.
+
+## 1. Make the Utility Generic and Multi-Team Compatible
+
+Currently, the utility should not be limited to one application, one project, or a predefined set of automation skills.
+
+Enhance it to support:
+- Multiple organizations and teams.
+- Multiple projects/applications per team.
+- Multiple frontend and backend components per application.
+- Multiple existing automation test suites per component.
+- Multiple execution runs across projects and environments.
+- Independent monitoring and execution history for each project.
+
+Do not hardcode project names, component names, team names, suite names or automation frameworks.
+
+## 2. Introduce Project Onboarding
+
+Add a new Project Onboarding section to the existing dashboard.
+
+Allow authorized users to register an application through the UI.
+
+Project details:
+- Project name.
+- Unique project ID.
+- Description.
+- Owning team.
+- Application URL (optional).
+- Environments such as QA, SIT, UAT and PROD.
+- Repository information (optional).
+
+Allow users to add multiple components to a project.
+
+Component details:
+- Component name.
+- Unique component ID.
+- Component type: FRONTEND, BACKEND, API, SERVICE or CUSTOM.
+- Description.
+- Repository information (optional).
+
+All components must be dynamically configurable.
+
+## 3. Support Existing Automation Test Suite Onboarding
+
+Add a Test Suite Registration section.
+
+Users should be able to register their existing automation test suites and map them to the relevant application components.
+
+Test suite details:
+- Suite name.
+- Unique suite ID.
+- Associated project.
+- Associated component.
+- Programming language.
+- Automation framework.
+- Repository information.
+- Integration type.
+- Description.
+- Optional tags.
+
+Examples of supported frameworks:
+- Java + JUnit 5.
+- Java + TestNG.
+- Selenium.
+- Rest Assured.
+- JavaScript + Playwright.
+- JavaScript + Jest.
+- Python + Pytest.
+- Custom automation frameworks.
+
+A component should support multiple test suites.
+
+Do not force users to recreate their existing test cases in this platform.
+
+The platform should monitor existing test suites, not replace them.
+
+## 4. Introduce a Framework-Independent Integration Mechanism
+
+This is a critical enhancement.
+
+Existing automation scripts must be able to report execution results to the dashboard without rewriting their actual test logic.
+
+Introduce a standardized, versioned reporting API.
+
+Support:
+- Generic HTTP REST event reporting.
+- JUnit 5 integration as the first working framework adapter.
+- GitLab CI/CD reporting integration or a documented pipeline example.
+- Extensible adapter architecture for future TestNG, Playwright and Pytest integrations.
+
+Provide an integration setup page for each registered test suite.
+
+It should display:
+- Dashboard API endpoint.
+- Project ID.
+- Component ID.
+- Suite ID.
+- Integration instructions.
+- Credential configuration guidance.
+- Sample reporting payload.
+- Integration validation status.
+
+Use secure, revocable integration credentials. Never expose secrets in frontend code or logs.
+
+## 5. Standardize Execution Events
+
+Extend the existing event model to support project, component, suite, run and test-case-level execution tracking.
+
+Use a common event envelope containing:
+- schemaVersion.
+- eventId.
+- eventType.
+- projectId.
+- componentId.
+- suiteId.
+- runId.
+- testCaseId (optional).
+- status.
+- timestamp.
+- message.
+- metadata.
+
+Support these event types:
+
+Run:
+- RUN_STARTED.
+- RUN_PROGRESS.
+- RUN_COMPLETED.
+- RUN_FAILED.
+- RUN_ABORTED.
+
+Suite:
+- SUITE_STARTED.
+- SUITE_PROGRESS.
+- SUITE_COMPLETED.
+- SUITE_FAILED.
+- SUITE_SKIPPED.
+
+Test case:
+- TEST_STARTED.
+- TEST_PASSED.
+- TEST_FAILED.
+- TEST_SKIPPED.
+- TEST_ABORTED.
+
+Logs:
+- LOG_MESSAGE.
+- ERROR_MESSAGE.
+- ARTIFACT_REPORTED.
+
+Validate event ownership, identifiers, event ordering, timestamps, payload size and supported schema version.
+
+Implement event ID-based idempotency to prevent duplicate results.
+
+Support both:
+1. Live event reporting while tests are running.
+2. Final test report ingestion when the existing automation framework only provides results after execution.
+
+Do not assume every framework supports live test-level progress.
+
+## 6. Enhance the Dashboard UI
+
+Extend the existing dashboard rather than replacing its current design unnecessarily.
+
+Add these views:
+
+### Organization / Team Dashboard
+- Total projects.
+- Active projects.
+- Active execution runs.
+- Total test cases.
+- Passed, failed and skipped counts.
+- Recent execution activity.
+
+### Project Dashboard
+- Project information.
+- Components.
+- Registered automation suites.
+- Latest execution.
+- Execution history.
+- Overall testing metrics.
+
+### Component Dashboard
+- Component status.
+- Associated test suites.
+- Latest run.
+- Test result summary.
+- Failure details.
+
+### Test Suite Dashboard
+- Suite name.
+- Automation framework.
+- Current status.
+- Progress percentage.
+- Total tests.
+- Passed, failed, skipped and running counts.
+- Execution duration.
+- Start/end timestamps.
+- Recent logs.
+- Failure details.
+
+### Live Execution View
+Display live updates for:
+- Project.
+- Component.
+- Suite.
+- Individual test cases, where available.
+- Run ID.
+- Environment.
+- Execution progress.
+- Current status.
+- Failure messages.
+- Execution logs.
+
+Add appropriate filters, search, sorting and pagination.
+
+Ensure users can navigate from an organization dashboard to a project, component, suite and individual test result.
+
+## 7. Enhance the Existing Architecture
+
+Extend the existing backend with modular domain boundaries for:
+
+- Organization management.
+- Team management.
+- Project management.
+- Component management.
+- Test suite management.
+- Execution management.
+- Test-case result management.
+- Integration management.
+- Event ingestion.
+- Dashboard analytics.
+
+Keep the current modular Spring Boot architecture.
+
+Do not introduce microservices or Kafka immediately.
+
+Use PostgreSQL for structured persistent data if it is not already implemented. If the current utility uses JSON persistence, migrate carefully without losing existing functionality.
+
+Keep event ingestion and dashboard broadcasting independent of the browser connection lifecycle.
+
+Retain the existing SSE implementation for real-time dashboard updates.
+
+## 8. Security and Data Isolation
+
+Make sure one team's data cannot be accessed or modified by another unauthorized team.
+
+Implement or prepare:
+- Organization/team/project-level authorization.
+- Secure integration credentials.
+- Credential revocation and rotation.
+- Input validation.
+- Request size limits.
+- Safe log sanitization.
+- Configurable CORS.
+- Rate limiting for event ingestion.
+
+Do not trust organizationId, teamId or projectId supplied by a client without verifying authorization on the server.
+
+## 9. Maintain Existing Functionality
+
+These requirements must continue working:
+- Current live monitoring dashboard.
+- Existing event ingestion.
+- Existing skill status tracking, where applicable.
+- SSE broadcasting.
+- Demo mode.
+- Execution history.
+- Error handling.
+- Dynamic port configuration.
+- Existing tests and APIs.
+
+Do not remove existing functionality just because the new domain model introduces projects and test suites.
+
+Migrate or adapt existing skill-based execution concepts into the generic test-suite model only where appropriate. Maintain backward compatibility where practical.
+
+## 10. Implementation and Verification
+
+Implement these enhancements incrementally.
+
+Suggested order:
+1. Inspect existing code and identify reusable modules.
+2. Extend the domain model and database.
+3. Add project/component/test-suite onboarding APIs.
+4. Add the onboarding UI.
+5. Extend the event schema and ingestion logic.
+6. Add integration configuration and validation.
+7. Implement the first JUnit 5 reporting adapter.
+8. Add project, component and suite-level dashboards.
+9. Verify live SSE updates.
+10. Add automated tests and update documentation.
+
+Test the complete workflow:
+
+- Create a project.
+- Register frontend and backend components.
+- Register existing test suites.
+- Configure an integration.
+- Execute an existing JUnit test suite outside the monitoring platform.
+- Send reporting events to the dashboard.
+- Verify live execution progress.
+- Verify individual test results.
+- Verify historical execution records.
+- Verify that another project and team can onboard independently.
+
+Do not claim an integration is supported until a working implementation or verified example exists.
+
+Before making changes, provide a brief assessment of the current implementation and the files/modules that need modification. Then implement the enhancements without unnecessarily rewriting the existing utility.
+
+**Final objective:** Transform the existing Live Automation Monitoring Utility into a reusable, scalable, multi-team monitoring platform that can onboard different applications and their existing automation test suites, regardless of the technology or framework they use.
